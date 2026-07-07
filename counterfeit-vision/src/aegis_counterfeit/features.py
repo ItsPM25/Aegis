@@ -40,9 +40,57 @@ class FeatureCheck:
     detail: str
 
 
+def _order_corners(quad: np.ndarray) -> np.ndarray:
+    """Order 4 points as top-left, top-right, bottom-right, bottom-left."""
+    s = quad.sum(axis=1)
+    d = np.diff(quad, axis=1).ravel()
+    return np.array(
+        [quad[np.argmin(s)], quad[np.argmin(d)], quad[np.argmax(s)], quad[np.argmax(d)]],
+        dtype=np.float32,
+    )
+
+
+def locate_note(img_bgr: np.ndarray) -> np.ndarray:
+    """Find the note in a camera frame and perspective-correct it.
+
+    A photo of a note on a desk puts the security-feature regions nowhere near
+    their canonical fractions — every check would read the wrong pixels. This
+    finds the dominant quadrilateral (15–95% of the frame), warps it to
+    NOTE_SIZE, and falls back to a plain resize when the image already *is*
+    the note (our renders, tight crops) or no plausible note outline exists.
+    """
+    h, w = img_bgr.shape[:2]
+    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+    edges = cv2.Canny(cv2.GaussianBlur(gray, (5, 5), 0), 50, 150)
+    edges = cv2.dilate(edges, np.ones((3, 3), np.uint8))
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    best_quad, best_area = None, 0.0
+    frame_area = float(h * w)
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if not (0.15 * frame_area <= area <= 0.95 * frame_area):
+            continue
+        approx = cv2.approxPolyDP(contour, 0.02 * cv2.arcLength(contour, True), True)
+        if len(approx) == 4 and area > best_area:
+            best_quad, best_area = approx.reshape(4, 2).astype(np.float32), area
+
+    if best_quad is None:
+        return cv2.resize(img_bgr, NOTE_SIZE, interpolation=cv2.INTER_AREA)
+
+    src = _order_corners(best_quad)
+    dst_w, dst_h = NOTE_SIZE
+    dst = np.array([[0, 0], [dst_w - 1, 0], [dst_w - 1, dst_h - 1], [0, dst_h - 1]],
+                   dtype=np.float32)
+    return cv2.warpPerspective(img_bgr, cv2.getPerspectiveTransform(src, dst), NOTE_SIZE)
+
+
 def _to_canonical(img_bgr: np.ndarray) -> np.ndarray:
-    """Resize to the canonical working size so region fractions line up."""
-    return cv2.resize(img_bgr, NOTE_SIZE, interpolation=cv2.INTER_AREA)
+    """Canonical working frame: pass through if already canonical (avoids
+    re-running localisation), otherwise locate + warp."""
+    if img_bgr.shape[1::-1] == NOTE_SIZE:
+        return img_bgr
+    return locate_note(img_bgr)
 
 
 def check_security_thread(img_bgr: np.ndarray) -> FeatureCheck:

@@ -21,8 +21,8 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from .config import CAPTURES_DIR, CONTRACT_SCHEMA, SCHEMA_VERSION
-from .features import infer_denomination, run_all_checks
+from .config import CAPTURES_DIR, CONTRACT_SCHEMA, SCHEMA_VERSION, TrainConfig
+from .features import infer_denomination, locate_note, run_all_checks
 from .model import CounterfeitModel
 
 
@@ -37,14 +37,19 @@ def analyze_image(
     save_capture: bool = False,
 ) -> dict:
     """Analyse one note photo; returns a contract-valid payload dict."""
-    bgr = _to_bgr(img)
+    # Localise once: checks AND the CNN both see the perspective-corrected
+    # note, so a camera frame with desk background behaves like a tight crop.
+    bgr = locate_note(_to_bgr(img))
     checks = run_all_checks(bgr)
     failed = [c.feature for c in checks if not c.passed]
-    p_fake = model.p_fake(img)
+    p_fake = model.p_fake(Image.fromarray(cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)))
     verdict = model.decide_verdict(p_fake, len(failed))
 
     if verdict == "fake":
-        confidence = p_fake
+        # A conviction may come from the CNN, the feature checks, or both —
+        # confidence reflects the stronger line of evidence.
+        feature_conf = 0.0 if not failed else min(0.95, 0.75 + 0.10 * (len(failed) - 1))
+        confidence = max(p_fake, feature_conf)
     elif verdict == "genuine":
         confidence = 1.0 - p_fake
     else:  # uncertain — confidence that a manual check is warranted
@@ -56,7 +61,10 @@ def analyze_image(
         CAPTURES_DIR.mkdir(parents=True, exist_ok=True)
         capture_path = CAPTURES_DIR / f"{event_id}.jpg"
         img.convert("RGB").save(capture_path, quality=88)
-        image_ref = str(capture_path.relative_to(CAPTURES_DIR.parents[1]))
+        _prune_captures()
+        # URL on this service (api.py mounts CAPTURES_DIR at /captures), so
+        # the dashboard can actually display the scanned note.
+        image_ref = f"/captures/{capture_path.name}"
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -71,6 +79,15 @@ def analyze_image(
         "image_ref": image_ref,
         "location_hint": location_hint,
     }
+
+
+def _prune_captures() -> None:
+    """Cap on-disk demo captures (oldest first) — every scan writes a JPEG and
+    a long demo day would otherwise grow the folder unbounded."""
+    keep = TrainConfig().max_captures
+    files = sorted(CAPTURES_DIR.glob("*.jpg"), key=lambda p: p.stat().st_mtime)
+    for stale in files[:-keep]:
+        stale.unlink(missing_ok=True)
 
 
 def analyze_file(path: Path, model: CounterfeitModel, **kwargs) -> dict:

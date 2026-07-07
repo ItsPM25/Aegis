@@ -15,7 +15,9 @@ CONTRACT_SCHEMA = REPO_ROOT / "contracts" / "counterfeit.schema.json"
 SCHEMA_VERSION = "1.0"
 
 # Kaggle dataset to swap in when API credentials are available (see data.py).
-KAGGLE_DATASET = "vishalmane109/indian-currency-note-images-dataset-2020"
+# Verified to exist 2026-07-07: real + fake ₹500/₹2000 notes, with separate
+# images per security feature.
+KAGGLE_DATASET = "sreeharisureshkaggle/fake-currency-detection-dataset"
 
 # Canonical working size for feature checks (w, h) — real ₹500 note is
 # 150x66 mm, aspect ratio ~2.27.
@@ -47,12 +49,14 @@ class TrainConfig(BaseModel):
     backbone: str = "efficientnet_b0"  # or "mobilenet_v3_small" / "tiny" (fast unit tests)
     img_size: int = 224
     batch_size: int = 32
-    epochs: int = 4
-    lr: float = 1e-3
+    epochs: int = 8
+    lr: float = 3e-3
     val_fraction: float = 0.2
     seed: int = 42
-    # Verdict bands: fake if p_fake >= fake_threshold, genuine if
-    # p_fake <= genuine_threshold, else uncertain. A note is money — an
-    # uncertain band is safer than a coin-flip verdict either way.
+    # Verdict-band FALLBACKS: the real thresholds are picked from the
+    # validation PR curve at train time (precision-first, like the other
+    # modules). These apply only if the curve search finds nothing usable.
     fake_threshold: float = 0.80
     genuine_threshold: float = 0.20
+    # Keep at most this many demo captures on disk (oldest pruned first).
+    max_captures: int = 200
