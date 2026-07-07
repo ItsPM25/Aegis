@@ -44,7 +44,7 @@ class SynthConfig(BaseModel):
 class TrainConfig(BaseModel):
     """CNN training knobs (CPU-friendly transfer learning)."""
 
-    backbone: str = "mobilenet_v3_small"  # or "tiny" for fast unit tests
+    backbone: str = "efficientnet_b0"  # or "mobilenet_v3_small" / "tiny" (fast unit tests)
     img_size: int = 224
     batch_size: int = 32
     epochs: int = 4
