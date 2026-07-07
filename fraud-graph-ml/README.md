@@ -63,11 +63,13 @@ tests/       # incl. end-to-end contract-compliance test
 - Ring recovery: **12/12 rings (100% detection rate)**, precision 1.0, account recall 0.94
 - Topology labels: layering chain / mule collection hub / round-tripping cycle
 
-**Real data — Elliptic++ actors (Bitcoin wallets, all 14,266 illicit + 50k licit sample):**
-- ROC-AUC **0.945**, avg precision 0.762, precision **0.91** @ recall 0.17 (precision-first threshold)
-- Structure-only features (address-level data has no amounts/timestamps) — model correctly
-  leans on `out_degree`, `core_number`, `pagerank`
-- Same pipeline, zero code changes: `fraud-graph demo --source elliptic`
+**Real data — Elliptic++ actors (Bitcoin wallets):**
+- *Our graph pipeline on the induced subgraph* (all 14,266 illicit + 50k licit, structure-only
+  features): ROC-AUC **0.945** — proves the pipeline transfers to real data unchanged
+  (`fraud-graph demo --source elliptic`)
+- *Official benchmark features* (full 265k labeled wallets, 55 behavioural features):
+  ROC-AUC **0.9945**, avg precision **0.950**, **precision 0.90 @ recall 0.85** —
+  benchmark-competitive (`python -m aegis_fraud_graph.elliptic_bench`)
 
 ## Tech
 NetworkX / PyTorch Geometric (stretch) · XGBoost · pandas · scikit-learn

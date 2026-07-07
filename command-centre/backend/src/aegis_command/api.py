@@ -89,6 +89,23 @@ async def analyze_scam(body: dict) -> dict:
     return event
 
 
+@app.post("/analyze/counterfeit")
+async def analyze_counterfeit(body: dict) -> dict:
+    """Live-demo path: forward a base64 note image to Counterfeit Vision
+    (:8002/analyze_b64) and auto-ingest the contract JSON it returns."""
+    if not body.get("image_b64"):
+        raise HTTPException(422, "body must contain 'image_b64'")
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            r = await client.post(f"{MODULES['counterfeit-vision']}/analyze_b64", json=body)
+            r.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise HTTPException(502, f"counterfeit-vision service unreachable: {exc}") from exc
+    event = r.json()
+    store.add_counterfeit(event)
+    return event
+
+
 @app.post("/refresh/fraud-graph")
 async def refresh_fraud_graph() -> dict:
     """Pull the latest ring detection from the fraud-graph service."""
