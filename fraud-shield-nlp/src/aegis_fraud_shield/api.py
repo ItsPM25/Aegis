@@ -17,6 +17,7 @@ Pushkar's module) calls /analyze directly during integration.
 from __future__ import annotations
 
 from pathlib import Path
+from threading import Lock
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,23 +32,27 @@ UI_FILE = Path(__file__).parent / "ui" / "index.html"
 app = FastAPI(title="Aegis Fraud Shield", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    # Local-origin browsers only (command centre + demo UIs).
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 _model: ScamClassifier | None = None
+_model_lock = Lock()
 
 
 def get_model() -> ScamClassifier:
     global _model
     if _model is None:
-        if not MODEL_FILE.exists():
-            raise HTTPException(
-                status_code=503,
-                detail="Model not trained. Run: python -m aegis_fraud_shield.cli train",
-            )
-        _model = ScamClassifier.load()
+        with _model_lock:  # concurrent first requests must not double-load
+            if _model is None:
+                if not MODEL_FILE.exists():
+                    raise HTTPException(
+                        status_code=503,
+                        detail="Model not trained. Run: python -m aegis_fraud_shield.cli train",
+                    )
+                _model = ScamClassifier.load()
     return _model
 
 
