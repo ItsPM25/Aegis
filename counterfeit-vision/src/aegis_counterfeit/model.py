@@ -181,10 +181,11 @@ class CounterfeitModel:
 
 
 def _roc_auc(y_true: np.ndarray, y_score: np.ndarray) -> float:
-    """Rank-based AUC (avoids a sklearn dependency in the torch module)."""
-    order = np.argsort(y_score)
-    ranks = np.empty_like(order, dtype=np.float64)
-    ranks[order] = np.arange(1, len(y_score) + 1)
+    """Rank-based AUC (avoids a sklearn dependency in the torch module).
+    Tied scores get average ranks — exact AUC even with duplicate probabilities."""
+    from scipy.stats import rankdata  # scipy ships with the torch/sklearn stack
+
+    ranks = rankdata(y_score, method="average")
     pos = y_true == 1
     n_pos, n_neg = int(pos.sum()), int((~pos).sum())
     if n_pos == 0 or n_neg == 0:
@@ -192,18 +193,55 @@ def _roc_auc(y_true: np.ndarray, y_score: np.ndarray) -> float:
     return float((ranks[pos].sum() - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg))
 
 
+def _pick_thresholds(y_true: np.ndarray, y_prob: np.ndarray,
+                     cfg: TrainConfig) -> tuple[float, float]:
+    """Precision-first verdict bands from the validation PR curve.
+
+    fake_threshold: highest-recall cut keeping fake-verdict precision >= 0.97.
+    genuine_threshold: widest low band whose contents are <= 2% fake — the
+    band where we're willing to *certify* a note.
+    """
+    order = np.argsort(y_prob)
+    sorted_prob, sorted_true = y_prob[order], y_true[order]
+
+    fake_thr = cfg.fake_threshold
+    best_recall = -1.0
+    n_pos = int(y_true.sum())
+    for i in range(len(sorted_prob)):
+        thr = sorted_prob[i]
+        flagged = sorted_true[i:]
+        precision = flagged.sum() / len(flagged)
+        recall = flagged.sum() / n_pos if n_pos else 0.0
+        if precision >= 0.97 and recall > best_recall:
+            best_recall, fake_thr = recall, float(thr)
+    fake_thr = max(fake_thr, 0.5)
+
+    genuine_thr = cfg.genuine_threshold
+    for i in range(len(sorted_prob) - 1, -1, -1):
+        low_band = sorted_true[: i + 1]
+        if low_band.mean() <= 0.02:
+            genuine_thr = float(sorted_prob[i])
+            break
+    genuine_thr = min(genuine_thr, fake_thr - 0.05)
+    return fake_thr, genuine_thr
+
+
 def train(data_dir: Path, cfg: TrainConfig | None = None) -> tuple[CounterfeitModel, TrainReport]:
+    """Three-way split: thresholds are picked on the val slice, the report's
+    metrics come from a test slice the tuning never saw."""
     cfg = cfg or TrainConfig()
     torch.manual_seed(cfg.seed)
 
     ds = NoteDataset(data_dir, cfg.img_size)
+    n_test = max(int(len(ds) * cfg.val_fraction), 2)
     n_val = max(int(len(ds) * cfg.val_fraction), 2)
-    n_train = len(ds) - n_val
-    train_ds, val_ds = torch.utils.data.random_split(
-        ds, [n_train, n_val], generator=torch.Generator().manual_seed(cfg.seed)
+    n_train = len(ds) - n_val - n_test
+    train_ds, val_ds, test_ds = torch.utils.data.random_split(
+        ds, [n_train, n_val, n_test], generator=torch.Generator().manual_seed(cfg.seed)
     )
     train_dl = DataLoader(train_ds, batch_size=cfg.batch_size, shuffle=True)
     val_dl = DataLoader(val_ds, batch_size=cfg.batch_size)
+    test_dl = DataLoader(test_ds, batch_size=cfg.batch_size)
 
     net = build_model(cfg.backbone)
     head_params = [p for p in net.parameters() if p.requires_grad]
@@ -222,19 +260,24 @@ def train(data_dir: Path, cfg: TrainConfig | None = None) -> tuple[CounterfeitMo
         print(f"epoch {epoch + 1}/{cfg.epochs}  train loss {total / n_train:.4f}")
 
     net.eval()
-    probs, labels = [], []
-    with torch.no_grad():
-        for x, y in val_dl:
-            probs.extend(torch.softmax(net(x), dim=1)[:, 1].tolist())
-            labels.extend(y.tolist())
-    y_true = np.array(labels)
-    y_prob = np.array(probs)
 
-    pred_fake = y_prob >= cfg.fake_threshold
+    def _probs(dl) -> tuple[np.ndarray, np.ndarray]:
+        probs, labels = [], []
+        with torch.no_grad():
+            for x, y in dl:
+                probs.extend(torch.softmax(net(x), dim=1)[:, 1].tolist())
+                labels.extend(y.tolist())
+        return np.array(labels), np.array(probs)
+
+    y_val, p_val = _probs(val_dl)
+    fake_thr, genuine_thr = _pick_thresholds(y_val, p_val, cfg)
+
+    y_true, y_prob = _probs(test_dl)
+    pred_fake = y_prob >= fake_thr
     tp = int((pred_fake & (y_true == 1)).sum())
     fp = int((pred_fake & (y_true == 0)).sum())
     fn = int((~pred_fake & (y_true == 1)).sum())
-    uncertain = (y_prob > cfg.genuine_threshold) & (y_prob < cfg.fake_threshold)
+    uncertain = (y_prob > genuine_thr) & (y_prob < fake_thr)
 
     report = TrainReport(
         backbone=cfg.backbone,
@@ -250,8 +293,8 @@ def train(data_dir: Path, cfg: TrainConfig | None = None) -> tuple[CounterfeitMo
         net=net,
         backbone=cfg.backbone,
         img_size=cfg.img_size,
-        fake_threshold=cfg.fake_threshold,
-        genuine_threshold=cfg.genuine_threshold,
+        fake_threshold=fake_thr,
+        genuine_threshold=genuine_thr,
         trained_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
     )
     return model, report

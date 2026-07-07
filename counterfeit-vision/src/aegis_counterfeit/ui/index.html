@@ -80,6 +80,18 @@
       <button id="startCam" class="ghost">Enable camera</button>
       <button id="scan" disabled>📷 Scan note</button>
       <label class="filebtn ghost">Upload image<input type="file" id="file" accept="image/*"></label>
+      <select id="district" title="Seizure location (feeds the crime map + fusion)"
+              style="background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:0 10px;font:inherit">
+        <option value="Jamtara">Jamtara</option>
+        <option value="Deoghar">Deoghar</option>
+        <option value="Alwar">Alwar</option>
+        <option value="Bharatpur">Bharatpur</option>
+        <option value="Nuh">Nuh</option>
+        <option value="Chennai Central">Chennai Central</option>
+        <option value="Mumbai South">Mumbai South</option>
+        <option value="Delhi East">Delhi East</option>
+        <option value="">no location</option>
+      </select>
     </div>
   </div>
 
@@ -104,6 +116,16 @@ const preview = document.getElementById("preview");
 const VERDICT_COLOR = { fake: "var(--fake)", uncertain: "var(--uncertain)", genuine: "var(--genuine)" };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
+// Command centre to auto-ingest scans into (dashboard + fusion).
+const COMMAND_CENTRE = "http://127.0.0.1:8000";
+// Demo geography shared with fraud-graph + fusion (see fusion/correlator.py).
+const DISTRICT_COORDS = {
+  "Jamtara": [23.79, 86.80], "Deoghar": [24.48, 86.70], "Alwar": [27.55, 76.63],
+  "Bharatpur": [27.22, 77.49], "Nuh": [28.10, 77.00], "Chennai Central": [13.08, 80.27],
+  "Mumbai South": [18.93, 72.83], "Delhi East": [28.65, 77.30],
+};
+const districtSel = document.getElementById("district");
+
 fetch("/health").then(r => r.json()).then(h => {
   statusEl.textContent = h.model_trained ? `model ready (${h.backbone})` : "model NOT trained";
   if (h.model_trained) statusEl.classList.add("ok");
@@ -121,13 +143,13 @@ startBtn.onclick = async () => {
   }
 };
 
-function render(r) {
+function render(r, relayed) {
   const pct = Math.round(r.confidence * 100);
   const color = VERDICT_COLOR[r.verdict];
   result.innerHTML = `
     <span class="verdict ${r.verdict}">${r.verdict}</span>
     <div class="confbar"><div style="width:${pct}%;background:${color}"></div></div>
-    <div class="meta">confidence ${pct}% · denomination ₹${esc(r.denomination)} · ${esc(r.event_id)}</div>
+    <div class="meta">confidence ${pct}% · denomination ₹${esc(r.denomination)} · ${esc(r.event_id)}${relayed ? " · ⇢ command centre" : ""}</div>
     ${r.missing_features.length
       ? `<div class="meta" style="margin-top:10px">Missing security features:</div>
          <div class="chips">${r.missing_features.map(f => `<span class="chip">${esc(f)}</span>`).join("")}</div>`
@@ -140,13 +162,27 @@ async function analyzeDataUrl(dataUrl) {
   scanBtn.disabled = true;
   result.innerHTML = `<p class="placeholder">Analysing…</p>`;
   try {
+    const district = districtSel.value;
+    const coords = DISTRICT_COORDS[district];
+    const location_hint = coords ? { district, lat: coords[0], lon: coords[1] } : null;
     const resp = await fetch("/analyze_b64", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image_b64: dataUrl }),
+      body: JSON.stringify({ image_b64: dataUrl, location_hint }),
     });
     if (!resp.ok) throw new Error((await resp.json()).detail || resp.statusText);
-    render(await resp.json());
+    const r = await resp.json();
+    // Fire-and-forget hand-off to the dashboard + fusion; failure is non-fatal.
+    let relayed = false;
+    try {
+      const ing = await fetch(`${COMMAND_CENTRE}/ingest/counterfeit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(r),
+      });
+      relayed = ing.ok;
+    } catch { /* command centre offline — fine */ }
+    render(r, relayed);
   } catch (e) {
     result.innerHTML = `<p class="placeholder" style="color:var(--fake)">Error: ${esc(e.message || e)}</p>`;
   } finally {
