@@ -198,8 +198,10 @@ def _pick_thresholds(y_true: np.ndarray, y_prob: np.ndarray,
     """Precision-first verdict bands from the validation PR curve.
 
     fake_threshold: highest-recall cut keeping fake-verdict precision >= 0.97.
-    genuine_threshold: widest low band whose contents are <= 2% fake — the
-    band where we're willing to *certify* a note.
+    genuine_threshold: widest low band (>= 10 samples) that is <= 5% fake.
+    The genuine band can afford 5%: certification additionally requires ALL
+    feature checks to pass (see decide_verdict), so the CNN score is not the
+    only gate. A stricter rate over-collapses on small validation sets.
     """
     order = np.argsort(y_prob)
     sorted_prob, sorted_true = y_prob[order], y_true[order]
@@ -219,7 +221,9 @@ def _pick_thresholds(y_true: np.ndarray, y_prob: np.ndarray,
     genuine_thr = cfg.genuine_threshold
     for i in range(len(sorted_prob) - 1, -1, -1):
         low_band = sorted_true[: i + 1]
-        if low_band.mean() <= 0.02:
+        if len(low_band) < 10:
+            break  # too few samples to trust — keep the fallback
+        if low_band.mean() <= 0.05:
             genuine_thr = float(sorted_prob[i])
             break
     genuine_thr = min(genuine_thr, fake_thr - 0.05)
