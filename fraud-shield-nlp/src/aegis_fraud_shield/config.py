@@ -45,5 +45,7 @@ class ModelConfig(BaseModel):
     # These are fallbacks if the curve search fails.
     scam_threshold_fallback: float = 0.80
     suspicious_threshold_fallback: float = 0.45
-    # Precision floor the "scam" verdict must clear on held-out data.
+    # Precision floors the verdict bands must clear on held-out data. The 0.90
+    # suspicious floor keeps genuine bank OTP messages out of the warning band.
     min_scam_precision: float = 0.97
+    min_suspicious_precision: float = 0.90
