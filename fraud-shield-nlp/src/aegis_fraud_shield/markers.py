@@ -88,7 +88,8 @@ _MARKER_PATTERNS: dict[str, list[str]] = {
         r"\bkeep\s+(?:your\s+)?camera\s+on\b",
     ],
     PERSONAL_DATA_REQUEST: [
-        r"\b(?:share|send|provide|confirm|verify|update)\b.{0,40}\b(?:OTP|one[- ]?time\s+password|PIN|CVV|passwords?)\b",
+        # Lookbehinds keep genuine warnings ("do not share this OTP") clean.
+        r"(?<!not\s)(?<!never\s)\b(?:share|send|provide|confirm|verify|update)\b.{0,40}\b(?:OTP|one[- ]?time\s+password|PIN|CVV|passwords?)\b",
         r"\b(?:aadhaar|aadhar|PAN)\s+(?:number|card\s+details|details)\b",
         r"\b(?:bank|account)\s+(?:details|number|credentials)\b.{0,30}\b(?:share|send|provide|confirm|verify)\b",
         r"\b(?:share|send|provide|confirm|verify)\b.{0,30}\b(?:bank|account)\s+(?:details|number|credentials)\b",
