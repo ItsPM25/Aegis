@@ -82,6 +82,11 @@ def cmd_demo(_: argparse.Namespace) -> int:
 
 
 def main() -> None:
+    # Windows consoles default to cp1252 and crash printing ₹/emoji in
+    # analysed text; force UTF-8 where the runtime allows it.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(prog="fraud-shield", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
 

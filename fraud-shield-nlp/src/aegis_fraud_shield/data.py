@@ -15,7 +15,9 @@ Output frame columns: `text`, `label` (1 = scam/spam, 0 = legit), `origin`.
 
 from __future__ import annotations
 
+import hashlib
 import io
+import warnings
 import zipfile
 from pathlib import Path
 
@@ -26,6 +28,21 @@ from .config import DATA_DIR, SMS_SPAM_URL, CorpusConfig
 from .corpus import generate_corpus
 
 SMS_SPAM_FILE = DATA_DIR / "SMSSpamCollection"
+# SHA-256 of the extracted SMSSpamCollection file (pinned 2026-07-07). A
+# changed hash means UCI moved/altered the file — warn loudly, don't train
+# silently on something else.
+SMS_SPAM_SHA256 = "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d"
+
+
+def _verify_checksum(path: Path) -> None:
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != SMS_SPAM_SHA256:
+        warnings.warn(
+            f"{path.name} checksum mismatch (got {digest[:12]}…, expected "
+            f"{SMS_SPAM_SHA256[:12]}…). The UCI source may have changed — "
+            "verify the data before trusting the trained model.",
+            stacklevel=2,
+        )
 
 
 def download_sms_spam(force: bool = False) -> Path:
@@ -38,16 +55,19 @@ def download_sms_spam(force: bool = False) -> Path:
     with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
         with zf.open("SMSSpamCollection") as src:
             SMS_SPAM_FILE.write_bytes(src.read())
+    _verify_checksum(SMS_SPAM_FILE)
     return SMS_SPAM_FILE
 
 
 def load_sms_spam() -> pd.DataFrame:
-    """UCI set as (text, label, origin) — spam maps to label 1."""
+    """UCI set as (text, label, origin, group) — spam maps to label 1."""
     path = download_sms_spam()
     df = pd.read_csv(path, sep="\t", names=["raw_label", "text"], quoting=3)
     df["label"] = (df["raw_label"] == "spam").astype(int)
     df["origin"] = "uci_sms_spam"
-    return df[["text", "label", "origin"]]
+    # Each real SMS is its own group (no template structure to leak).
+    df["group"] = [f"uci_{i}" for i in range(len(df))]
+    return df[["text", "label", "origin", "group"]]
 
 
 def load_training_frame(cfg: CorpusConfig | None = None) -> pd.DataFrame:

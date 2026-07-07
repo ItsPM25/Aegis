@@ -36,7 +36,7 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit
 from sklearn.pipeline import FeatureUnion, Pipeline
 
 from .config import MODELS_DIR, ModelConfig
@@ -144,22 +144,38 @@ class ScamClassifier:
         return joblib.load(path)
 
 
+def _grouped_split(frame: pd.DataFrame, test_size: float, seed: int):
+    """Split holding template groups together (synthetic rows share a `group`
+    per source template; UCI rows are singleton groups). Prevents variants of
+    one scam template landing on both sides and inflating recall."""
+    groups = frame["group"] if "group" in frame.columns else pd.Series(range(len(frame)))
+    splitter = GroupShuffleSplit(n_splits=1, test_size=test_size, random_state=seed)
+    train_idx, held_idx = next(splitter.split(frame, groups=groups))
+    return frame.iloc[train_idx], frame.iloc[held_idx]
+
+
 def train(frame: pd.DataFrame, cfg: ModelConfig | None = None) -> tuple[ScamClassifier, TrainReport]:
-    """Train on a (text, label, origin) frame; returns model + held-out report."""
+    """Train on a (text, label, origin[, group]) frame.
+
+    Three-way template-grouped split: thresholds are tuned on the validation
+    slice and the report's metrics come from a test slice the tuning never
+    saw — otherwise the reported precision is optimistically biased.
+    """
     cfg = cfg or ModelConfig()
-    train_df, test_df = train_test_split(
-        frame, test_size=cfg.test_size, random_state=cfg.seed, stratify=frame["label"]
-    )
+    rest_df, test_df = _grouped_split(frame, cfg.test_size, cfg.seed)
+    train_df, val_df = _grouped_split(rest_df, cfg.test_size, cfg.seed + 1)
 
     pipeline = build_pipeline(cfg)
     pipeline.fit(train_df["text"], train_df["label"])
 
+    y_val = val_df["label"].to_numpy()
+    p_val = pipeline.predict_proba(val_df["text"])[:, 1]
     y_test = test_df["label"].to_numpy()
     y_prob = pipeline.predict_proba(test_df["text"])[:, 1]
 
-    scam_thr = _pick_threshold(y_test, y_prob, cfg.min_scam_precision, cfg.scam_threshold_fallback)
+    scam_thr = _pick_threshold(y_val, p_val, cfg.min_scam_precision, cfg.scam_threshold_fallback)
     susp_thr = min(
-        _pick_threshold(y_test, y_prob, cfg.min_suspicious_precision,
+        _pick_threshold(y_val, p_val, cfg.min_suspicious_precision,
                         cfg.suspicious_threshold_fallback),
         scam_thr,  # suspicious band must sit below the scam threshold
     )

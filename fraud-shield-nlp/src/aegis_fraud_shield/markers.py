@@ -47,7 +47,9 @@ ALL_MARKERS = [
 _MARKER_PATTERNS: dict[str, list[str]] = {
     AUTHORITY_IMPERSONATION: [
         r"\b(?:CBI|ED|NIA|RBI|TRAI|NCB|customs|cyber\s*(?:crime|cell)|income\s*tax|enforcement\s+directorate)\b",
-        r"\b(?:inspector|constable|commissioner|sub[- ]?inspector|SP|DCP|ACP|IPS)\b.{0,40}\b(?:speaking|calling|here|from)\b",
+        # "SP" dropped from the rank list: too ambiguous as a bare token
+        # ("the SP from our college is speaking" is not the police).
+        r"\b(?:inspector|constable|commissioner|sub[- ]?inspector|DCP|ACP|IPS)\b.{0,40}\b(?:speaking|calling|here|from)\b",
         r"\bthis\s+is\s+(?:officer|inspector|constable|agent)\b",
         r"\b(?:police|crime\s*branch)\b.{0,30}\b(?:department|station|headquarters|calling|speaking)\b",
         r"\bcalling\s+from\s+(?:the\s+)?(?:police|court|ministry|government|telecom\s+department)\b",

@@ -103,6 +103,13 @@ _SCAM_TEMPLATES: list[tuple[str, str]] = [
     ("Your electricity connection will be disconnected tonight at 9.30pm because previous "
      "month bill was not updated. Immediately contact electricity officer and download the "
      "AnyDesk app for bill verification.", "phishing"),
+    # spoofed-number claims — gives the spoofed_number marker real coverage
+    ("This is {officer} from {city} police. This call is from the official landline number of "
+     "the police department, you can verify this number on the government portal. Your {id_doc} "
+     "is under investigation for {crime}. Share your Aadhaar number to record your statement.", "digital_arrest"),
+    ("{bank} security desk calling. This number is the official helpline, verify our number on "
+     "truecaller. Unusual activity on your account — confirm your debit card number and OTP "
+     "immediately or the account will be frozen within {minutes}.", "phishing"),
 ]
 
 # --- hard legit negatives (label = 0) ----------------------------------------
@@ -150,17 +157,23 @@ def _expand(template: str, rng: random.Random) -> str:
 
 
 def generate_corpus(cfg: CorpusConfig | None = None) -> pd.DataFrame:
-    """Deterministic (seeded) corpus of scam scripts + hard legit negatives."""
+    """Deterministic (seeded) corpus of scam scripts + hard legit negatives.
+
+    Each row carries a `group` id naming its source template, so the training
+    split can hold out whole templates — otherwise "recall" partly measures
+    template memorisation, not generalisation.
+    """
     cfg = cfg or CorpusConfig()
     rng = random.Random(cfg.seed)
     rows: list[dict] = []
     for label, templates in ((1, _SCAM_TEMPLATES), (0, _LEGIT_TEMPLATES)):
-        for template, origin in templates:
+        for t_idx, (template, origin) in enumerate(templates):
             for _ in range(cfg.variants_per_template):
                 rows.append({
                     "text": _expand(template, rng),
                     "label": label,
                     "origin": f"synth_{origin}",
+                    "group": f"tpl_{label}_{t_idx:02d}",
                 })
     frame = pd.DataFrame(rows).drop_duplicates(subset="text").reset_index(drop=True)
     return frame
