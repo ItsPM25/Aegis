@@ -153,6 +153,20 @@ and note access in [`docs/`](docs/).
 
 > Append newest entries at the top. Format: `### YYYY-MM-DD — <who> — <what>`
 
+### 2026-07-07 — Sudarsan — Fraud Shield v1 working end-to-end
+- Confirmed dataset access (Phase 1 ✔): UCI SMS Spam Collection downloads via `data.py`.
+- Built the module on branch `feat/fraud-shield`, all inside `fraud-shield-nlp/`:
+  - **Marker rules engine** for the 8 contract markers, with matched evidence spans.
+  - **Synthetic Indian-scam corpus** (digital-arrest scripts + KYC/lottery/loan/phishing +
+    hard legit negatives) — public datasets predate digital arrest entirely.
+  - **Classifier**: word+char TF-IDF ⊕ marker features → LogReg; precision-first thresholds
+    (scam band ≥0.97 precision). Held-out: ROC-AUC 0.984, scam precision 0.971 / recall 0.919,
+    100% recall on all synthetic scam families.
+  - **Contract emitter** — output validated by `shared/validate_contract.py scam` ✔.
+  - **CLI** (`train` / `analyze` / `demo`), **FastAPI** `/analyze` + `/health` on port 8001,
+    **chat UI** at `/` for the live demo, **15 tests** (offline) all passing.
+- **Next:** hand endpoint to command centre; optional DistilBERT upgrade only if schedule allows.
+
 ### 2026-07-07 — Prayag / setup — Repo scaffolded
 - Made `Aegis/` its own git repo pointing at the `prayag-1771/Aegis` fork, isolated from the outer
   `VSC_NEW` workspace repo (added `/Aegis/` to the outer `.gitignore` so there's no cross-tracking).
