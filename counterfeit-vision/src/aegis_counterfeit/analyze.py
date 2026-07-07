@@ -22,7 +22,7 @@ import numpy as np
 from PIL import Image
 
 from .config import CAPTURES_DIR, CONTRACT_SCHEMA, SCHEMA_VERSION
-from .features import infer_denomination, run_all_checks
+from .features import infer_denomination, locate_note, run_all_checks
 from .model import CounterfeitModel
 
 
@@ -37,10 +37,12 @@ def analyze_image(
     save_capture: bool = False,
 ) -> dict:
     """Analyse one note photo; returns a contract-valid payload dict."""
-    bgr = _to_bgr(img)
+    # Localise once: checks AND the CNN both see the perspective-corrected
+    # note, so a camera frame with desk background behaves like a tight crop.
+    bgr = locate_note(_to_bgr(img))
     checks = run_all_checks(bgr)
     failed = [c.feature for c in checks if not c.passed]
-    p_fake = model.p_fake(img)
+    p_fake = model.p_fake(Image.fromarray(cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)))
     verdict = model.decide_verdict(p_fake, len(failed))
 
     if verdict == "fake":

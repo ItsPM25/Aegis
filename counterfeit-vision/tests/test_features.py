@@ -43,3 +43,31 @@ def test_checks_report_scores_and_thresholds():
 def test_denomination_inference():
     assert infer_denomination(to_bgr(render_note(NoteSpec(denomination="500", seed=5)))) == "500"
     assert infer_denomination(to_bgr(render_note(NoteSpec(denomination="2000", seed=6)))) == "2000"
+
+
+def _note_in_scene(spec: NoteSpec, angle_deg: float = 8.0) -> np.ndarray:
+    """Paste a rendered note, rotated, onto a larger dark desk background —
+    what a real camera frame looks like."""
+    from aegis_counterfeit.config import NOTE_SIZE
+
+    note = to_bgr(render_note(spec))
+    h, w = note.shape[:2]
+    scene = np.full((int(h * 2.2), int(w * 1.8), 3), 38, dtype=np.uint8)
+    m = cv2.getRotationMatrix2D((w / 2, h / 2), angle_deg, 0.9)
+    m[0, 2] += (scene.shape[1] - w) / 2
+    m[1, 2] += (scene.shape[0] - h) / 2
+    cv2.warpAffine(note, m, (scene.shape[1], scene.shape[0]), dst=scene,
+                   borderMode=cv2.BORDER_TRANSPARENT, flags=cv2.WARP_FILL_OUTLIERS)
+    assert scene.shape[1::-1] != NOTE_SIZE  # must actually exercise localisation
+    return scene
+
+
+def test_localisation_genuine_note_in_scene_passes():
+    scene = _note_in_scene(NoteSpec(denomination="500", seed=21))
+    assert missing_features(scene) == []
+
+
+def test_localisation_fake_note_in_scene_caught():
+    scene = _note_in_scene(NoteSpec(denomination="500", is_fake=True,
+                                    missing_features=["security_thread"], seed=22))
+    assert "security_thread" in missing_features(scene)
