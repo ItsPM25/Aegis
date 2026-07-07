@@ -91,10 +91,10 @@ def render_note(spec: NoteSpec) -> Image.Image:
         wx, wy = int(w * WATERMARK_X), int(h * 0.45)
         overlay = Image.new("L", (w, h), 0)
         odraw = ImageDraw.Draw(overlay)
-        odraw.ellipse([wx - 38, wy - 52, wx + 38, wy + 52], fill=26)
-        overlay = overlay.filter(ImageFilter.GaussianBlur(9))
+        odraw.ellipse([wx - 38, wy - 52, wx + 38, wy + 52], fill=85)
+        overlay = overlay.filter(ImageFilter.GaussianBlur(7))
         img = Image.composite(
-            Image.new("RGB", (w, h), tuple(min(c + 30, 255) for c in base)), img, overlay
+            Image.new("RGB", (w, h), tuple(min(c + 42, 255) for c in base)), img, overlay
         )
         draw = ImageDraw.Draw(img)
 
@@ -115,7 +115,7 @@ def render_note(spec: NoteSpec) -> Image.Image:
 
     # Blur the microprint band only — how cheap counterfeits actually fail.
     if MICROPRINT in spec.missing_features:
-        band = img.crop((0, my - 4, w, my + 20)).filter(ImageFilter.GaussianBlur(2.2))
+        band = img.crop((0, my - 4, w, my + 20)).filter(ImageFilter.GaussianBlur(2.8))
         img.paste(band, (0, my - 4))
 
     # --- camera-style perturbations (applied to every note) ---
