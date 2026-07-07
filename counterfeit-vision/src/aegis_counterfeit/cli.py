@@ -70,10 +70,11 @@ def cmd_analyze(args: argparse.Namespace) -> int:
 
 def cmd_demo(_: argparse.Namespace) -> int:
     model = _load_model()
-    cases = [("genuine ₹500", NoteSpec(denomination="500", seed=9001)),
-             ("genuine ₹2000", NoteSpec(denomination="2000", seed=9002))]
+    # "Rs" not "₹": Windows consoles default to cp1252 and choke on U+20B9.
+    cases = [("genuine Rs500", NoteSpec(denomination="500", seed=9001)),
+             ("genuine Rs2000", NoteSpec(denomination="2000", seed=9002))]
     for i, feature in enumerate(CHECKABLE_FEATURES):
-        cases.append((f"fake ₹500 (no {feature})",
+        cases.append((f"fake Rs500 (no {feature})",
                       NoteSpec(denomination="500", is_fake=True,
                                missing_features=[feature], seed=9100 + i)))
     for name, spec in cases:

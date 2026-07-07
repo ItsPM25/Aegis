@@ -44,7 +44,10 @@ def analyze_image(
     verdict = model.decide_verdict(p_fake, len(failed))
 
     if verdict == "fake":
-        confidence = p_fake
+        # A conviction may come from the CNN, the feature checks, or both —
+        # confidence reflects the stronger line of evidence.
+        feature_conf = 0.0 if not failed else min(0.95, 0.75 + 0.10 * (len(failed) - 1))
+        confidence = max(p_fake, feature_conf)
     elif verdict == "genuine":
         confidence = 1.0 - p_fake
     else:  # uncertain — confidence that a manual check is warranted

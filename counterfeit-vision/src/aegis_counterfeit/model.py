@@ -137,11 +137,18 @@ class CounterfeitModel:
     def decide_verdict(self, p_fake: float, n_failed_features: int) -> str:
         if p_fake >= self.fake_threshold:
             return "fake"
+        # The feature checks are hard measurements of the note itself, so
+        # they can convict where the CNN alone hedges: two failed security
+        # features, or one failure with an elevated CNN score, is a fake.
+        if n_failed_features >= 2:
+            return "fake"
+        if n_failed_features == 1 and p_fake >= 0.5:
+            return "fake"
         if p_fake <= self.genuine_threshold and n_failed_features == 0:
             return "genuine"
-        # Everything else — mid-band CNN score, or ANY failed security
-        # feature — goes to manual inspection. A note is never certified
-        # genuine while a security check is failing.
+        # Mid-band score or a lone feature failure on a clean CNN read —
+        # manual inspection. A note is never certified genuine while a
+        # security check is failing.
         return "uncertain"
 
     def save(self) -> Path:
