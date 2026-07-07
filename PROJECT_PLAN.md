@@ -153,6 +153,20 @@ and note access in [`docs/`](docs/).
 
 > Append newest entries at the top. Format: `### YYYY-MM-DD — <who> — <what>`
 
+### 2026-07-07 — Prayag — Fraud Graph module v1 COMPLETE (Phase 2 goal hit on Day 1)
+- Full pipeline working end-to-end: synthetic data → 18 graph features → XGBoost →
+  Louvain ring clustering → contract-validated `fraud_graph.json` → FastAPI on :8003.
+- Synthetic world generator with 3 real laundering topologies (mule chains, smurfing
+  fan-in, round-tripping cycles) **plus legit heavy actors** (merchants, payroll, B2B)
+  so the model must learn behaviour, not "big amount = fraud".
+- Results: AUC 0.998, AP 0.958, precision 0.94 @ recall 0.76 (precision-first threshold);
+  ring recovery 12/12, 94% of illicit accounts.
+- 4 pytest tests incl. end-to-end contract compliance — all green.
+- Pushed to fork + upstream (sudarsan2507-hue/Aegis). **Command centre can integrate
+  against `GET :8003/fraud-graph` or `output/fraud_graph.json` today.**
+- **Postponed for Prayag's return:** Kaggle/Drive access for real Elliptic++ validation
+  (pipeline has an `elliptic` loader ready; drop files in `data/elliptic/`).
+
 ### 2026-07-07 — Prayag / setup — Repo scaffolded
 - Made `Aegis/` its own git repo pointing at the `prayag-1771/Aegis` fork, isolated from the outer
   `VSC_NEW` workspace repo (added `/Aegis/` to the outer `.gitignore` so there's no cross-tracking).
