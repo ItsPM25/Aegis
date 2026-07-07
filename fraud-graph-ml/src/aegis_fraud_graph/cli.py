@@ -44,6 +44,20 @@ def demo(source: str = typer.Option("synthetic")):
 
 
 @app.command()
+def evaluate(source: str = typer.Option("synthetic")):
+    """Ring-recovery metrics vs ground truth (deck numbers: detection rate etc.)."""
+    from .evaluate import run_evaluation
+
+    report = run_evaluation(source)
+    d = report.to_dict()
+    typer.echo(json.dumps({k: v for k, v in d.items() if k != "per_ring"}, indent=2))
+    for row in d["per_ring"]:
+        mark = "OK " if row["recovered"] else "MISS"
+        typer.echo(f"  [{mark}] {row['true_ring']} size={row['size']:2d} "
+                   f"overlap={row['member_overlap']:.0%} -> {row['matched_detected_ring']}")
+
+
+@app.command()
 def serve(
     host: str = typer.Option("127.0.0.1"),
     port: int = typer.Option(8003, help="Fraud Graph service port (A=8001, B=8002, C=8003)"),
