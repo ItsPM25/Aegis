@@ -6,7 +6,10 @@
 
 **Hackathon:** ET AI Hackathon 2026 · Problem Statement #6 (Digital Public Safety)
 **Timeline:** 15-day execution plan (compressed from the original 20-day scope)
-**Repo:** [github.com/prayag-1771/Aegis](https://github.com/prayag-1771/Aegis) (fork of Sudarsan's repo; final merge upstreams to Sudarsan)
+**Repo:** [github.com/sudarsan2507-hue/Aegis](https://github.com/sudarsan2507-hue/Aegis) — development happens
+directly on `main` (the branch-per-person workflow below is kept for reference; in practice
+everyone commits small and pulls/merges `main` before pushing). Prayag's
+[fork](https://github.com/prayag-1771/Aegis) also flows into this repo.
 
 ---
 
@@ -153,6 +156,20 @@ and note access in [`docs/`](docs/).
 
 > Append newest entries at the top. Format: `### YYYY-MM-DD — <who> — <what>`
 
+### 2026-07-08 — Pushkar — Upstream merge + dashboard consolidation
+- Merged `upstream/main` (Sudarsan's bug-review pass, Prayag's Elliptic++ validation +
+  frontend, Counterfeit Vision v1) into my fork's line. **Two dashboards had been built in
+  parallel** — Prayag's react-leaflet variant (while covering) and my MapLibre/Express-gateway
+  build. Consolidated on **mine** per the team stack decision (Next + Express, reference-image
+  UI); removed only the react-leaflet variant files (`app/components/CrimeMap.tsx`,
+  `next.config.ts`, react-leaflet deps). **Everything else from upstream is kept untouched**:
+  backend `/analyze/scam` + `/analyze/counterfeit` live-analysis endpoints, hardened
+  correlator (spatial-evidence requirement, rings on map), counterfeit-vision v1,
+  fraud-shield v1 + demo UIs.
+- Gateway now proxies the live-analysis endpoints (`POST /api/analyze/scam`,
+  `POST /api/analyze/counterfeit`) so the wow-moment flows work through the public entry
+  point too; dashboard API client extended to match.
+
 ### 2026-07-07 (evening) — Pushkar — Dashboard + gateway + 3-website architecture
 - **Team decision:** all future work in **Next.js + Express (latest)**. Architecture is a
   **3-website setup**: citizen currency-check site (Adharshan), citizen scam-alert site
@@ -171,6 +188,54 @@ and note access in [`docs/`](docs/).
 - **Map provider research** for the team: [`docs/map-providers.md`](docs/map-providers.md) —
   chosen stack costs ₹0 with no API key; MapTiler (~$25/mo) is the scale-up path.
 - **Remaining:** wire real citizen sites when A/B deliver, demo video, deck.
+
+### 2026-07-07 (night) — Sudarsan — Full-codebase bug review + remediation pass
+- Reviewed all four modules end-to-end; fixed the demo-critical integration gaps:
+  - **Live wiring complete:** both demo UIs (8001/8002) now auto-ingest detections into the
+    command centre with a selectable origin/seizure district → live events reach the dashboard,
+    map and fusion. Backend gained `/analyze/counterfeit` proxy + typed frontend API helpers.
+  - **Correlator hardened:** links now require *spatial* evidence (temporal alone linked
+    unrelated events across the country); fraud rings now plotted on the crime map via a
+    district→coords lookup, so cross-domain hubs can genuinely show all three signals.
+  - **Counterfeit robustness:** note localisation (contour + perspective warp) — angled camera
+    shots now land the security-feature regions correctly; PR-curve-picked verdict thresholds;
+    captures served at `/captures` for the dashboard; upload size caps.
+  - **Honest evaluation:** fraud-shield retrained on a template-grouped 3-way split (tune on
+    val, report on test) — headline: ROC-AUC 0.993, scam precision 0.973 @ recall 0.924 on
+    *held-out templates*. Counterfeit: ROC-AUC 0.962, fake precision 1.0 @ recall 0.79 on an
+    untouched test slice.
+  - Plus: ingest schema validation at the backend door, fraud-graph warms at startup (no more
+    first-request timeout), local-only CORS everywhere, UTF-8 console output, dataset checksum
+    pin, verified Kaggle dataset slug (`sreeharisureshkaggle/fake-currency-detection-dataset`).
+- **Still open (needs creds/hardware):** real-note retrain once `kaggle.json` lands;
+  camera demo must run on localhost (or add an HTTPS dev cert) for `getUserMedia`.
+
+### 2026-07-07 (evening) — Prayag — REAL-DATA VALIDATION + frontend + fraud-shield integration
+- **Elliptic++ real-data validation (Person C COMPLETE):** ROC-AUC **0.945** on real Bitcoin
+  fraud (all 14,266 illicit wallets + 50k licit sample, structure-only features).
+  Same pipeline, no code changes: `fraud-graph demo --source elliptic`.
+- **Dashboard frontend** (Next.js 16 + React 19 + Tailwind + Leaflet, no map token needed):
+  three signal cards, health pills, crime map with pulsing cross-domain hubs, RUN FUSION panel.
+- Merged **Sudarsan's fraud-shield v1** from upstream (zero conflicts — contract-first works);
+  added `POST /analyze/scam` proxy so live scam analysis auto-ingests into the dashboard + fusion.
+
+### 2026-07-07 — Sudarsan (covering Adharshan) — Counterfeit Vision v1 working end-to-end
+- **Dataset decision locked Day 1** (per plan: "decide, don't wait"): no Kaggle credentials on
+  the build machine → v1 trains on a **synthetic ₹500/₹2000 note renderer** with controllable
+  security features, giving per-feature ground truth no public dataset has. `data.py` keeps the
+  Kaggle download + real-dataset prep hook ready — retrain is one CLI flag when creds land.
+- Built in `counterfeit-vision/` (work now committed directly on `main`):
+  - **Feature-level checks (OpenCV):** security-thread darkness contrast, watermark brightness
+    lift, microprint Laplacian sharpness — validated 40/40 genuine clean, 40/40 fakes caught
+    with the correct feature named. Denomination inferred from hue.
+  - **CNN:** EfficientNet-B0 transfer learning (head-only). Val: ROC-AUC 0.980, fake-verdict
+    precision 1.0 @ recall 0.70, uncertain rate 22%.
+  - **Verdict fusion:** ≥2 failed features (or 1 + elevated CNN score) ⇒ fake; a note is never
+    certified genuine while any security check fails; mid-band ⇒ `uncertain` (manual check).
+  - **Contract emitter** — validated by `shared/validate_contract.py counterfeit` ✔.
+  - **CLI** (`generate`/`train`/`analyze`/`demo`), **FastAPI** on port **8002** (`/analyze`
+    multipart, `/analyze_b64` for webcam, `/health`), **camera demo UI** at `/`, **11 tests**.
+- **Next:** command-centre wiring (endpoint ready); Kaggle real-data retrain when creds available.
 
 ### 2026-07-07 (later) — Prayag — Fusion layer + command-centre backend + geospatial DONE
 - **Gen AI fusion layer** (`command-centre/fusion/`): deterministic correlation engine
@@ -203,6 +268,20 @@ and note access in [`docs/`](docs/).
   against `GET :8003/fraud-graph` or `output/fraud_graph.json` today.**
 - **Postponed for Prayag's return:** Kaggle/Drive access for real Elliptic++ validation
   (pipeline has an `elliptic` loader ready; drop files in `data/elliptic/`).
+
+### 2026-07-07 — Sudarsan — Fraud Shield v1 working end-to-end
+- Confirmed dataset access (Phase 1 ✔): UCI SMS Spam Collection downloads via `data.py`.
+- Built the module on branch `feat/fraud-shield`, all inside `fraud-shield-nlp/`:
+  - **Marker rules engine** for the 8 contract markers, with matched evidence spans.
+  - **Synthetic Indian-scam corpus** (digital-arrest scripts + KYC/lottery/loan/phishing +
+    hard legit negatives) — public datasets predate digital arrest entirely.
+  - **Classifier**: word+char TF-IDF ⊕ marker features → LogReg; precision-first thresholds
+    (scam band ≥0.97 precision). Held-out: ROC-AUC 0.984, scam precision 0.971 / recall 0.919,
+    100% recall on all synthetic scam families.
+  - **Contract emitter** — output validated by `shared/validate_contract.py scam` ✔.
+  - **CLI** (`train` / `analyze` / `demo`), **FastAPI** `/analyze` + `/health` on port 8001,
+    **chat UI** at `/` for the live demo, **15 tests** (offline) all passing.
+- **Next:** hand endpoint to command centre; optional DistilBERT upgrade only if schedule allows.
 
 ### 2026-07-07 — Prayag / setup — Repo scaffolded
 - Made `Aegis/` its own git repo pointing at the `prayag-1771/Aegis` fork, isolated from the outer

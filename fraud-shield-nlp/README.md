@@ -33,8 +33,43 @@ tests/       # unit tests + contract validation
 ## Tech
 Python · scikit-learn / HuggingFace DistilBERT · FastAPI
 
+## Quick start
+```bash
+cd fraud-shield-nlp
+pip install -e .[dev]          # or: pip install scikit-learn pandas fastapi uvicorn joblib jsonschema requests
+
+python -m aegis_fraud_shield.cli train     # downloads UCI data, trains, saves model + report
+python -m aegis_fraud_shield.cli demo      # sanity-check the bundled demo scripts
+python -m aegis_fraud_shield.cli analyze "your message here" --source sms
+
+# live demo chat UI + the /analyze endpoint the command centre calls:
+uvicorn aegis_fraud_shield.api:app --app-dir src --port 8001
+# then open http://127.0.0.1:8001/
+
+python -m pytest -q                        # tests (offline, no download needed)
+```
+
+## How it works
+1. **Data** ([src/aegis_fraud_shield/data.py](src/aegis_fraud_shield/data.py)) — UCI SMS Spam
+   Collection (5.5k real SMS) + a template-generated Indian-scam corpus
+   ([corpus.py](src/aegis_fraud_shield/corpus.py)): digital-arrest call scripts, KYC/lottery/
+   loan/phishing messages, and *hard legit negatives* (genuine OTPs, real police verification)
+   so the model can't cheat on surface words.
+2. **Markers** ([markers.py](src/aegis_fraud_shield/markers.py)) — regex rule layer for the 8
+   contract markers (authority impersonation, fake FIR, video-call isolation…). Returns matched
+   evidence spans → powers the "why flagged" explanation and auditability.
+3. **Model** ([model.py](src/aegis_fraud_shield/model.py)) — word + char TF-IDF ⊕ marker
+   features → Logistic Regression. Verdict thresholds picked precision-first from the held-out
+   PR curve (scam band ≥ 0.97 precision; suspicious band ≥ 0.90).
+4. **Contract** ([analyze.py](src/aegis_fraud_shield/analyze.py)) — emits schema-valid
+   `scam_detection` JSON with a deterministic evidence-based explanation.
+
+**Held-out metrics (seed 42):** ROC-AUC 0.984 · scam-verdict precision 0.971 / recall 0.919 ·
+100% recall on synthetic digital-arrest / KYC / lottery / loan / phishing families.
+
 ## Definition of done
-- [ ] Classifies the sample scripts correctly
-- [ ] Emits valid `scam_detection` JSON (validate against the schema)
-- [ ] Chat UI can demo a live scam catch
-- [ ] Handed off to the command centre with a working endpoint or JSON file
+- [x] Classifies the sample scripts correctly (`cli demo` + tests)
+- [x] Emits valid `scam_detection` JSON (validated in tests and via `shared/validate_contract.py`)
+- [x] Chat UI can demo a live scam catch (`/` on the API)
+- [ ] Handed off to the command centre with a working endpoint or JSON file (endpoint ready on
+      port 8001 — integration pending Pushkar's dashboard)

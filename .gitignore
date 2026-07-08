@@ -41,10 +41,13 @@ dist/
 *.onnx
 */models/*
 !*/models/.gitkeep
+# Runtime note captures from the counterfeit demo UI (per-scan artifacts).
+*/output/captures/
 
 # --- Personal learning notes & work log (local only, never commit) ---
 learning.md
 WORKLOG.md
+BUG_REPORT.md
 
 # --- OS / editor ---
 .DS_Store

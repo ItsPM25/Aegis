@@ -53,14 +53,24 @@ src/aegis_fraud_graph/
   cli.py       # typer CLI (train/detect/demo/serve)
   api.py       # FastAPI service for the command centre
 models/      # saved XGBoost model + train_report.json (gitignored)
-output/      # fraud_graph.json (gitignored)
+output/      # fraud_graph.json (committed on purpose — integration artifact
+             # the command centre seeds from; see backend store.seed_demo_data)
 tests/       # incl. end-to-end contract-compliance test
 ```
 
-## Current results (synthetic, seed 42)
+## Current results
+**Synthetic (seed 42):**
 - AUC **0.998**, avg precision **0.958**, precision **0.94** @ recall 0.76 (threshold 0.92)
-- Ring recovery: **12/12 rings**, 78/83 illicit accounts (94%)
+- Ring recovery: **12/12 rings (100% detection rate)**, precision 1.0, account recall 0.94
 - Topology labels: layering chain / mule collection hub / round-tripping cycle
+
+**Real data — Elliptic++ actors (Bitcoin wallets):**
+- *Our graph pipeline on the induced subgraph* (all 14,266 illicit + 50k licit, structure-only
+  features): ROC-AUC **0.945** — proves the pipeline transfers to real data unchanged
+  (`fraud-graph demo --source elliptic`)
+- *Official benchmark features* (full 265k labeled wallets, 55 behavioural features):
+  ROC-AUC **0.9945**, avg precision **0.950**, **precision 0.90 @ recall 0.85** —
+  benchmark-competitive (`python -m aegis_fraud_graph.elliptic_bench`)
 
 ## Tech
 NetworkX / PyTorch Geometric (stretch) · XGBoost · pandas · scikit-learn
