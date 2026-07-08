@@ -1,52 +1,73 @@
-# 🏛️ Aegis — System Architecture
+# 🏗️ Aegis — System Architecture
 
-> Expected deliverable: architecture diagram. This renders natively on GitHub (Mermaid).
-> Export to PNG for the deck via https://mermaid.live if needed.
+> Owned by the command-centre lead (Pushkar). Reflects the **3-website setup** decided 2026-07-07.
 
-## Full-system view
+## The 3-website setup
+
+| # | Site | Audience | Owner | Emits |
+|---|---|---|---|---|
+| 1 | **Currency-check website** — upload/scan a note, get genuine/fake verdict | Citizens | Adharshan (counterfeit-vision) | `counterfeit` JSON → gateway |
+| 2 | **Scam-alert website** — paste/read a message or call transcript, get scam verdict + public alerts | Citizens | Sudarsan (fraud-shield-nlp) | `scam_detection` JSON → gateway |
+| 3 | **Command-centre dashboard** — police/analyst view: cards + crime map + fusion | Law enforcement | Pushkar | consumes everything |
+
+**Fraud Graph gets no separate website** — it is not citizen-facing. It runs as an internal
+service (`:8003`) and its rings render inside the dashboard (left panel + map districts).
+
+## Data flow
 
 ```mermaid
-flowchart TB
-    subgraph inputs["📥 Signal sources"]
-        CALL["📞 Scam call / SMS text<br/>(read aloud in demo)"]
-        NOTE["💵 Currency note photo<br/>(webcam in demo)"]
-        TXN["🏦 Transaction network<br/>(Elliptic++ / synthetic)"]
+flowchart LR
+    subgraph citizens["Citizen websites (Next.js)"]
+        W1["🌐 Currency-check site\n(counterfeit-vision · Adharshan)"]
+        W2["🌐 Scam-alert site\n(fraud-shield · Sudarsan)"]
     end
 
-    subgraph detectors["🔍 Detection modules — independent, contract-coupled"]
-        FS["Fraud Shield · :8001<br/>TF-IDF ⊕ marker rules → LogReg<br/>ROC-AUC 0.984 · precision-first thresholds<br/><i>Sudarsan</i>"]
-        CV["Counterfeit Vision · :8002<br/>EfficientNet-B0 + OpenCV feature checks<br/>never certifies genuine on failed check<br/><i>Adharshan</i>"]
-        FG["Fraud Graph · :8003<br/>18 graph features → XGBoost → Louvain rings<br/>0.9945 AUC real-data benchmark<br/><i>Prayag</i>"]
+    subgraph internal["Internal detection services"]
+        FG["🕸️ Fraud Graph API :8003\n(XGBoost + Louvain · Prayag)"]
     end
 
-    subgraph contracts["📜 contracts/ — locked JSON schemas"]
-        SCAM_J["scam_detection.json"]
-        NOTE_J["counterfeit.json"]
-        RING_J["fraud_graph.json"]
+    GW["🚪 Express 5 Gateway :4000\ncommand-centre/gateway\nvalidate + forward (public entry)"]
+
+    subgraph cc["Command centre (Pushkar)"]
+        BE["⚙️ FastAPI backend :8000\nevent store · module health"]
+        FU["🧠 Gen AI Fusion\ncorrelator + Claude narrator\n(audit_trail, inputs_hash)"]
+        GEO["🗺️ Geospatial\nDBSCAN hotspot hubs"]
+        FE["🖥️ Next.js 15 dashboard :3000\nMapLibre crime map · cards\nwarning panel · fusion reveal"]
     end
 
-    subgraph centre["🎛️ Command Centre — Pushkar + Prayag"]
-        BE["Backend aggregator · :8000<br/>ingest · health probes · proxies"]
-        CORR["Correlation engine (deterministic)<br/>shared district · ≤30km · ≤96h<br/>audit_trail.inputs_hash"]
-        LLM["Gen AI narrator<br/>Claude → Groq (Llama 3.3 70B) → Gemini → template<br/>structured JSON, never-invent-links prompt"]
-        GEO["Geospatial · DBSCAN hotspots<br/>cross-domain hub = coordinated crime"]
-        FE["Dashboard · :3000<br/>Next.js 16 · React 19 · Leaflet crime map"]
-    end
-
-    CALL --> FS --> SCAM_J
-    NOTE --> CV --> NOTE_J
-    TXN --> FG --> RING_J
-    SCAM_J --> BE
-    NOTE_J --> BE
-    RING_J --> BE
-    BE --> CORR --> LLM
-    CORR --> GEO
-    LLM --> FE
-    GEO --> FE
-    BE <--> FE
-
-    LLM -.->|"innovation #2: generates evolved<br/>scam variants → retrains Fraud Shield"| FS
+    W1 -- "POST /api/report/counterfeit" --> GW
+    W2 -- "POST /api/alert/scam" --> GW
+    GW -- "/ingest/*" --> BE
+    BE -- "POST /refresh/fraud-graph" --> FG
+    BE --> FU
+    BE --> GEO
+    FE -- "GET /api/events · /api/hotspots\nPOST /api/fuse" --> GW
 ```
+
+- **Contracts** (`contracts/*.schema.json`) are the only coupling between modules — every
+  arrow above carries JSON validated against them.
+- The **fusion layer stays in Python** (it imports directly into the FastAPI backend); the
+  Express gateway is the public entry point so internal services are never exposed.
+- **Map tiles are keyless & free** (CARTO dark / Esri imagery via MapLibre GL) — the demo
+  cannot die on a missing API token.
+
+## Ports
+
+| Service | Port |
+|---|---|
+| Fraud Shield API (Sudarsan) | 8001 |
+| Counterfeit Vision API (Adharshan) | 8002 |
+| Fraud Graph API (Prayag) | 8003 |
+| Command backend (FastAPI) | 8000 |
+| Express gateway | 4000 |
+| Dashboard (Next.js) | 3000 |
+
+---
+
+## Appendix — detection & fusion internals
+
+> Deeper diagrams from the fusion/detection side (Prayag). The 3-website flow above is the
+> deployment topology; this appendix is what happens *inside* the boxes.
 
 ## The fusion pipeline (innovation #1)
 
