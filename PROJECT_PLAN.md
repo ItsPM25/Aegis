@@ -156,6 +156,25 @@ and note access in [`docs/`](docs/).
 
 > Append newest entries at the top. Format: `### YYYY-MM-DD — <who> — <what>`
 
+### 2026-07-08 — Prayag — Gen AI complete + all 3 wow paths verified live + deliverables
+- **Live Gen AI fusion working** — multi-provider narrator (Claude → Groq Llama-3.3-70B →
+  Gemini → template failover). Groq narrator writes evidence-accurate summaries live;
+  contract-valid. The demo can't die: any provider failure falls through to the template.
+- **Innovation #2 shipped — self-improving classifier.** An LLM red-teams Fraud Shield:
+  generates evolved scam variants (incl. investment + job-task families the model never saw),
+  half augment training, half held out. Balanced legit hard-negatives added.
+  **Result: recall on unseen variants 69% → 100%, zero human labels.**
+  (`aegis_fusion.self_improve` + `self_improve_eval`; `data.load_extra_corpus` hook in fraud-shield.)
+- **All 3 wow-moment live paths verified end-to-end through the command centre:**
+  scam (risk 0.999 digital_arrest), counterfeit (fake ₹500, conf 1.0, 3 features named),
+  fusion (CRITICAL, live Groq narrator). Counterfeit path required fixing an undeclared
+  `scipy` dependency in counterfeit-vision (noted for Adharshan in gitignored BUG_REPORT.md —
+  didn't edit his folder).
+- **Judged deliverables:** `docs/architecture.md` (Mermaid system + fusion-sequence diagrams,
+  criteria mapping) and `docs/demo-script.md` (6-min run-of-show with fallbacks + Q&A ammo).
+- **Keys:** Groq/Gemini in gitignored `command-centre/fusion/.env`. Gemini currently 429
+  (free-tier quota) but authenticates — failover handles it.
+
 ### 2026-07-07 (night) — Sudarsan — Full-codebase bug review + remediation pass
 - Reviewed all four modules end-to-end; fixed the demo-critical integration gaps:
   - **Live wiring complete:** both demo UIs (8001/8002) now auto-ingest detections into the

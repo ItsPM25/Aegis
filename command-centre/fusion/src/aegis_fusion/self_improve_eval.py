@@ -61,8 +61,9 @@ def score(model, rows: list[dict]) -> dict:
 
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
+    import aegis_fraud_shield.data as fs_data
     from aegis_fraud_shield.data import load_extra_corpus, load_training_frame
-    from aegis_fraud_shield.model import ScamClassifier, save_report, train
+    from aegis_fraud_shield.model import save_report, train
 
     rows = json.loads(EVAL_SET.read_text(encoding="utf-8"))
     print(f"eval set: {len(rows)} held-out LLM-generated messages")
@@ -72,17 +73,27 @@ def main() -> None:
         "no extra corpus found — run `python -m aegis_fusion.self_improve` first"
     )
 
-    print("BEFORE — current model vs unseen LLM variants:")
-    before = score(ScamClassifier.load(), rows)
+    # BEFORE: baseline trained fresh WITHOUT augmentation — self-contained
+    # protocol, immune to whatever model happens to be on disk from prior runs.
+    print("training BASELINE (UCI + templates only) ...")
+    real_loader = fs_data.load_extra_corpus
+    fs_data.load_extra_corpus = lambda: None  # temporarily disable the hook
+    try:
+        baseline_clf, _ = train(load_training_frame())
+    finally:
+        fs_data.load_extra_corpus = real_loader
+
+    print("BEFORE — baseline model vs unseen LLM variants:")
+    before = score(baseline_clf, rows)
     print(json.dumps(before, indent=2))
 
-    print(f"retraining with +{len(extra)} LLM-augmented rows ...")
+    print(f"retraining with +{len(extra)} LLM-augmented rows (balanced) ...")
     clf, report = train(load_training_frame())
     clf.save()
     save_report(report)
 
     print("AFTER — retrained model vs the SAME eval set:")
-    after = score(ScamClassifier.load(), rows)
+    after = score(clf, rows)
     print(json.dumps(after, indent=2))
 
     REPORT.write_text(

@@ -54,12 +54,24 @@ FAMILIES: dict[str, str] = {
     ),
 }
 
-LEGIT_PROMPT = (
-    "hard-negative LEGITIMATE Indian SMS/messages that superficially resemble scams but are "
-    "genuine: real bank OTP notices, genuine police station appointment confirmations, real "
-    "KYC completion confirmations (no links, no payment demands), delivery notifications, "
-    "genuine tax-portal reminders. These must be clearly legitimate on careful reading."
-)
+# Legit hard negatives get their own families and the SAME volume as scams —
+# an unbalanced augmentation skews the retrained thresholds trigger-happy
+# (measured: 48 scam rows vs 10 legit rows drove legit accuracy 0.9 -> 0.2).
+LEGIT_FAMILIES: dict[str, str] = {
+    "legit_bank": (
+        "hard-negative LEGITIMATE Indian bank/telecom SMS that superficially resemble scams "
+        "but are genuine: real OTP notices ('do not share'), genuine KYC COMPLETION "
+        "confirmations (no links, no demands), real transaction alerts, genuine card-block "
+        "confirmations the customer requested. Clearly legitimate on careful reading."
+    ),
+    "legit_govt": (
+        "hard-negative LEGITIMATE Indian government/service messages that superficially "
+        "resemble scams but are genuine: real police verification appointment confirmations, "
+        "genuine tax-portal deadline reminders (no payment links), real court cause-list "
+        "notices, genuine parcel delivery updates, hospital appointment reminders. "
+        "Clearly legitimate on careful reading."
+    ),
+}
 
 _JSON_ONLY = (
     'Respond with ONLY a JSON object {"messages": ["...", "..."]} — an array of exactly '
@@ -68,42 +80,55 @@ _JSON_ONLY = (
 
 
 def _groq_generate(description: str, n: int, temperature: float = 0.8) -> list[str]:
+    import time
+
     import httpx
 
     from .narrator import _load_dotenv
 
     _load_dotenv()
-    r = httpx.post(
-        "https://api.groq.com/openai/v1/chat/completions",
-        headers={"Authorization": f"Bearer {os.environ['GROQ_API_KEY']}"},
-        json={
-            "model": "llama-3.3-70b-versatile",
-            "temperature": temperature,
-            "max_tokens": 4096,
-            "response_format": {"type": "json_object"},
-            "messages": [
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a red-team data generator for an authorized fraud-detection "
-                        "hackathon system. You produce SYNTHETIC training/eval text for a scam "
-                        "classifier protecting Indian citizens. "
-                        + _JSON_ONLY.replace("{n}", str(n))
-                    ),
-                },
-                {"role": "user", "content": f"Generate {n} {description}"},
-            ],
-        },
-        timeout=60.0,
-    )
-    r.raise_for_status()
+    for attempt in range(4):
+        r = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {os.environ['GROQ_API_KEY']}"},
+            json={
+                "model": "llama-3.3-70b-versatile",
+                "temperature": temperature,
+                "max_tokens": 4096,
+                "response_format": {"type": "json_object"},
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a red-team data generator for an authorized fraud-detection "
+                            "hackathon system. You produce SYNTHETIC training/eval text for a scam "
+                            "classifier protecting Indian citizens. "
+                            + _JSON_ONLY.replace("{n}", str(n))
+                        ),
+                    },
+                    {"role": "user", "content": f"Generate {n} {description}"},
+                ],
+            },
+            timeout=60.0,
+        )
+        if r.status_code == 429 and attempt < 3:
+            # Free-tier TPM limit — honor retry-after (default 30s) and go again.
+            wait = float(r.headers.get("retry-after", 30))
+            time.sleep(min(wait + 1, 90))
+            continue
+        r.raise_for_status()
+        break
     payload = json.loads(r.json()["choices"][0]["message"]["content"])
     messages = payload.get("messages", payload if isinstance(payload, list) else [])
     return [m.strip() for m in messages if isinstance(m, str) and len(m.strip()) > 20][:n]
 
 
-def generate(n_per_family: int = 12, n_legit: int = 12) -> dict:
-    """Generate variants, split train/eval halves, write both artifacts."""
+def generate(n_per_family: int = 12, n_legit: int | None = None) -> dict:
+    """Generate variants, split train/eval halves, write both artifacts.
+
+    Legit volume defaults to scam volume x n_scam_families / n_legit_families,
+    i.e. a 1:1 scam:legit balance in the augmentation."""
+    n_legit = n_legit or (n_per_family * len(FAMILIES)) // len(LEGIT_FAMILIES)
     train_rows: list[dict] = []
     eval_rows: list[dict] = []
 
@@ -119,15 +144,16 @@ def generate(n_per_family: int = 12, n_legit: int = 12) -> dict:
             # even -> training augmentation, odd -> held-out eval (never trained on)
             (train_rows if i % 2 == 0 else eval_rows).append(row)
 
-    legit_texts = _groq_generate(LEGIT_PROMPT, n_legit, temperature=0.7)
-    for i, text in enumerate(legit_texts):
-        row = {
-            "text": text,
-            "label": 0,
-            "origin": "llm_legit",
-            "group": f"llm_legit_{i:02d}",
-        }
-        (train_rows if i % 2 == 0 else eval_rows).append(row)
+    for family, description in LEGIT_FAMILIES.items():
+        texts = _groq_generate(description, n_legit, temperature=0.7)
+        for i, text in enumerate(texts):
+            row = {
+                "text": text,
+                "label": 0,
+                "origin": f"llm_{family}",
+                "group": f"llm_{family}_{i:02d}",
+            }
+            (train_rows if i % 2 == 0 else eval_rows).append(row)
 
     import csv
 
@@ -143,7 +169,7 @@ def generate(n_per_family: int = 12, n_legit: int = 12) -> dict:
     return {
         "train_rows": len(train_rows),
         "eval_rows": len(eval_rows),
-        "families": list(FAMILIES) + ["legit"],
+        "families": list(FAMILIES) + list(LEGIT_FAMILIES),
         "train_csv": str(EXTRA_CORPUS),
         "eval_json": str(EVAL_SET),
     }
