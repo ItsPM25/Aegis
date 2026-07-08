@@ -5,6 +5,10 @@
  *   POST /api/alert/scam           Sudarsan's alert website  -> scam_detection JSON
  *   POST /api/report/counterfeit   Adharshan's currency site -> counterfeit JSON
  *
+ * Live-demo analyze (text/image -> module -> auto-ingest, for the dashboard):
+ *   POST /api/analyze/scam         { text, source?, location_hint? }
+ *   POST /api/analyze/counterfeit  { image_b64, location_hint? }
+ *
  * Dashboard reads (proxied to the FastAPI command backend, :8000):
  *   GET  /api/health | /api/events | /api/hotspots | /api/fusion/latest
  *   POST /api/fuse   | /api/refresh/fraud-graph
@@ -20,8 +24,22 @@ import cors from "cors";
 const PORT = process.env.PORT ?? 4000;
 const COMMAND_API = process.env.COMMAND_API ?? "http://127.0.0.1:8000";
 
+// Allowed browser origins. Defaults to the local dashboard + citizen sites;
+// override with a comma-separated ALLOWED_ORIGINS when deployed. Set it to "*"
+// only if you intend the gateway to be openly callable (there is no auth yet).
+const ALLOWED_ORIGINS = (
+  process.env.ALLOWED_ORIGINS ??
+  "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001"
+)
+  .split(",")
+  .map((o) => o.trim());
+
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: ALLOWED_ORIGINS.includes("*") ? true : ALLOWED_ORIGINS,
+  })
+);
 app.use(express.json({ limit: "5mb" }));
 
 /** Forward a request to the FastAPI command backend and relay its response. */
@@ -56,6 +74,20 @@ app.post("/api/report/counterfeit", (req, res) => {
   if (!e.event_id || !e.verdict)
     return res.status(422).json({ error: "not a valid counterfeit payload (see contracts/)" });
   forward(res, "/ingest/counterfeit", { method: "POST", body: e });
+});
+
+// ---- live-demo analyze paths (text/image -> module -> auto-ingest) ----
+app.post("/api/analyze/scam", (req, res) => {
+  const body = req.body ?? {};
+  if (!body.text) return res.status(422).json({ error: "body must contain 'text'" });
+  forward(res, "/analyze/scam", { method: "POST", body });
+});
+
+app.post("/api/analyze/counterfeit", (req, res) => {
+  const body = req.body ?? {};
+  if (!body.image_b64)
+    return res.status(422).json({ error: "body must contain 'image_b64'" });
+  forward(res, "/analyze/counterfeit", { method: "POST", body });
 });
 
 // ---- dashboard reads / actions ----

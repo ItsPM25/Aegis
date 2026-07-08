@@ -108,3 +108,32 @@ export async function runFusion(): Promise<FusionOutput> {
   if (!r.ok) throw new Error(`fusion failed: ${r.status}`);
   return r.json();
 }
+
+/** Live wow moment #1: analyse a scam message/transcript; auto-ingested for the map + fusion. */
+export async function analyzeScam(
+  text: string,
+  source = "manual_demo",
+  location_hint?: LocationHint
+): Promise<ScamEvent> {
+  const r = await fetch(`${API_BASE}/api/analyze/scam`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ text, source, location_hint }),
+  });
+  if (!r.ok) throw new Error(`scam analysis failed: ${r.status}`);
+  return r.json();
+}
+
+/** Live wow moment #2: analyse a note photo (data URL / base64); auto-ingested. */
+export async function analyzeCounterfeit(
+  image_b64: string,
+  location_hint?: LocationHint
+): Promise<CounterfeitEvent> {
+  const r = await fetch(`${API_BASE}/api/analyze/counterfeit`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ image_b64, location_hint }),
+  });
+  if (!r.ok) throw new Error(`note analysis failed: ${r.status}`);
+  return r.json();
+}

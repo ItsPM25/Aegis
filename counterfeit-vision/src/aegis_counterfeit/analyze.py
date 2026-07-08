@@ -13,9 +13,14 @@ for "genuine", the distance from certainty for "uncertain").
 from __future__ import annotations
 
 import json
+import os
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+
+# Absolute base for capture URLs so the dashboard (a different origin, :3000)
+# can load the scanned-note image. Override via env when deployed elsewhere.
+SERVICE_BASE_URL = os.environ.get("COUNTERFEIT_PUBLIC_URL", "http://127.0.0.1:8002")
 
 import cv2
 import numpy as np
@@ -62,9 +67,9 @@ def analyze_image(
         capture_path = CAPTURES_DIR / f"{event_id}.jpg"
         img.convert("RGB").save(capture_path, quality=88)
         _prune_captures()
-        # URL on this service (api.py mounts CAPTURES_DIR at /captures), so
-        # the dashboard can actually display the scanned note.
-        image_ref = f"/captures/{capture_path.name}"
+        # Absolute URL on this service (api.py mounts CAPTURES_DIR at /captures),
+        # so the dashboard on a different origin can actually display the note.
+        image_ref = f"{SERVICE_BASE_URL}/captures/{capture_path.name}"
 
     return {
         "schema_version": SCHEMA_VERSION,
