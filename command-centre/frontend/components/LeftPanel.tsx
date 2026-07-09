@@ -57,22 +57,24 @@ export default function LeftPanel({
   const handleInject = async () => {
     if (!onInjectRing) return;
     setCaught(null);
+    const t0 = performance.now();
     try {
       const graph = await onInjectRing(district, names.length >= 3 ? names : undefined);
       if (!graph) return;
+      const secs = ((performance.now() - t0) / 1000).toFixed(1);
       if (names.length >= 3) {
         const hit = graph.rings.find((r) =>
           r.account_ids.some((id) => names.some((n) => id === n || id.startsWith(`${n}_`)))
         );
         setCaught({
-          title: `CAUGHT: ${names.slice(0, 10).join(", ")}`,
+          title: `CAUGHT in ${secs}s: ${names.slice(0, 10).join(", ")}`,
           detail: hit
             ? `${hit.label ?? "fraud ring"} in ${hit.district ?? district} · risk ${Math.round(hit.risk_score * 100)}%`
             : `new ring detected in ${district}`,
         });
       } else {
         setCaught({
-          title: `New ring caught in ${district}`,
+          title: `New ring caught in ${district} — ${secs}s`,
           detail: `${graph.rings.length} rings now on the map`,
         });
       }
