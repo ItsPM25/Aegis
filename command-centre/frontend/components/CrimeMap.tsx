@@ -34,6 +34,7 @@ export default function CrimeMap({
   const mapRef = useRef<any>(null);
   const libRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const scalablesRef = useRef<HTMLElement[]>([]);
   const [ready, setReady] = useState(false);
   const [satellite, setSatellite] = useState(false);
 
@@ -88,34 +89,42 @@ export default function CrimeMap({
 
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
+    scalablesRef.current = [];
 
     for (const h of hubs) {
-      const el = document.createElement("div");
-      el.className = `hub ${h.cross_domain ? "hub-cross" : ""}`;
+      // wrap: MapLibre owns the wrap's transform for positioning; we scale `inner`.
+      const wrap = document.createElement("div");
+      const inner = document.createElement("div");
+      inner.className = `hub ${h.cross_domain ? "hub-cross" : ""}`;
       const size = Math.round(Math.min(150, 64 + h.intensity * 32));
-      el.style.width = el.style.height = `${size}px`;
+      inner.style.width = inner.style.height = `${size}px`;
       if (h.cross_domain) {
         const label = document.createElement("span");
         label.className = "hub-label";
         label.textContent = `COORDINATED HUB${h.district ? ` · ${h.district.toUpperCase()}` : ""}`;
-        el.appendChild(label);
+        inner.appendChild(label);
       }
+      wrap.appendChild(inner);
+      scalablesRef.current.push(inner);
       markersRef.current.push(
-        new lib.Marker({ element: el }).setLngLat([h.lon, h.lat]).addTo(map)
+        new lib.Marker({ element: wrap }).setLngLat([h.lon, h.lat]).addTo(map)
       );
     }
 
     for (const p of points) {
       if (p.lat == null || p.lon == null) continue;
-      const el = document.createElement("div");
-      el.className = `sig sig-${p.type}`;
-      el.innerHTML = `<span class="sig-ring"></span><span class="sig-core"></span>`;
+      const wrap = document.createElement("div");
+      const inner = document.createElement("div");
+      inner.className = `sig sig-${p.type}`;
+      inner.innerHTML = `<span class="sig-ring"></span><span class="sig-core"></span>`;
+      wrap.appendChild(inner);
+      scalablesRef.current.push(inner);
       const popup = new lib.Popup({ offset: 14, closeButton: false }).setHTML(
         `<strong>${titleCase(p.type)}</strong><br/>${p.district ?? "unknown district"}` +
           (p.weight != null ? `<br/>confidence ${(p.weight * 100).toFixed(0)}%` : "")
       );
       markersRef.current.push(
-        new lib.Marker({ element: el }).setLngLat([p.lon, p.lat]).setPopup(popup).addTo(map)
+        new lib.Marker({ element: wrap }).setLngLat([p.lon, p.lat]).setPopup(popup).addTo(map)
       );
     }
   }, [points, hubs, ready]);
