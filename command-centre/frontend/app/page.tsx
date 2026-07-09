@@ -1,17 +1,19 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type {
   EventsResponse,
   FusionOutput,
   HealthResponse,
   HotspotsResponse,
+  Ring,
 } from "@/lib/api";
 import { injectDemoRing } from "@/lib/api";
 import { usePolling } from "@/lib/usePolling";
 import FusionPanel from "@/components/FusionPanel";
 import LeftPanel from "@/components/LeftPanel";
+import RingViewer from "@/components/RingViewer";
 import TopNav from "@/components/TopNav";
 import VolumePanel from "@/components/VolumePanel";
 import WarningPanel from "@/components/WarningPanel";
@@ -52,6 +54,19 @@ export default function Page() {
   const [focus, setFocus] = useState<{ lat: number; lon: number } | null>(null);
   const [injecting, setInjecting] = useState(false);
   const [ringAlerts, setRingAlerts] = useState<RingAlert[]>([]);
+  const [viewRing, setViewRing] = useState<Ring | null>(null);
+
+  const viewerData = useMemo(() => {
+    if (!viewRing) return null;
+    const g = events?.fraud_graph;
+    const member = new Set(viewRing.account_ids);
+    const nodes = viewRing.account_ids.map((id) => {
+      const acc = g?.accounts?.find((a) => a.account_id === id);
+      return { id, score: acc?.illicit_probability, features: acc?.features ?? null };
+    });
+    const edges = (g?.edges ?? []).filter((e) => member.has(e.source) && member.has(e.target));
+    return { nodes, edges };
+  }, [viewRing, events]);
 
   const lastFusion = fusion ?? events?.last_fusion ?? null;
   const alertCount =
@@ -136,8 +151,20 @@ export default function Page() {
         health={health}
         hotspots={hotspots}
         onInjectRing={handleInjectRing}
+        onViewRing={setViewRing}
         injecting={injecting}
       />
+      {viewRing && viewerData && (
+        <RingViewer
+          title={`${viewRing.ring_id} · ${viewRing.label ?? "fraud ring"}`}
+          subtitle={`${viewRing.district ?? "unknown district"} · ${viewRing.size} accounts · risk ${Math.round(viewRing.risk_score * 100)}%${viewRing.total_amount != null ? ` · ₹${Math.round(viewRing.total_amount / 100000)}L` : ""}`}
+          badge="SIMULATED CITY"
+          label={viewRing.label}
+          nodes={viewerData.nodes}
+          edges={viewerData.edges}
+          onClose={() => setViewRing(null)}
+        />
+      )}
       <WarningPanel
         events={events}
         hotspots={hotspots}

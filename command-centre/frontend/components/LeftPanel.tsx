@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { EventsResponse, FraudGraph, HealthResponse, HotspotsResponse } from "@/lib/api";
+import type { EventsResponse, FraudGraph, HealthResponse, HotspotsResponse, Ring } from "@/lib/api";
 import { clockTime, inr, pct, titleCase } from "@/lib/format";
 import {
   Activity,
@@ -33,12 +33,14 @@ export default function LeftPanel({
   health,
   hotspots,
   onInjectRing,
+  onViewRing,
   injecting = false,
 }: {
   events: EventsResponse | null;
   health: HealthResponse | null;
   hotspots: HotspotsResponse | null;
   onInjectRing?: (district: string, accounts?: string[]) => Promise<FraudGraph | void> | void;
+  onViewRing?: (ring: Ring) => void;
   injecting?: boolean;
 }) {
   const scam = events?.scams.at(-1) ?? null;
@@ -49,7 +51,9 @@ export default function LeftPanel({
   const down = modules.length - up;
   const [district, setDistrict] = useState(DEMO_DISTRICTS[0]);
   const [namesRaw, setNamesRaw] = useState("");
-  const [caught, setCaught] = useState<{ title: string; detail: string } | null>(null);
+  const [caught, setCaught] = useState<{ title: string; detail: string; ring?: Ring } | null>(
+    null
+  );
 
   const names = namesRaw.split(",").map((n) => n.trim()).filter(Boolean);
   const namesTooFew = names.length > 0 && names.length < 3;
@@ -69,8 +73,9 @@ export default function LeftPanel({
         setCaught({
           title: `CAUGHT in ${secs}s: ${names.slice(0, 10).join(", ")}`,
           detail: hit
-            ? `${hit.label ?? "fraud ring"} in ${hit.district ?? district} · risk ${Math.round(hit.risk_score * 100)}%`
+            ? `${hit.label ?? "fraud ring"} in ${hit.district ?? district} · risk ${Math.round(hit.risk_score * 100)}% — click to see the money`
             : `new ring detected in ${district}`,
+          ring: hit,
         });
       } else {
         setCaught({
@@ -268,10 +273,14 @@ export default function LeftPanel({
               </p>
             )}
             {caught && !injecting && (
-              <div className="mt-2 rounded-lg border border-emerald-400/25 bg-emerald-500/10 px-2.5 py-2">
+              <button
+                onClick={() => caught.ring && onViewRing?.(caught.ring)}
+                disabled={!caught.ring}
+                className="mt-2 w-full rounded-lg border border-emerald-400/25 bg-emerald-500/10 px-2.5 py-2 text-left transition enabled:hover:border-emerald-400/60"
+              >
                 <div className="text-[11px] font-semibold text-emerald-300">{caught.title}</div>
                 <div className="mt-0.5 text-[10px] text-emerald-200/70">{caught.detail}</div>
-              </div>
+              </button>
             )}
             <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
               Adds fresh accounts moving money in a loop, reruns graph detection, and lights up a
@@ -281,7 +290,12 @@ export default function LeftPanel({
         )}
         <div className="mt-3 space-y-2.5">
           {rings.slice(0, 4).map((r) => (
-            <div key={r.ring_id}>
+            <button
+              key={r.ring_id}
+              onClick={() => onViewRing?.(r)}
+              className="block w-full rounded-lg px-1 py-0.5 text-left transition hover:bg-white/5"
+              title="view the money flow"
+            >
               <div className="flex items-center justify-between text-[11px]">
                 <span className="text-zinc-300">
                   {r.ring_id} · {r.label ?? "ring"}
@@ -296,7 +310,7 @@ export default function LeftPanel({
                   style={{ width: `${Math.round(r.risk_score * 100)}%` }}
                 />
               </div>
-            </div>
+            </button>
           ))}
           {rings.length === 0 && <Empty />}
         </div>

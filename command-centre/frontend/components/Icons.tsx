@@ -17,6 +17,13 @@ function I({ children, className }: { children: React.ReactNode; className?: str
   );
 }
 
+export const X = ({ className }: { className?: string }) => (
+  <I className={className}>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </I>
+);
+
 export const Shield = ({ className }: { className?: string }) => (
   <I className={className}>
     <path d="M12 22s8-3 8-10V5l-8-3-8 3v7c0 7 8 10 8 10z" />

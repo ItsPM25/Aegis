@@ -44,11 +44,29 @@ export interface Ring {
   district?: string;
 }
 
+export interface AccountFeatures {
+  degree_centrality?: number;
+  clustering_coefficient?: number;
+  in_degree?: number;
+  out_degree?: number;
+  throughput_ratio?: number | null;
+  burst_ratio?: number | null;
+  round_amount_ratio?: number | null;
+  tx_count?: number | null;
+}
+
+export interface GraphAccount {
+  account_id: string;
+  illicit_probability: number;
+  ring_id: string | null;
+  features?: AccountFeatures | null;
+}
+
 export interface FraudGraph {
   generated_at?: string;
   model?: string;
   rings: Ring[];
-  accounts?: { account_id: string; illicit_probability: number; ring_id: string | null }[];
+  accounts?: GraphAccount[];
   edges?: { source: string; target: string; amount: number; timestamp?: string }[];
 }
 
