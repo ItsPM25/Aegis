@@ -127,6 +127,15 @@ export default function CrimeMap({
         new lib.Marker({ element: wrap }).setLngLat([p.lon, p.lat]).setPopup(popup).addTo(map)
       );
     }
+
+    // resize every marker so its ground footprint stays fixed across zoom
+    const applyScale = () => {
+      const k = Math.min(SCALE_MAX, Math.max(SCALE_MIN, Math.pow(2, map.getZoom() - ZOOM_REF)));
+      for (const el of scalablesRef.current) el.style.transform = `scale(${k})`;
+    };
+    applyScale();
+    map.on("zoom", applyScale);
+    return () => map.off("zoom", applyScale);
   }, [points, hubs, ready]);
 
   // fly to a located alert / fusion hotspot
