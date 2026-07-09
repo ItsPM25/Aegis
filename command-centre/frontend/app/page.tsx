@@ -58,13 +58,14 @@ export default function Page() {
   );
 
   const handleInjectRing = useCallback(
-    async (district: string) => {
+    async (district: string, accounts?: string[]) => {
       setInjecting(true);
       try {
-        await injectDemoRing(district);
+        const graph = await injectDemoRing(district, accounts);
         const coords = DEMO_DISTRICT_COORDS[district];
         if (coords) setFocus(coords);
         await Promise.all([refreshEvents(), refreshHotspots()]);
+        return graph;
       } finally {
         setInjecting(false);
       }

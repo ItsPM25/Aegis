@@ -23,32 +23,74 @@ _DEMO_DISTRICTS = (
 )
 
 
+def clean_account_names(raw: list[str] | None) -> list[str]:
+    """Trim, dedupe (case-insensitive), and cap user-supplied account names.
+
+    Returns [] when nothing usable was given; raises ValueError when 1-2 names
+    survive cleaning — a ring needs at least 3 members to be detectable
+    (RingConfig.min_ring_size), and silently padding would surprise the demo.
+    """
+    if not raw:
+        return []
+    seen: set[str] = set()
+    names: list[str] = []
+    for item in raw:
+        name = str(item).strip()[:24]
+        if not name or name.lower() in seen:
+            continue
+        seen.add(name.lower())
+        names.append(name)
+    if 0 < len(names) < 3:
+        raise ValueError("need at least 3 account names to form a detectable ring")
+    return names[:10]
+
+
 def inject_demo_ring(
     ds: Dataset,
     district: str = "Jamtara",
     topology: DemoTopology = "cycle",
     size: int = 6,
+    account_names: list[str] | None = None,
 ) -> Dataset:
     """Return a copy of *ds* with a fresh illicit ring appended.
 
     The injected cluster is intentionally high-signal: six new accounts, dense
     transfers, short time gaps, and round-ish values so the graph detector
-    catches it on the next pass.
+    catches it on the next pass. Pass *account_names* (3-10 strings) to name
+    the ring members yourself — the stage moment where a judge's name shows up
+    inside a caught fraud ring.
     """
 
     district = district if district in _DEMO_DISTRICTS else "Jamtara"
     accounts = ds.accounts.copy(deep=True)
     transactions = ds.transactions.copy(deep=True)
 
+    names = clean_account_names(account_names)
+    if names:
+        size = len(names)
+
     next_account = _next_numeric_id(accounts["account_id"], prefix="acc_")
     next_tx = _next_numeric_id(transactions["tx_id"], prefix="tx_")
     next_ring_index = int(accounts["ring_id"].dropna().nunique()) + 1 if "ring_id" in accounts else 1
     ring_id = f"ring_{next_ring_index:02d}"
 
+    existing_ids = set(accounts["account_id"].astype(str))
+
+    def unique_id(base: str) -> str:
+        candidate, n = base, 2
+        while candidate in existing_ids:
+            candidate = f"{base}_{n}"
+            n += 1
+        existing_ids.add(candidate)
+        return candidate
+
     members: list[str] = []
-    for _ in range(size):
-        account_id = f"acc_{next_account:05d}"
-        next_account += 1
+    for i in range(size):
+        if names:
+            account_id = unique_id(names[i])
+        else:
+            account_id = unique_id(f"acc_{next_account:05d}")
+            next_account += 1
         members.append(account_id)
         accounts.loc[len(accounts)] = {
             "account_id": account_id,

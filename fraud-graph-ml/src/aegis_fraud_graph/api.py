@@ -15,7 +15,7 @@ import json
 from contextlib import asynccontextmanager
 from threading import Lock
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import __version__
@@ -107,7 +107,11 @@ def detect() -> dict:
 
 @app.post("/demo/inject-ring")
 def demo_inject_ring(body: dict | None = None) -> dict:
-    """Inject a fresh six-account ring and rerun detection immediately."""
+    """Inject a fresh ring and rerun detection immediately.
+
+    Body (all optional): district, topology (cycle|chain|fan_in), and
+    accounts — 3-10 custom member names for the name-the-criminals moment.
+    """
     global _CURRENT_DATASET, _CURRENT_OUTPUT
 
     payload = body or {}
@@ -115,11 +119,19 @@ def demo_inject_ring(body: dict | None = None) -> dict:
     topology = payload.get("topology") or "cycle"
     if topology not in {"cycle", "chain", "fan_in"}:
         topology = "cycle"
+    raw_names = payload.get("accounts")
+    if raw_names is not None and not isinstance(raw_names, list):
+        raise HTTPException(422, "'accounts' must be a list of names")
 
     with _STATE_LOCK:
         current_dataset = _CURRENT_DATASET
 
-    injected = inject_demo_ring(current_dataset, district=district, topology=topology)
+    try:
+        injected = inject_demo_ring(
+            current_dataset, district=district, topology=topology, account_names=raw_names
+        )
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
     output = run_detection(ds=injected)
 
     with _STATE_LOCK:

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { EventsResponse, HealthResponse, HotspotsResponse } from "@/lib/api";
+import type { EventsResponse, FraudGraph, HealthResponse, HotspotsResponse } from "@/lib/api";
 import { clockTime, inr, pct, titleCase } from "@/lib/format";
 import {
   Activity,
@@ -38,7 +38,7 @@ export default function LeftPanel({
   events: EventsResponse | null;
   health: HealthResponse | null;
   hotspots: HotspotsResponse | null;
-  onInjectRing?: (district: string) => Promise<void> | void;
+  onInjectRing?: (district: string, accounts?: string[]) => Promise<FraudGraph | void> | void;
   injecting?: boolean;
 }) {
   const scam = events?.scams.at(-1) ?? null;
@@ -48,6 +48,38 @@ export default function LeftPanel({
   const up = modules.filter(([, s]) => s === "up").length;
   const down = modules.length - up;
   const [district, setDistrict] = useState(DEMO_DISTRICTS[0]);
+  const [namesRaw, setNamesRaw] = useState("");
+  const [caught, setCaught] = useState<{ title: string; detail: string } | null>(null);
+
+  const names = namesRaw.split(",").map((n) => n.trim()).filter(Boolean);
+  const namesTooFew = names.length > 0 && names.length < 3;
+
+  const handleInject = async () => {
+    if (!onInjectRing) return;
+    setCaught(null);
+    try {
+      const graph = await onInjectRing(district, names.length >= 3 ? names : undefined);
+      if (!graph) return;
+      if (names.length >= 3) {
+        const hit = graph.rings.find((r) =>
+          r.account_ids.some((id) => names.some((n) => id === n || id.startsWith(`${n}_`)))
+        );
+        setCaught({
+          title: `CAUGHT: ${names.slice(0, 10).join(", ")}`,
+          detail: hit
+            ? `${hit.label ?? "fraud ring"} in ${hit.district ?? district} · risk ${Math.round(hit.risk_score * 100)}%`
+            : `new ring detected in ${district}`,
+        });
+      } else {
+        setCaught({
+          title: `New ring caught in ${district}`,
+          detail: `${graph.rings.length} rings now on the map`,
+        });
+      }
+    } catch {
+      setCaught({ title: "Inject failed", detail: "is the fraud-graph service up?" });
+    }
+  };
 
   const confidences = [
     ...(events?.scams.map((s) => s.risk_score) ?? []),
@@ -215,15 +247,33 @@ export default function LeftPanel({
                 ))}
               </select>
               <button
-                onClick={() => onInjectRing(district)}
-                disabled={injecting}
+                onClick={handleInject}
+                disabled={injecting || namesTooFew}
                 className="rounded-lg bg-violet-500 px-3 py-2 text-[11px] font-semibold text-white transition hover:bg-violet-400 disabled:cursor-wait disabled:opacity-50"
               >
                 {injecting ? "Injecting…" : "Inject ring"}
               </button>
             </div>
+            <input
+              value={namesRaw}
+              onChange={(e) => setNamesRaw(e.target.value)}
+              placeholder="name the criminals (optional): ravi, pinky, quickcash"
+              className="mt-2 w-full rounded-lg border border-white/10 bg-zinc-950/70 px-2.5 py-2 text-[11px] text-zinc-200 placeholder:text-zinc-600 outline-none transition focus:border-violet-400/60"
+            />
+            {namesTooFew && (
+              <p className="mt-1 text-[10px] text-amber-400/90">
+                a ring needs at least 3 names (comma-separated)
+              </p>
+            )}
+            {caught && !injecting && (
+              <div className="mt-2 rounded-lg border border-emerald-400/25 bg-emerald-500/10 px-2.5 py-2">
+                <div className="text-[11px] font-semibold text-emerald-300">{caught.title}</div>
+                <div className="mt-0.5 text-[10px] text-emerald-200/70">{caught.detail}</div>
+              </div>
+            )}
             <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
-              Adds 6 fresh accounts, reruns graph detection, and should light up a new purple dot.
+              Adds fresh accounts moving money in a loop, reruns graph detection, and lights up a
+              new purple dot.
             </p>
           </div>
         )}

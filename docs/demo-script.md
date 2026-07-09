@@ -56,18 +56,22 @@ Dashboard rings card: *"Meanwhile our graph engine watched the money. 12 fraud r
 mule chains, collection hubs, round-tripping cycles — each district-tagged. On real
 Bitcoin fraud data this scores 0.99 AUC at 90% precision."*
 
-Then the live moment — in the rings card, pick **Mumbai South** in the dropdown and press
-**Inject ring**:
+Then the live moment — in the rings card, pick **Mumbai South** in the dropdown. For the
+interactive kill-shot, ask the judges to **name the criminals** and type 3+ names into the
+names box (e.g. `ravi, pinky, quickcash`), then press **Inject ring**:
 
-> *"Let's commit fraud right now. Six brand-new accounts just started looping money
-> around Mumbai — accounts our model has never seen."*
+> *"Let's commit fraud right now — you name the gang. …Okay: ravi, pinky and quickcash
+> just opened accounts and started looping money around Mumbai — accounts our model has
+> never seen."*
 
-The map flies to Mumbai and a new purple dot appears; the rings count ticks 12 → 13
-(round-tripping cycle, 6 accts, risk 99.9%).
+The map flies to Mumbai, a new purple dot appears, the rings count ticks 12 → 13, and a
+green **CAUGHT: ravi, pinky, quickcash** banner shows the ring type + risk.
 
-> *"Caught on the first pass, in under four seconds. That gang didn't exist ten seconds
+> *"Caught on the first pass, in about three seconds. That gang didn't exist ten seconds
 > ago — and nobody retrained anything. The model recognises the behaviour, not the
 > account numbers."*
+
+(Leaving the names box empty also works — it generates 6 anonymous accounts instead.)
 
 **Fallback:** if the button misbehaves, same thing from a terminal:
 `Invoke-RestMethod -Method POST http://127.0.0.1:4000/api/demo/inject-ring -ContentType application/json -Body '{"district":"Mumbai South"}'`

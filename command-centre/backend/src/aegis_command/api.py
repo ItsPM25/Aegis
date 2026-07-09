@@ -151,11 +151,19 @@ async def demo_inject_ring(body: dict | None = None) -> dict:
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             r = await client.post(f"{MODULES['fraud-graph']}/demo/inject-ring", json=payload)
-            r.raise_for_status()
-            store.set_fraud_graph(r.json())
-            return r.json()
     except httpx.HTTPError as exc:
         raise HTTPException(502, f"fraud-graph service unreachable: {exc}") from exc
+    if r.status_code >= 400:
+        # Pass module validation errors (e.g. "need at least 3 names") through
+        # as-is instead of masking them as a 502 "unreachable".
+        try:
+            detail = r.json().get("detail", r.text)
+        except ValueError:
+            detail = r.text
+        raise HTTPException(r.status_code, detail)
+    graph = r.json()
+    store.set_fraud_graph(graph)
+    return graph
 
 
 @app.post("/demo/reset")

@@ -111,11 +111,18 @@ export async function runFusion(): Promise<FusionOutput> {
   return r.json();
 }
 
-export async function injectDemoRing(district: string): Promise<DemoRingResponse> {
+export async function injectDemoRing(
+  district: string,
+  accounts?: string[]
+): Promise<DemoRingResponse> {
   const r = await fetch(`${API_BASE}/api/demo/inject-ring`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ district, topology: "cycle" }),
+    body: JSON.stringify({
+      district,
+      topology: "cycle",
+      ...(accounts && accounts.length >= 3 ? { accounts } : {}),
+    }),
   });
   if (!r.ok) throw new Error(`demo inject failed: ${r.status}`);
   return r.json();
