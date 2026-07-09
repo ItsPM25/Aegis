@@ -54,18 +54,34 @@ export default function LeftPanel({
   const [caught, setCaught] = useState<{ title: string; detail: string; ring?: Ring } | null>(
     null
   );
+  const [phase, setPhase] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
 
   const names = namesRaw.split(",").map((n) => n.trim()).filter(Boolean);
   const namesTooFew = names.length > 0 && names.length < 3;
 
   const handleInject = async () => {
-    if (!onInjectRing) return;
+    if (!onInjectRing || running) return;
     setCaught(null);
+    setRunning(true);
     const t0 = performance.now();
+    // staged narration while the real work happens underneath
+    setPhase(
+      names.length >= 3
+        ? `opening accounts: ${names.slice(0, 4).join(", ")}${names.length > 4 ? "…" : ""}`
+        : "opening 6 new accounts…"
+    );
+    const timers = [
+      setTimeout(() => setPhase("money starts looping between them…"), 1000),
+      setTimeout(() => setPhase("graph engine scanning the network…"), 2100),
+    ];
     try {
       const graph = await onInjectRing(district, names.length >= 3 ? names : undefined);
-      if (!graph) return;
       const secs = ((performance.now() - t0) / 1000).toFixed(1);
+      // let the story finish playing even when the engine is faster
+      const elapsed = performance.now() - t0;
+      if (elapsed < 3000) await new Promise((r) => setTimeout(r, 3000 - elapsed));
+      if (!graph) return;
       if (names.length >= 3) {
         const hit = graph.rings.find((r) =>
           r.account_ids.some((id) => names.some((n) => id === n || id.startsWith(`${n}_`)))
@@ -85,6 +101,10 @@ export default function LeftPanel({
       }
     } catch {
       setCaught({ title: "Inject failed", detail: "is the fraud-graph service up?" });
+    } finally {
+      timers.forEach(clearTimeout);
+      setPhase(null);
+      setRunning(false);
     }
   };
 
@@ -255,12 +275,18 @@ export default function LeftPanel({
               </select>
               <button
                 onClick={handleInject}
-                disabled={injecting || namesTooFew}
+                disabled={running || injecting || namesTooFew}
                 className="rounded-lg bg-violet-500 px-3 py-2 text-[11px] font-semibold text-white transition hover:bg-violet-400 disabled:cursor-wait disabled:opacity-50"
               >
-                {injecting ? "Injecting…" : "Inject ring"}
+                {running ? "Committing…" : "Inject ring"}
               </button>
             </div>
+            {phase && (
+              <div className="mt-2 flex items-center gap-2 rounded-lg bg-violet-500/10 px-2.5 py-2">
+                <span className="h-1.5 w-1.5 animate-ping rounded-full bg-violet-400" />
+                <span className="animate-pulse text-[10px] text-violet-200">{phase}</span>
+              </div>
+            )}
             <input
               value={namesRaw}
               onChange={(e) => setNamesRaw(e.target.value)}
@@ -272,7 +298,7 @@ export default function LeftPanel({
                 a ring needs at least 3 names (comma-separated)
               </p>
             )}
-            {caught && !injecting && (
+            {caught && !running && (
               <button
                 onClick={() => caught.ring && onViewRing?.(caught.ring)}
                 disabled={!caught.ring}
