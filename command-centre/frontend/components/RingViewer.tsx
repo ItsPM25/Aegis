@@ -7,6 +7,8 @@ import { X } from "./Icons";
 export type ViewNode = {
   id: string;
   score?: number;
+  /** true = victim/outside account paying into the ring (drawn as a small grey orbit node) */
+  satellite?: boolean;
   features?: {
     throughput_ratio?: number | null;
     burst_ratio?: number | null;
@@ -26,9 +28,11 @@ const CY = H / 2;
 const R = 118;
 
 /** Position nodes so the ring's topology is visible at a glance:
- *  hub -> star (collector centred), chain -> left-to-right line, else circle. */
-function layout(nodes: ViewNode[], edges: ViewEdge[], label?: string | null) {
+ *  hub -> star (collector centred), chain -> left-to-right line, else circle.
+ *  Satellite (victim) nodes orbit outside, near the member they pay into. */
+function layout(allNodes: ViewNode[], edges: ViewEdge[], label?: string | null) {
   const pos = new Map<string, { x: number; y: number }>();
+  const nodes = allNodes.filter((n) => !n.satellite);
   const ids = nodes.map((n) => n.id);
   const deg = new Map<string, number>(ids.map((id) => [id, 0]));
   const inDeg = new Map<string, number>(ids.map((id) => [id, 0]));
@@ -69,6 +73,24 @@ function layout(nodes: ViewNode[], edges: ViewEdge[], label?: string | null) {
   } else {
     circle(ids);
   }
+
+  // victims orbit outside, angled toward the member account they pay into
+  const satellites = allNodes.filter((n) => n.satellite);
+  satellites.forEach((sat, i) => {
+    const targetEdge = edges.find((e) => e.source === sat.id && pos.has(e.target));
+    const t = targetEdge ? pos.get(targetEdge.target)! : { x: CX, y: CY };
+    let angle = Math.atan2(t.y - CY, t.x - CX);
+    if (!Number.isFinite(angle) || (t.x === CX && t.y === CY)) {
+      angle = (2 * Math.PI * i) / Math.max(satellites.length, 1) - Math.PI / 2;
+    }
+    // fan siblings out so victims of the same collector don't stack
+    angle += (i % 3 - 1) * 0.35;
+    const r = R + 44;
+    pos.set(sat.id, {
+      x: Math.min(Math.max(CX + r * Math.cos(angle), 26), W - 26),
+      y: Math.min(Math.max(CY + r * Math.sin(angle), 22), H - 30),
+    });
+  });
   return pos;
 }
 
@@ -83,6 +105,7 @@ export default function RingViewer({
   label,
   nodes,
   edges,
+  trail,
   onClose,
 }: {
   title: string;
@@ -91,6 +114,8 @@ export default function RingViewer({
   label?: string | null;
   nodes: ViewNode[];
   edges: ViewEdge[];
+  /** fusion money trail for this ring — the traced victim payment to highlight */
+  trail?: { account_id: string; amount: number } | null;
   onClose: () => void;
 }) {
   const [picked, setPicked] = useState<ViewNode | null>(null);
@@ -140,6 +165,12 @@ export default function RingViewer({
               )}
             </div>
             {subtitle && <p className="mt-0.5 text-[11px] text-zinc-400">{subtitle}</p>}
+            {trail && (
+              <p className="mt-1 text-[10px] font-semibold text-red-300">
+                ⚠ ₹{trail.amount.toLocaleString("en-IN")} victim payment traced into{" "}
+                <span className="font-mono">{trail.account_id}</span> — red arrow below
+              </p>
+            )}
           </div>
           <button onClick={onClose} className="text-zinc-500 transition hover:text-zinc-200">
             <X className="h-4 w-4" />
@@ -164,6 +195,17 @@ export default function RingViewer({
               >
                 <path d="M 0 0 L 8 4 L 0 8 z" fill="#a78bfa" opacity="0.85" />
               </marker>
+              <marker
+                id="arrowRed"
+                viewBox="0 0 8 8"
+                refX="7"
+                refY="4"
+                markerWidth="7"
+                markerHeight="7"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 0 L 8 4 L 0 8 z" fill="#f87171" />
+              </marker>
             </defs>
             {merged.map((e, i) => {
               const a = pos.get(e.source);
@@ -179,6 +221,11 @@ export default function RingViewer({
               const x1 = a.x + (dx / len) * trim;
               const y1 = a.y + (dy / len) * trim;
               const wgt = 1 + 2.5 * ((e.amount ?? 0) / maxAmt);
+              const traced =
+                trail != null &&
+                e.target === trail.account_id &&
+                e.amount != null &&
+                Math.abs(e.amount - trail.amount) <= Math.max(0.01 * trail.amount, 1);
               return (
                 <g key={i}>
                   <line
@@ -186,12 +233,14 @@ export default function RingViewer({
                     y1={y1}
                     x2={x2}
                     y2={y2}
-                    stroke="#a78bfa"
-                    strokeOpacity="0.55"
-                    strokeWidth={wgt}
-                    markerEnd="url(#arrow)"
+                    stroke={traced ? "#f87171" : "#a78bfa"}
+                    strokeOpacity={traced ? 0.95 : 0.55}
+                    strokeWidth={traced ? 2.5 : wgt}
+                    markerEnd={traced ? "url(#arrowRed)" : "url(#arrow)"}
+                    className={traced ? "animate-pulse" : undefined}
                   />
                   <title>
+                    {traced ? "TRACED VICTIM PAYMENT · " : ""}
                     {e.source} → {e.target}
                     {e.amount ? ` · ${inr(e.amount)}` : ""}
                     {e.n > 1 ? ` (${e.n} transfers)` : ""}
@@ -202,6 +251,17 @@ export default function RingViewer({
             {nodes.map((n) => {
               const p = pos.get(n.id);
               if (!p) return null;
+              if (n.satellite) {
+                return (
+                  <g key={n.id}>
+                    <circle cx={p.x} cy={p.y} r={6} fill="#27272a" stroke="#52525b" strokeWidth={1} />
+                    <text x={p.x} y={p.y + 16} textAnchor="middle" fontSize="7.5" fill="#71717a">
+                      {short(n.id)}
+                    </text>
+                    <title>{n.id} — outside account paying into the ring (victim)</title>
+                  </g>
+                );
+              }
               const hot = (n.score ?? 0) >= 0.9;
               return (
                 <g

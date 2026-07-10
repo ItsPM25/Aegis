@@ -14,6 +14,7 @@ import { usePolling } from "@/lib/usePolling";
 import FraudConsole from "@/components/FraudConsole";
 import FusionPanel from "@/components/FusionPanel";
 import LeftPanel from "@/components/LeftPanel";
+import PipelineStrip from "@/components/PipelineStrip";
 import RingViewer from "@/components/RingViewer";
 import TopNav from "@/components/TopNav";
 import VolumePanel from "@/components/VolumePanel";
@@ -84,6 +85,8 @@ export default function Page() {
     [refreshEvents, refreshHotspots]
   );
 
+  const lastFusion = fusion ?? events?.last_fusion ?? null;
+
   const viewerData = useMemo(() => {
     if (!viewRing) return null;
     const g = events?.fraud_graph;
@@ -92,11 +95,25 @@ export default function Page() {
       const acc = g?.accounts?.find((a) => a.account_id === id);
       return { id, score: acc?.illicit_probability, features: acc?.features ?? null };
     });
-    const edges = (g?.edges ?? []).filter((e) => member.has(e.source) && member.has(e.target));
-    return { nodes, edges };
-  }, [viewRing, events]);
-
-  const lastFusion = fusion ?? events?.last_fusion ?? null;
+    const intra = (g?.edges ?? []).filter((e) => member.has(e.source) && member.has(e.target));
+    const trail =
+      (lastFusion?.money_trails ?? []).find((t) => t.ring_id === viewRing.ring_id) ?? null;
+    // victim payments INTO the ring — traced edge first, then biggest, capped
+    // so the drawing stays readable
+    const inflow = (g?.edges ?? [])
+      .filter((e) => !member.has(e.source) && member.has(e.target))
+      .sort((a, b) => {
+        const hit = (e: { target: string; amount: number }) =>
+          trail && e.target === trail.account_id && Math.abs(e.amount - trail.amount) < 1 ? 1 : 0;
+        return hit(b) - hit(a) || b.amount - a.amount;
+      })
+      .slice(0, 10);
+    const satellites = [...new Set(inflow.map((e) => e.source))].map((id) => ({
+      id,
+      satellite: true,
+    }));
+    return { nodes: [...nodes, ...satellites], edges: [...intra, ...inflow], trail };
+  }, [viewRing, events, lastFusion]);
   const alertCount =
     (events?.scams.filter((s) => s.verdict !== "legit").length ?? 0) +
     (events?.counterfeits.filter((c) => c.verdict === "fake").length ?? 0) +
@@ -161,6 +178,7 @@ export default function Page() {
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-zinc-950/80 to-transparent" />
 
       <TopNav health={health} alertCount={alertCount} />
+      <PipelineStrip events={events} fusion={lastFusion} />
 
       {/* hero title, like the reference */}
       <div className="pointer-events-none absolute left-[23rem] top-16 z-10 hidden lg:block">
@@ -206,6 +224,7 @@ export default function Page() {
           label={viewRing.label}
           nodes={viewerData.nodes}
           edges={viewerData.edges}
+          trail={viewerData.trail}
           onClose={() => setViewRing(null)}
         />
       )}
