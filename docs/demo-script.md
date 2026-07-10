@@ -92,10 +92,24 @@ evidence: *"money out ≈ money in · 56% of transfers within 60 min · round am
 rings (a graph-service restart does too) — always reset before going on stage.
 
 ### Beat 5 — WOW #3: THE FUSION MOMENT (90s)
+
+Point at the **pipeline strip** first (top of the map): *"These aren't three crimes.
+Scams TAKE the money, mule rings MOVE it, the cash economy — where fake notes live —
+absorbs it. One pipeline. Watch the arrows."* (Backup: [crime-pipeline.md](crime-pipeline.md)
+has the researched citations if a judge pushes.)
+
 Press **▶ RUN FUSION**. Read the Gen-AI summary aloud as it appears:
 
 > *"A scam call detected in Jamtara is linked to a round-tripping fraud ring… a
 > counterfeit ₹500 note was also seized in Jamtara…"* — **threat: CRITICAL**
+
+Then the money-trail card appears under the summary — the kill shot:
+
+> *"And here — a victim in Alwar reported paying ₹49,999 after a 'digital arrest' call.
+> Fusion searched the transaction network and found that exact amount landing in
+> collection account acc_02033 of ring_06, six hours after the call, same district.
+> That's not a correlation — that's an account number you can freeze TONIGHT."*
+> (Open ring_06 in the viewer: the traced payment is the pulsing red arrow.)
 
 Say: *"Three independent AI systems just agreed about one district. No product on the
 market does this. And look —"* (point at audit hash) *"— the links come from a
