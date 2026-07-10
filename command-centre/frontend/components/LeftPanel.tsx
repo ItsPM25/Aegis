@@ -34,6 +34,7 @@ export default function LeftPanel({
   hotspots,
   onInjectRing,
   onViewRing,
+  onOpenConsole,
   injecting = false,
 }: {
   events: EventsResponse | null;
@@ -41,6 +42,7 @@ export default function LeftPanel({
   hotspots: HotspotsResponse | null;
   onInjectRing?: (district: string, accounts?: string[]) => Promise<FraudGraph | void> | void;
   onViewRing?: (ring: Ring) => void;
+  onOpenConsole?: () => void;
   injecting?: boolean;
 }) {
   const scam = events?.scams.at(-1) ?? null;
@@ -312,6 +314,14 @@ export default function LeftPanel({
               Adds fresh accounts moving money in a loop, reruns graph detection, and lights up a
               new purple dot.
             </p>
+            {onOpenConsole && (
+              <button
+                onClick={onOpenConsole}
+                className="mt-2 w-full rounded-lg border border-white/10 px-2.5 py-1.5 text-[10px] text-zinc-300 transition hover:border-violet-400/50 hover:text-violet-200"
+              >
+                ⚖ Fraud console — design the transactions yourself
+              </button>
+            )}
           </div>
         )}
         <div className="mt-3 space-y-2.5">

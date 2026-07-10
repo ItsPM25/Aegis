@@ -146,6 +146,34 @@ export async function injectDemoRing(
   return r.json();
 }
 
+export interface ConsoleTx {
+  source: string;
+  target: string;
+  amount: number;
+}
+
+export interface ConsoleResult {
+  accounts: { account_id: string; illicit_probability: number; in_ring: boolean }[];
+  ring: {
+    ring_id: string;
+    label?: string | null;
+    size: number;
+    risk_score: number;
+    district?: string | null;
+    total_amount?: number | null;
+    account_ids: string[];
+  } | null;
+  committed: boolean;
+  rings_total: number;
+}
+
+/** Fraud console: the human designs the transactions; the engine scores them. */
+export const scoreCustom = (payload: {
+  district: string;
+  speed: "minutes" | "days";
+  transactions: ConsoleTx[];
+}) => post<ConsoleResult>("/api/demo/score-custom", payload);
+
 async function post<T>(path: string, body: unknown): Promise<T> {
   const r = await fetch(`${API_BASE}${path}`, {
     method: "POST",

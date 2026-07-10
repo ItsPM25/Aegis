@@ -11,6 +11,7 @@ import type {
 } from "@/lib/api";
 import { injectDemoRing } from "@/lib/api";
 import { usePolling } from "@/lib/usePolling";
+import FraudConsole from "@/components/FraudConsole";
 import FusionPanel from "@/components/FusionPanel";
 import LeftPanel from "@/components/LeftPanel";
 import RingViewer from "@/components/RingViewer";
@@ -55,6 +56,17 @@ export default function Page() {
   const [injecting, setInjecting] = useState(false);
   const [ringAlerts, setRingAlerts] = useState<RingAlert[]>([]);
   const [viewRing, setViewRing] = useState<Ring | null>(null);
+  const [consoleOpen, setConsoleOpen] = useState(false);
+
+  const handleConsoleCommitted = useCallback(
+    (district: string) => {
+      const coords = DEMO_DISTRICT_COORDS[district];
+      if (coords) setFocus(coords);
+      refreshEvents();
+      refreshHotspots();
+    },
+    [refreshEvents, refreshHotspots]
+  );
 
   const viewerData = useMemo(() => {
     if (!viewRing) return null;
@@ -152,8 +164,12 @@ export default function Page() {
         hotspots={hotspots}
         onInjectRing={handleInjectRing}
         onViewRing={setViewRing}
+        onOpenConsole={() => setConsoleOpen(true)}
         injecting={injecting}
       />
+      {consoleOpen && (
+        <FraudConsole onClose={() => setConsoleOpen(false)} onCommitted={handleConsoleCommitted} />
+      )}
       {viewRing && viewerData && (
         <RingViewer
           title={`${viewRing.ring_id} · ${viewRing.label ?? "fraud ring"}`}
