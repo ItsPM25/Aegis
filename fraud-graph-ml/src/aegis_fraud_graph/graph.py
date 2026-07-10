@@ -49,7 +49,11 @@ def compute_features(ds: Dataset, g: nx.MultiDiGraph | None = None) -> pd.DataFr
     """One row of behavioural features per account."""
     g = g or build_graph(ds)
     tx = ds.transactions.copy()
-    tx["timestamp"] = pd.to_datetime(tx["timestamp"], errors="coerce", utc=True)
+    # format="ISO8601": pandas 2 otherwise infers the format from the first row
+    # and silently coerces every differently-formatted timestamp to NaT — which
+    # zeroed all tempo features for demo-injected transactions (no microseconds)
+    # mixed into the cached city (microseconds).
+    tx["timestamp"] = pd.to_datetime(tx["timestamp"], errors="coerce", utc=True, format="ISO8601")
 
     # ---- flow aggregates (vectorised in pandas, cheap even at 100k tx) ----
     in_agg = tx.groupby("target").agg(

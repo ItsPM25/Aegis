@@ -166,6 +166,34 @@ async def demo_inject_ring(body: dict | None = None) -> dict:
     return graph
 
 
+@app.post("/demo/score-custom")
+async def demo_score_custom(body: dict | None = None) -> dict:
+    """Fraud console proxy: forward human-designed transactions for scoring;
+    if the engine caught a ring (and committed it), refresh dashboard state."""
+    payload = body or {}
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            r = await client.post(f"{MODULES['fraud-graph']}/demo/score-custom", json=payload)
+    except httpx.HTTPError as exc:
+        raise HTTPException(502, f"fraud-graph service unreachable: {exc}") from exc
+    if r.status_code >= 400:
+        try:
+            detail = r.json().get("detail", r.text)
+        except ValueError:
+            detail = r.text
+        raise HTTPException(r.status_code, detail)
+    result = r.json()
+    if result.get("committed"):
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                g = await client.get(f"{MODULES['fraud-graph']}/fraud-graph")
+                if g.status_code == 200:
+                    store.set_fraud_graph(g.json())
+        except httpx.HTTPError:
+            pass  # scoring succeeded; the dashboard will catch up on next refresh
+    return result
+
+
 @app.post("/demo/reset")
 async def demo_reset() -> dict:
     """Drop injected rings (rehearsal cleanup), then refresh dashboard state."""

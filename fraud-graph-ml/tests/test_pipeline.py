@@ -11,7 +11,7 @@ from aegis_fraud_graph.graph import FEATURE_COLUMNS, compute_features
 from aegis_fraud_graph.model import train
 from aegis_fraud_graph.rings import detect_rings
 from aegis_fraud_graph.export import build_output
-from aegis_fraud_graph.demo import clean_account_names, inject_demo_ring
+from aegis_fraud_graph.demo import build_custom_dataset, clean_account_names, inject_demo_ring
 from aegis_fraud_graph.synth import generate
 
 
@@ -103,6 +103,76 @@ def test_demo_ring_with_custom_account_names(small_world):
     named = [r for r in rings if set(names) <= set(r.account_ids)]
     assert named, "all custom-named accounts should land in one detected ring"
     assert named[0].district == "Jamtara"
+
+
+@pytest.fixture(scope="module")
+def console_world():
+    """Richer training world for console tests — the tiny 4-ring fixture has a
+    single cycle example, too little signal to learn the pattern (the
+    production model trains on 12 rings and catches hand-built loops live)."""
+    cfg = SynthConfig(n_legit_accounts=500, n_rings=9, n_background_tx=3000, seed=11)
+    result = generate(cfg)
+    return Dataset(accounts=result.accounts, transactions=result.transactions, name="console")
+
+
+@pytest.fixture(scope="module")
+def console_model(console_world):
+    """Model trained on the base console world (before any custom accounts)."""
+    features = compute_features(console_world)
+    labels = console_world.accounts.set_index("account_id")["is_illicit"]
+    clf, _ = train(features, labels)
+    return clf
+
+
+def _score_custom(world, clf, transactions, speed):
+    """Mirror the /demo/score-custom flow: the model is trained on the base
+    world FIRST, then scores accounts it has never seen (training on the
+    already-injected dataset would teach it the judge's pattern is legit)."""
+    from aegis_fraud_graph.model import score_all
+
+    eval_ds, user_accounts = build_custom_dataset(
+        world, transactions, district="Alwar", speed=speed
+    )
+    features = compute_features(eval_ds)
+    scores = score_all(clf, features)
+    rings, _ = detect_rings(eval_ds, scores)
+    user_set = set(user_accounts)
+    hit = next((r for r in rings if len(user_set & set(r.account_ids)) >= 3), None)
+    return hit, {a: float(scores.get(a, 0.0)) for a in user_accounts}
+
+
+def test_console_catches_hand_built_laundering(console_world, console_model):
+    """A human-designed fast round-tripping loop must be caught."""
+    loop = ["judge_a", "judge_b", "judge_c", "judge_d"]
+    txs = []
+    for rep in range(3):  # loop the money three times, big round amounts
+        for i in range(len(loop)):
+            txs.append(
+                {"source": loop[i], "target": loop[(i + 1) % len(loop)], "amount": 250_000}
+            )
+    hit, scores = _score_custom(console_world, console_model, txs, speed="minutes")
+    assert hit is not None, f"laundering loop not caught; scores={scores}"
+    assert set(loop) <= set(hit.account_ids)
+
+
+def test_console_ignores_normal_behaviour(console_world, console_model):
+    """A couple of ordinary slow payments must NOT form a flagged ring."""
+    txs = [
+        {"source": "meena", "target": "landlord", "amount": 12_500},
+        {"source": "meena", "target": "grocer", "amount": 1_840},
+        {"source": "employer", "target": "meena", "amount": 45_000},
+    ]
+    hit, scores = _score_custom(console_world, console_model, txs, speed="days")
+    assert hit is None, f"normal behaviour wrongly ringed; scores={scores}"
+
+
+def test_build_custom_dataset_validation(small_world):
+    with pytest.raises(ValueError):
+        build_custom_dataset(small_world, [{"source": "a", "target": "a", "amount": 100}])
+    with pytest.raises(ValueError):
+        build_custom_dataset(small_world, [{"source": "a", "target": "b", "amount": -5}])
+    with pytest.raises(ValueError):
+        build_custom_dataset(small_world, [{"source": "a", "target": "b"}])
 
 
 def test_clean_account_names_rules():

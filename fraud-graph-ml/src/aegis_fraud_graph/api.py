@@ -6,6 +6,7 @@ Endpoints:
                              pipeline on first call if no cached output exists
     POST /detect             force a fresh detection run
     POST /demo/inject-ring   stage demo: add a fresh 6-account ring + re-detect
+    POST /demo/score-custom  fraud console: score human-designed transactions
     POST /demo/reset         drop injected rings, back to the base dataset
 """
 
@@ -21,7 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from . import __version__
 from .config import OUTPUT_DIR
 from .data import load
-from .demo import inject_demo_ring
+from .demo import build_custom_dataset, inject_demo_ring
 from .pipeline import run_detection
 
 _OUTPUT_FILE = OUTPUT_DIR / "fraud_graph.json"
@@ -139,6 +140,84 @@ def demo_inject_ring(body: dict | None = None) -> dict:
         _CURRENT_OUTPUT = output
 
     return json.loads(output.model_dump_json())
+
+
+@app.post("/demo/score-custom")
+def demo_score_custom(body: dict | None = None) -> dict:
+    """Fraud console: score transactions a human designed by hand.
+
+    Body: transactions [{source, target, amount}] (1-40), district?, speed?
+    ("minutes" fast / "days" slow), commit? (default true — a caught ring is
+    kept on the live map; uncaught activity never pollutes state).
+    """
+    global _CURRENT_DATASET, _CURRENT_OUTPUT
+
+    from .config import RingConfig
+    from .export import build_output
+    from .graph import compute_features
+    from .model import load_model, score_all
+    from .rings import detect_rings
+
+    payload = body or {}
+    txs = payload.get("transactions")
+    if not isinstance(txs, list) or not 1 <= len(txs) <= 40:
+        raise HTTPException(422, "provide 1-40 transactions")
+    district = str(payload.get("district") or "Jamtara")
+    speed = payload.get("speed") if payload.get("speed") in {"minutes", "days"} else "minutes"
+    commit = bool(payload.get("commit", True))
+
+    with _STATE_LOCK:
+        base = _CURRENT_DATASET
+
+    try:
+        eval_ds, user_accounts = build_custom_dataset(base, txs, district=district, speed=speed)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+    features = compute_features(eval_ds)
+    clf = load_model()
+    scores = score_all(clf, features)
+    rings, accounts_df = detect_rings(eval_ds, scores, RingConfig())
+
+    user_set = set(user_accounts)
+    hit = next((r for r in rings if len(user_set & set(r.account_ids)) >= 3), None)
+
+    committed = False
+    if hit is not None and commit:
+        output = build_output(eval_ds, rings, accounts_df, features)
+        (OUTPUT_DIR / "fraud_graph.json").write_text(
+            output.model_dump_json(indent=2), encoding="utf-8"
+        )
+        with _STATE_LOCK:
+            _CURRENT_DATASET = eval_ds
+            _CURRENT_OUTPUT = output
+        committed = True
+
+    return {
+        "accounts": [
+            {
+                "account_id": a,
+                "illicit_probability": round(float(scores.get(a, 0.0)), 4),
+                "in_ring": hit is not None and a in set(hit.account_ids),
+            }
+            for a in user_accounts
+        ],
+        "ring": (
+            {
+                "ring_id": hit.ring_id,
+                "label": hit.label,
+                "size": hit.size,
+                "risk_score": round(hit.risk_score, 4),
+                "district": hit.district,
+                "total_amount": hit.total_amount,
+                "account_ids": hit.account_ids,
+            }
+            if hit
+            else None
+        ),
+        "committed": committed,
+        "rings_total": len(rings),
+    }
 
 
 @app.post("/demo/reset")

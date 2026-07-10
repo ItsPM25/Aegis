@@ -99,6 +99,9 @@ app.post("/api/refresh/fraud-graph", (_req, res) =>
 app.post("/api/demo/inject-ring", (req, res) =>
   forward(res, "/demo/inject-ring", { method: "POST", body: req.body ?? {} })
 );
+app.post("/api/demo/score-custom", (req, res) =>
+  forward(res, "/demo/score-custom", { method: "POST", body: req.body ?? {} })
+);
 app.post("/api/demo/reset", (_req, res) =>
   forward(res, "/demo/reset", { method: "POST" })
 );

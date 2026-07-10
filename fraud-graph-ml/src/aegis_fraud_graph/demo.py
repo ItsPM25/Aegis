@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import random
+import zlib
 from datetime import datetime, timedelta, timezone
 from typing import Literal
 
@@ -146,6 +148,111 @@ def inject_demo_ring(
         accounts=accounts.reset_index(drop=True),
         transactions=transactions.reset_index(drop=True),
         name=f"{ds.name}+demo-ring",
+    )
+
+
+def build_custom_dataset(
+    ds: Dataset,
+    transactions: list[dict],
+    district: str = "Jamtara",
+    speed: str = "minutes",
+) -> tuple[Dataset, list[str]]:
+    """Append user-authored accounts + transactions to a copy of *ds*.
+
+    This powers the fraud console: the human designs the money movement
+    entirely (who pays whom, how much, fast or slow) and the engine scores
+    whatever they built — nothing about the pattern is machine-generated.
+    Returns (dataset, resolved user account ids).
+    """
+    district = district if district in _DEMO_DISTRICTS else "Jamtara"
+    accounts = ds.accounts.copy(deep=True)
+    txdf = ds.transactions.copy(deep=True)
+    existing = set(accounts["account_id"].astype(str))
+
+    parsed: list[tuple[str, str, float]] = []
+    for i, t in enumerate(transactions):
+        try:
+            src = str(t["source"]).strip()[:24]
+            dst = str(t["target"]).strip()[:24]
+            amt = float(t["amount"])
+        except (KeyError, TypeError, ValueError):
+            raise ValueError(f"transaction {i + 1} needs source, target and a numeric amount")
+        if not src or not dst or src.lower() == dst.lower():
+            raise ValueError(f"transaction {i + 1}: source and target must differ")
+        if not amt > 0:
+            raise ValueError(f"transaction {i + 1}: amount must be positive")
+        parsed.append((src, dst, amt))
+
+    name_map: dict[str, str] = {}
+    # Ordinary accounts to serve as background counterparties (not in any ring).
+    ring_col = accounts["ring_id"] if "ring_id" in accounts else pd.Series(dtype=object)
+    peers = accounts.loc[ring_col.isna(), "account_id"].astype(str).tolist() or list(existing)
+
+    next_tx = _next_numeric_id(txdf["tx_id"], prefix="tx_")
+    base_ts = datetime.now(timezone.utc).replace(microsecond=0, second=0)
+
+    def add_background(candidate: str) -> None:
+        """A brand-new account whose ONLY activity is the user's 2-3 transfers
+        looks like a mule to a model trained on accounts with full lives (the
+        blank-slate false positive — verified live: 3 innocent payments scored
+        0.999). So every console account gets a small organic history — slow,
+        small, non-round transactions with random ordinary peers. Deterministic
+        per name, and identical whether the user then builds fraud or rent
+        payments, so it cannot manufacture fraud signal."""
+        nonlocal next_tx
+        rng = random.Random(zlib.crc32(candidate.encode("utf-8")))
+        # 3-4 txs: enough life to kill the blank-slate false positive, little
+        # enough that a designed laundering pattern still dominates the account
+        for _ in range(rng.randint(3, 4)):
+            peer = rng.choice(peers)
+            amount = round(rng.lognormvariate(6.8, 0.8), 2)  # median ~900, organic
+            ts = base_ts - timedelta(days=rng.uniform(1, 25), hours=rng.uniform(0, 20))
+            src, dst = (candidate, peer) if rng.random() < 0.5 else (peer, candidate)
+            txdf.loc[len(txdf)] = {
+                "tx_id": f"tx_{next_tx:06d}",
+                "source": src,
+                "target": dst,
+                "amount": amount,
+                "timestamp": ts.isoformat(),
+            }
+            next_tx += 1
+
+    def resolve(name: str) -> str:
+        if name not in name_map:
+            candidate, n = name, 2
+            while candidate in existing:
+                candidate = f"{name}_{n}"
+                n += 1
+            existing.add(candidate)
+            name_map[name] = candidate
+            accounts.loc[len(accounts)] = {
+                "account_id": candidate,
+                "district": district,
+                "is_illicit": False,  # ground-truth label unknown; scoring ignores it
+                "ring_id": None,
+            }
+            add_background(candidate)
+        return name_map[name]
+    # tempo is the one lever the user picks explicitly: laundering moves in
+    # minutes, normal life moves in days — the engine must see the difference
+    gap = timedelta(minutes=6) if speed == "minutes" else timedelta(days=1, hours=9)
+    for i, (src, dst, amt) in enumerate(parsed):
+        txdf.loc[len(txdf)] = {
+            "tx_id": f"tx_{next_tx:06d}",
+            "source": resolve(src),
+            "target": resolve(dst),
+            "amount": round(amt, 2),
+            "timestamp": (base_ts + gap * i).isoformat(),
+        }
+        next_tx += 1
+
+    return (
+        Dataset(
+            accounts=accounts.reset_index(drop=True),
+            transactions=txdf.reset_index(drop=True),
+            name=f"{ds.name}+custom",
+        ),
+        list(name_map.values()),
     )
 
 
