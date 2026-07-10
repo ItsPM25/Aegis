@@ -35,6 +35,7 @@ export default function LeftPanel({
   onInjectRing,
   onViewRing,
   onOpenConsole,
+  onShowRealRing,
   injecting = false,
 }: {
   events: EventsResponse | null;
@@ -43,6 +44,7 @@ export default function LeftPanel({
   onInjectRing?: (district: string, accounts?: string[]) => Promise<FraudGraph | void> | void;
   onViewRing?: (ring: Ring) => void;
   onOpenConsole?: () => void;
+  onShowRealRing?: () => void;
   injecting?: boolean;
 }) {
   const scam = events?.scams.at(-1) ?? null;
@@ -349,6 +351,15 @@ export default function LeftPanel({
             </button>
           ))}
           {rings.length === 0 && <Empty />}
+          {onShowRealRing && (
+            <button
+              onClick={onShowRealRing}
+              className="mt-1 w-full rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-1.5 text-left text-[10px] text-emerald-300/90 transition hover:border-emerald-400/50"
+              title="a confirmed-illicit wallet cluster from the Elliptic++ dataset"
+            >
+              ◆ see a REAL ring — Bitcoin blockchain, same engine
+            </button>
+          )}
         </div>
       </div>
     </aside>
