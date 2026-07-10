@@ -45,6 +45,9 @@ STRICT RULES:
 - A link of kind "scam-ring-payment" is a TRACED MONEY TRAIL — the victim's reported
   payment was matched to a transaction landing in a named ring account. It is the
   strongest evidence available and must LEAD the summary (name the amount and account).
+  This match is on amount + timing, NOT district — mule rings often operate far from
+  their victims by design, so do not assume or claim the ring and victim are co-located
+  unless the fact explicitly says same_district is true.
 """
 
 
@@ -80,10 +83,19 @@ class TemplateNarrator:
             trails = [l for l in links if l.get("kind") == "scam-ring-payment"]
             if trails:
                 t = trails[0]
+                ring_where = t.get("ring_district")
+                victim_where = t.get("district")
+                if t.get("same_district"):
+                    place = f"in {ring_where}, the same district as the victim"
+                elif ring_where and victim_where:
+                    place = f"in {ring_where} — victim was in {victim_where}, hundreds of km away"
+                elif ring_where:
+                    place = f"in {ring_where}"
+                else:
+                    place = "in an unlisted district"
                 parts.append(
                     f"a victim's payment of ₹{t['amount']:,.0f} made after a scam call was "
-                    f"traced into collection account {t['account']} of {t['ring']} "
-                    f"in {t.get('district', where)}"
+                    f"traced into collection account {t['account']} of {t['ring']} {place}"
                 )
             if any(l["kind"] == "scam-ring" for l in links):
                 parts.append(f"an active scam call is linked to a fraud ring operating in {where}")

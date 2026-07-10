@@ -100,16 +100,33 @@ def _trail_world(**scam_overrides):
 
 
 def test_money_trail_traced():
-    """Amount + window + district match -> shared_account link + money_trail."""
+    """Amount + window match (same district too, here) -> shared_account link."""
     scam, graph = _trail_world()
     c = correlate([scam], [], graph)
     assert "shared_account" in c.correlation_basis
+    assert "shared_district" in c.correlation_basis  # bonus signal, both in Alwar
     assert c.money_trails == [{
         "scam_event_id": "s_pay", "ring_id": "ring_x",
         "account_id": "collector", "amount": 49_999.0, "district": "Alwar",
     }]
     assert any("traced into" in l.reason for l in c.linked_signals)
     assert any(l.get("kind") == "scam-ring-payment" for l in c.facts["links"])
+
+
+def test_money_trail_traced_across_districts():
+    """Real mule rings usually operate far from their victims by design — the
+    money trail must fire on amount + timing ALONE, with no district match.
+    This is the fix for the case where district would wrongly gate a real trail."""
+    scam, graph = _trail_world(
+        location_hint={"district": "Kerala Coast", "lat": 9.98, "lon": 76.28}
+    )
+    c = correlate([scam], [], graph)  # ring is in Alwar, victim is in Kerala
+    assert "shared_account" in c.correlation_basis
+    assert "shared_district" not in c.correlation_basis  # correctly did NOT match
+    assert c.money_trails == [{
+        "scam_event_id": "s_pay", "ring_id": "ring_x",
+        "account_id": "collector", "amount": 49_999.0, "district": "Alwar",
+    }]
 
 
 @pytest.mark.parametrize(
@@ -119,10 +136,9 @@ def test_money_trail_traced():
         {"reported_payment": {"amount": 25_000}},  # amount mismatch
         {"timestamp": "2026-06-30T10:00:00Z"},  # payment BEFORE the call
         {"timestamp": "2026-06-10T10:00:00Z"},  # payment > 96h after the call
-        {"location_hint": {"district": "Jamtara", "lat": 23.79, "lon": 86.80}},  # wrong district
     ],
 )
-def test_money_trail_requires_all_evidence(overrides):
+def test_money_trail_requires_amount_and_timing(overrides):
     scam, graph = _trail_world(**overrides)
     c = correlate([scam], [], graph)
     assert c.money_trails == []
