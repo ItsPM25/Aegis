@@ -73,6 +73,18 @@ green **CAUGHT: ravi, pinky, quickcash** banner shows the ring type + risk.
 
 (Leaving the names box empty also works — it generates 6 anonymous accounts instead.)
 
+Click the CAUGHT banner (or any ring in the card) → the **ring viewer** draws the gang's
+actual money flow — the loop of arrows visible on screen. Click any account → plain-word
+evidence: *"money out ≈ money in · 56% of transfers within 60 min · round amounts."*
+
+**If a judge pushes "this is all synthetic":** two counters, both on screen —
+1. **"◆ see a REAL ring"** (bottom of the rings card) → a confirmed-illicit wallet cluster
+   from the real Bitcoin blockchain (Elliptic++), same engine, badge says REAL.
+2. **"⚖ Fraud console"** → hand them the keyboard: *"design any money movement you like."*
+   They build it (or use the presets), press Run detection. Laundering gets caught with
+   per-account scores; a normal day comes back clean — the false-positive claim proven live.
+   Caught rings go straight onto the map; clean runs never pollute it.
+
 **Fallback:** if the button misbehaves, same thing from a terminal:
 `Invoke-RestMethod -Method POST http://127.0.0.1:4000/api/demo/inject-ring -ContentType application/json -Body '{"district":"Mumbai South"}'`
 

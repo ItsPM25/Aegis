@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-09T18:14:45.074867+00:00",
+  "generated_at": "2026-07-10T05:51:53.831044+00:00",
   "model": "graph_features+xgboost",
   "rings": [
     {
@@ -211,7 +211,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.0003,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 5
       }
     },
     {
@@ -222,7 +226,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.1,
         "in_degree": 4,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9753,
+        "burst_ratio": 0.2857,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -233,7 +241,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.9719,
+        "burst_ratio": 0.4,
+        "round_amount_ratio": 0.0,
+        "tx_count": 5
       }
     },
     {
@@ -244,7 +256,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9682,
+        "burst_ratio": 0.1667,
+        "round_amount_ratio": 0.0,
+        "tx_count": 6
       }
     },
     {
@@ -255,7 +271,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 5
+        "out_degree": 5,
+        "throughput_ratio": 0.9817,
+        "burst_ratio": 0.5714,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -266,7 +286,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.9512,
+        "burst_ratio": 0.4,
+        "round_amount_ratio": 0.0,
+        "tx_count": 5
       }
     },
     {
@@ -277,7 +301,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9638,
+        "burst_ratio": 0.2,
+        "round_amount_ratio": 0.0,
+        "tx_count": 5
       }
     },
     {
@@ -288,7 +316,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 1
+        "out_degree": 1,
+        "throughput_ratio": 0.0004,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 5
       }
     },
     {
@@ -299,7 +331,11 @@
         "degree_centrality": 0.008165,
         "clustering_coefficient": 0.0,
         "in_degree": 10,
-        "out_degree": 7
+        "out_degree": 7,
+        "throughput_ratio": 0.7113,
+        "burst_ratio": 0.0588,
+        "round_amount_ratio": 0.15,
+        "tx_count": 17
       }
     },
     {
@@ -310,7 +346,11 @@
         "degree_centrality": 0.000961,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
-        "out_degree": 1
+        "out_degree": 1,
+        "throughput_ratio": 0.051,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 2
       }
     },
     {
@@ -321,7 +361,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.0372,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 3
       }
     },
     {
@@ -332,7 +376,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.0224,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4
       }
     },
     {
@@ -343,7 +391,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9746,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 8
       }
     },
     {
@@ -354,7 +406,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 5
+        "out_degree": 5,
+        "throughput_ratio": 0.9752,
+        "burst_ratio": 0.1111,
+        "round_amount_ratio": 0.0,
+        "tx_count": 9
       }
     },
     {
@@ -365,7 +421,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9681,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -376,7 +436,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 5
+        "out_degree": 5,
+        "throughput_ratio": 0.9698,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 9
       }
     },
     {
@@ -387,7 +451,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.9815,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 8
       }
     },
     {
@@ -398,7 +466,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 5
+        "out_degree": 5,
+        "throughput_ratio": 0.9785,
+        "burst_ratio": 0.125,
+        "round_amount_ratio": 0.0,
+        "tx_count": 8
       }
     },
     {
@@ -409,7 +481,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9958,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 8
       }
     },
     {
@@ -420,7 +496,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9953,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 8
       }
     },
     {
@@ -431,7 +511,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 6
+        "out_degree": 6,
+        "throughput_ratio": 0.9944,
+        "burst_ratio": 0.1111,
+        "round_amount_ratio": 0.0,
+        "tx_count": 9
       }
     },
     {
@@ -442,7 +526,11 @@
         "degree_centrality": 0.000961,
         "clustering_coefficient": 0.0,
         "in_degree": 0,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.0,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 3
       }
     },
     {
@@ -453,7 +541,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.974,
+        "burst_ratio": 0.2857,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -464,7 +556,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9734,
+        "burst_ratio": 0.2857,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -475,7 +571,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9631,
+        "burst_ratio": 0.1667,
+        "round_amount_ratio": 0.0,
+        "tx_count": 6
       }
     },
     {
@@ -486,7 +586,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.971,
+        "burst_ratio": 0.2857,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -497,7 +601,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.9686,
+        "burst_ratio": 0.1429,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -508,7 +616,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.9867,
+        "burst_ratio": 0.4286,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -519,7 +631,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 1
+        "out_degree": 1,
+        "throughput_ratio": 0.0011,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4
       }
     },
     {
@@ -530,7 +646,11 @@
         "degree_centrality": 0.011527,
         "clustering_coefficient": 0.0,
         "in_degree": 17,
-        "out_degree": 7
+        "out_degree": 7,
+        "throughput_ratio": 0.8298,
+        "burst_ratio": 0.125,
+        "round_amount_ratio": 0.1765,
+        "tx_count": 24
       }
     },
     {
@@ -541,7 +661,11 @@
         "degree_centrality": 0.000961,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 0
+        "out_degree": 0,
+        "throughput_ratio": 0.0,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 2
       }
     },
     {
@@ -552,7 +676,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 1
+        "out_degree": 1,
+        "throughput_ratio": 0.0168,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 3
       }
     },
     {
@@ -563,7 +691,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.0549,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4
       }
     },
     {
@@ -574,7 +706,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.0114,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4
       }
     },
     {
@@ -585,7 +721,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.0231,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4
       }
     },
     {
@@ -596,7 +736,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.0363,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4
       }
     },
     {
@@ -607,7 +751,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.9634,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -618,7 +766,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.9997,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 5
       }
     },
     {
@@ -629,7 +781,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9584,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 6
       }
     },
     {
@@ -640,7 +796,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.9425,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 5
       }
     },
     {
@@ -651,7 +811,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.988,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -662,7 +826,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9981,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -673,7 +841,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.9973,
+        "burst_ratio": 0.1667,
+        "round_amount_ratio": 0.0,
+        "tx_count": 6
       }
     },
     {
@@ -684,7 +856,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.9501,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 5
       }
     },
     {
@@ -695,7 +871,11 @@
         "degree_centrality": 0.000961,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.0001,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 3
       }
     },
     {
@@ -706,7 +886,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9521,
+        "burst_ratio": 0.3333,
+        "round_amount_ratio": 0.0,
+        "tx_count": 6
       }
     },
     {
@@ -717,7 +901,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.9712,
+        "burst_ratio": 0.5,
+        "round_amount_ratio": 0.0,
+        "tx_count": 6
       }
     },
     {
@@ -728,7 +916,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 1
+        "out_degree": 1,
+        "throughput_ratio": 0.0011,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4
       }
     },
     {
@@ -739,7 +931,11 @@
         "degree_centrality": 0.007685,
         "clustering_coefficient": 0.0,
         "in_degree": 9,
-        "out_degree": 7
+        "out_degree": 7,
+        "throughput_ratio": 0.8053,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.1667,
+        "tx_count": 16
       }
     },
     {
@@ -750,7 +946,11 @@
         "degree_centrality": 0.000961,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 0
+        "out_degree": 0,
+        "throughput_ratio": 0.0,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 2
       }
     },
     {
@@ -761,7 +961,11 @@
         "degree_centrality": 0.000961,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 0
+        "out_degree": 0,
+        "throughput_ratio": 0.0,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 2
       }
     },
     {
@@ -772,7 +976,11 @@
         "degree_centrality": 0.000961,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 0
+        "out_degree": 0,
+        "throughput_ratio": 0.0,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 2
       }
     },
     {
@@ -783,7 +991,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 0
+        "out_degree": 0,
+        "throughput_ratio": 0.0,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 3
       }
     },
     {
@@ -794,7 +1006,11 @@
         "degree_centrality": 0.000961,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 0
+        "out_degree": 0,
+        "throughput_ratio": 0.0,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 2
       }
     },
     {
@@ -805,7 +1021,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 2
+        "out_degree": 2,
+        "throughput_ratio": 0.0812,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4
       }
     },
     {
@@ -816,7 +1036,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 6
+        "out_degree": 6,
+        "throughput_ratio": 0.9741,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 10
       }
     },
     {
@@ -827,7 +1051,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
-        "out_degree": 6
+        "out_degree": 6,
+        "throughput_ratio": 0.983,
+        "burst_ratio": 0.0909,
+        "round_amount_ratio": 0.0833,
+        "tx_count": 11
       }
     },
     {
@@ -838,7 +1066,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 5
+        "out_degree": 5,
+        "throughput_ratio": 0.9999,
+        "burst_ratio": 0.1111,
+        "round_amount_ratio": 0.125,
+        "tx_count": 9
       }
     },
     {
@@ -849,7 +1081,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 5
+        "out_degree": 5,
+        "throughput_ratio": 0.9793,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 9
       }
     },
     {
@@ -860,7 +1096,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
-        "out_degree": 5
+        "out_degree": 5,
+        "throughput_ratio": 0.9925,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 10
       }
     },
     {
@@ -871,7 +1111,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 5
+        "out_degree": 5,
+        "throughput_ratio": 0.98,
+        "burst_ratio": 0.1111,
+        "round_amount_ratio": 0.0,
+        "tx_count": 9
       }
     },
     {
@@ -882,7 +1126,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 5
+        "out_degree": 5,
+        "throughput_ratio": 0.9992,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 9
       }
     },
     {
@@ -893,7 +1141,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
-        "out_degree": 5
+        "out_degree": 5,
+        "throughput_ratio": 0.9924,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 10
       }
     },
     {
@@ -904,7 +1156,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.9944,
+        "burst_ratio": 0.1111,
+        "round_amount_ratio": 0.0,
+        "tx_count": 9
       }
     },
     {
@@ -915,7 +1171,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.0006,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 5
       }
     },
     {
@@ -926,7 +1186,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9758,
+        "burst_ratio": 0.4286,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -937,7 +1201,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9736,
+        "burst_ratio": 0.25,
+        "round_amount_ratio": 0.0,
+        "tx_count": 8
       }
     },
     {
@@ -948,7 +1216,11 @@
         "degree_centrality": 0.000961,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 1
+        "out_degree": 1,
+        "throughput_ratio": 0.0002,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4
       }
     },
     {
@@ -959,7 +1231,11 @@
         "degree_centrality": 0.011047,
         "clustering_coefficient": 0.0,
         "in_degree": 18,
-        "out_degree": 5
+        "out_degree": 5,
+        "throughput_ratio": 0.8629,
+        "burst_ratio": 0.2609,
+        "round_amount_ratio": 0.2778,
+        "tx_count": 23
       }
     },
     {
@@ -970,7 +1246,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 1
+        "out_degree": 1,
+        "throughput_ratio": 0.0062,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 3
       }
     },
     {
@@ -981,7 +1261,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
-        "out_degree": 1
+        "out_degree": 1,
+        "throughput_ratio": 0.0088,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4
       }
     },
     {
@@ -992,7 +1276,11 @@
         "degree_centrality": 0.000961,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
-        "out_degree": 0
+        "out_degree": 0,
+        "throughput_ratio": 0.0,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 2
       }
     },
     {
@@ -1003,7 +1291,11 @@
         "degree_centrality": 0.000961,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
-        "out_degree": 1
+        "out_degree": 1,
+        "throughput_ratio": 0.0096,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 2
       }
     },
     {
@@ -1014,7 +1306,11 @@
         "degree_centrality": 0.002402,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.9873,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 9
       }
     },
     {
@@ -1025,7 +1321,11 @@
         "degree_centrality": 0.001921,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 4
+        "out_degree": 4,
+        "throughput_ratio": 0.9791,
+        "burst_ratio": 0.125,
+        "round_amount_ratio": 0.0,
+        "tx_count": 8
       }
     },
     {
@@ -1036,7 +1336,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9717,
+        "burst_ratio": 0.1429,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -1047,7 +1351,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9809,
+        "burst_ratio": 0.2857,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     },
     {
@@ -1058,7 +1366,11 @@
         "degree_centrality": 0.001441,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
-        "out_degree": 3
+        "out_degree": 3,
+        "throughput_ratio": 0.9896,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 7
       }
     }
   ],
