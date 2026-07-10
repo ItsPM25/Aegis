@@ -53,6 +53,11 @@ class EventStore:
         """Load contract samples so the dashboard is never empty. The live
         fraud-graph output is preferred over the sample when it exists."""
         self.add_scam(json.loads((SAMPLES / "scam_detection.sample.json").read_text(encoding="utf-8")))
+        # Second sample carries reported_payment — fusion traces it into a
+        # collector account of the live graph (the money-trail demo).
+        traced = SAMPLES / "scam_detection.sample2.json"
+        if traced.exists():
+            self.add_scam(json.loads(traced.read_text(encoding="utf-8")))
         self.add_counterfeit(json.loads((SAMPLES / "counterfeit.sample.json").read_text(encoding="utf-8")))
         live = REPO_ROOT / "fraud-graph-ml" / "output" / "fraud_graph.json"
         source = live if live.exists() else SAMPLES / "fraud_graph.sample.json"
