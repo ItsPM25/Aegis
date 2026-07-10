@@ -42,6 +42,9 @@ STRICT RULES:
 - Only reference links present in the FACTS. Never invent connections.
 - If there are no cross-domain links, say the signals appear isolated.
 - Keep every claim traceable to a fact (use the district names and ring labels given).
+- A link of kind "scam-ring-payment" is a TRACED MONEY TRAIL — the victim's reported
+  payment was matched to a transaction landing in a named ring account. It is the
+  strongest evidence available and must LEAD the summary (name the amount and account).
 """
 
 
@@ -74,6 +77,14 @@ class TemplateNarrator:
             link_districts = sorted({l.get("district") for l in links if l.get("district")})
             where = link_districts[0] if link_districts else "the monitored area"
             parts = []
+            trails = [l for l in links if l.get("kind") == "scam-ring-payment"]
+            if trails:
+                t = trails[0]
+                parts.append(
+                    f"a victim's payment of ₹{t['amount']:,.0f} made after a scam call was "
+                    f"traced into collection account {t['account']} of {t['ring']} "
+                    f"in {t.get('district', where)}"
+                )
             if any(l["kind"] == "scam-ring" for l in links):
                 parts.append(f"an active scam call is linked to a fraud ring operating in {where}")
             if any(l["kind"] in ("scam-counterfeit", "counterfeit-ring") for l in links):
@@ -93,6 +104,13 @@ class TemplateNarrator:
             summary = "No active threats detected across the monitored signal streams."
 
         actions = []
+        trail_links = [l for l in links if l.get("kind") == "scam-ring-payment"]
+        if trail_links:
+            t = trail_links[0]
+            actions.append(
+                f"Freeze account {t['account']} immediately and request transaction "
+                "reversal through the bank's nodal officer."
+            )
         if rings:
             # Prefer the ring that is actually implicated in a link; fall back to
             # the highest-risk ring only when nothing is linked.

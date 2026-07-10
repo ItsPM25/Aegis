@@ -13,6 +13,9 @@ Correlation keys (from weakest to strongest):
 - shared_district      : signals name the same district
 - geospatial_overlap   : lat/lon within RADIUS_KM
 - temporal_proximity   : timestamps within WINDOW_HOURS
+- shared_account       : the MONEY TRAIL — a scam victim's reported payment
+                         matched (amount + window + district) to a transaction
+                         landing in a fraud-ring collector account
 """
 
 from __future__ import annotations
@@ -52,6 +55,8 @@ class Correlation:
     linked_signals: list[Link] = field(default_factory=list)
     correlation_basis: list[str] = field(default_factory=list)
     map_hotspots: list[dict] = field(default_factory=list)
+    # Traced scam-payment -> ring-account matches (contract: money_trails).
+    money_trails: list[dict] = field(default_factory=list)
     # Structured facts handed to the narrator (LLM or template).
     facts: dict = field(default_factory=dict)
 
@@ -88,9 +93,25 @@ def correlate(
     links: list[Link] = []
     basis: set[str] = set()
     hotspots: list[dict] = []
+    money_trails: list[dict] = []
     facts: dict = {"scams": [], "counterfeits": [], "rings": [], "links": []}
 
     rings = (fraud_graph or {}).get("rings", [])
+
+    # Index ring membership + payments flowing INTO rings from outside (the
+    # fraud-graph export includes victim -> collector inflow edges).
+    ring_of: dict[str, dict] = {}
+    for r in rings:
+        for acc in r.get("account_ids", []) or []:
+            ring_of[acc] = r
+    inflows = sorted(
+        (
+            e
+            for e in ((fraud_graph or {}).get("edges", []) or [])
+            if e.get("target") in ring_of and e.get("source") not in ring_of
+        ),
+        key=lambda e: (str(e.get("timestamp") or ""), str(e.get("target"))),
+    )
 
     # ---- collect hotspots (everything with a location goes on the map) ----
     for s in scams:
@@ -125,6 +146,49 @@ def correlate(
     for s in high_scams:
         s_district, s_lat, s_lon = _loc(s.get("location_hint"))
         s_time = _ts(s.get("timestamp"))
+
+        # scam -> ring MONEY TRAIL (strongest link): the victim reported what
+        # they paid; find that payment landing in a ring account — amount match
+        # (±1%), after the call within WINDOW_HOURS, same district. This is the
+        # thin thread that ties the three "separate" crime domains into one
+        # pipeline: the scam TAKES the money, the ring MOVES it.
+        payment = s.get("reported_payment") or {}
+        paid = payment.get("amount")
+        if paid and s_time and s_district:
+            for e in inflows:
+                r = ring_of[e["target"]]
+                if r.get("district") != s_district:
+                    continue
+                e_amt = e.get("amount")
+                if e_amt is None or abs(float(e_amt) - float(paid)) > 0.01 * float(paid):
+                    continue
+                e_time = _ts(e.get("timestamp"))
+                if e_time is None:
+                    continue
+                try:
+                    hours_after = (e_time - s_time).total_seconds() / 3600.0
+                except TypeError:  # naive vs aware timestamps — refuse to guess
+                    continue
+                if not -2.0 <= hours_after <= WINDOW_HOURS:
+                    continue
+                acct = e["target"]
+                basis.update(("shared_account", "shared_district", "temporal_proximity"))
+                links.append(Link("scam", s["event_id"],
+                                  f"victim's reported payment of ₹{float(paid):,.0f} traced into "
+                                  f"account {acct} of {r['ring_id']} ({r.get('label', 'fraud ring')})"))
+                links.append(Link("fraud_ring", r["ring_id"],
+                                  f"collection account {acct} received ₹{float(e_amt):,.0f} "
+                                  f"{hours_after:.0f}h after the scam call in {s_district}"))
+                facts["links"].append(
+                    {"kind": "scam-ring-payment", "district": s_district,
+                     "scam": s["event_id"], "ring": r["ring_id"], "account": acct,
+                     "amount": float(e_amt), "hours_after_call": round(hours_after, 1)}
+                )
+                money_trails.append(
+                    {"scam_event_id": s["event_id"], "ring_id": r["ring_id"],
+                     "account_id": acct, "amount": float(e_amt), "district": s_district}
+                )
+                break  # earliest qualifying payment only — deterministic
 
         # scam <-> ring: same district
         for r in rings:
@@ -227,5 +291,6 @@ def correlate(
         linked_signals=unique_links,
         correlation_basis=sorted(basis),
         map_hotspots=hotspots,
+        money_trails=money_trails,
         facts=facts,
     )

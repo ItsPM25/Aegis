@@ -40,6 +40,14 @@ class AuditTrail(BaseModel):
     prompt_version: str
 
 
+class MoneyTrail(BaseModel):
+    scam_event_id: str
+    ring_id: str
+    account_id: str
+    amount: float
+    district: str | None = None
+
+
 class FusionOutput(BaseModel):
     schema_version: str = "1.0"
     generated_at: str = ""
@@ -49,6 +57,7 @@ class FusionOutput(BaseModel):
     correlation_basis: list[str] = Field(default_factory=list)
     recommended_actions: list[str] = Field(default_factory=list)
     map_hotspots: list[MapHotspot] = Field(default_factory=list)
+    money_trails: list[MoneyTrail] = Field(default_factory=list)
     audit_trail: AuditTrail | None = None
 
 
@@ -83,6 +92,7 @@ def fuse(
         correlation_basis=correlation.correlation_basis,
         recommended_actions=narrative.recommended_actions,
         map_hotspots=[MapHotspot(**h) for h in correlation.map_hotspots],
+        money_trails=[MoneyTrail(**t) for t in correlation.money_trails],
         audit_trail=AuditTrail(
             model=narrator_name,
             inputs_hash=_inputs_hash(scams, counterfeits, fraud_graph),
