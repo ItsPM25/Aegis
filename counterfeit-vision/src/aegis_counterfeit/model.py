@@ -134,6 +134,52 @@ class CounterfeitModel:
             logits = self.net(tf(img.convert("RGB")).unsqueeze(0))
             return float(torch.softmax(logits, dim=1)[0, 1])
 
+    def _last_conv(self) -> nn.Module | None:
+        """The last Conv2d in the backbone — Grad-CAM hooks its feature maps."""
+        last = None
+        for m in self.net.modules():
+            if isinstance(m, nn.Conv2d):
+                last = m
+        return last
+
+    def gradcam(self, img: Image.Image) -> tuple[float, np.ndarray]:
+        """Grad-CAM for the 'fake' class: returns (p_fake, heatmap) where the
+        heatmap is a HxW float array in [0,1] marking WHICH regions of the note
+        drove the fake decision — the visual 'why is it fake' explanation.
+
+        Standard Grad-CAM: hook the last conv layer's activations + gradients,
+        weight each feature-map channel by its mean gradient w.r.t. the fake
+        logit, ReLU the weighted sum, normalise.
+        """
+        self.net.eval()
+        target = self._last_conv()
+        if target is None:  # e.g. the tiny test net — no heatmap
+            return self.p_fake(img), np.zeros((self.img_size, self.img_size), dtype=np.float32)
+
+        acts: list[torch.Tensor] = []
+        grads: list[torch.Tensor] = []
+        h1 = target.register_forward_hook(lambda _m, _i, o: acts.append(o))
+        h2 = target.register_full_backward_hook(lambda _m, _gi, go: grads.append(go[0]))
+        try:
+            tf = make_transform(self.img_size)
+            x = tf(img.convert("RGB")).unsqueeze(0)
+            x.requires_grad_(True)
+            logits = self.net(x)
+            p_fake = float(torch.softmax(logits, dim=1)[0, 1])
+            self.net.zero_grad()
+            logits[0, 1].backward()  # gradient of the FAKE logit
+
+            a = acts[0][0]            # (C, h, w) activations
+            g = grads[0][0]           # (C, h, w) gradients
+            weights = g.mean(dim=(1, 2))               # (C,) channel importance
+            cam = torch.relu((weights[:, None, None] * a).sum(0))  # (h, w)
+            cam = cam - cam.min()
+            cam = cam / (cam.max() + 1e-8)
+            return p_fake, cam.detach().cpu().numpy()
+        finally:
+            h1.remove()
+            h2.remove()
+
     def decide_verdict(self, p_fake: float, n_failed_features: int) -> str:
         """The CNN — trained on REAL photos of real notes vs REAL photos of
         counterfeit notes (98% genuine / 95% fake accuracy, AUC 0.994) — is the
