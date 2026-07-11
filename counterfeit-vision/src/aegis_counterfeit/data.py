@@ -64,7 +64,7 @@ def prepare_real_dataset(src_dir: Path = KAGGLE_DIR, out_dir: Path | None = None
             hint = str(p.relative_to(src_dir)).lower()
             if any(k in hint for k in ("fake", "counterfeit", "forged")):
                 bucket = "fake"
-            elif any(k in hint for k in ("real", "genuine", "original")):
+            elif any(k in hint for k in ("real", "genuine", "original", "_dataset")):
                 bucket = "genuine"
             else:
                 continue
