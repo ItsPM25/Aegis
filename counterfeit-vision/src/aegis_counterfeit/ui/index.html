@@ -524,7 +524,9 @@ function render(r, relayed, uploadDataUrl) {
   function setSlider(frac) {
     sliderPos = Math.max(0.02, Math.min(0.98, frac));
     slider.style.left = (sliderPos * 100) + '%';
-    imgHeat.style.clipPath = `inset(0 ${(1 - sliderPos) * 100}% 0 0)`;
+    // Original is left, Heatmap is right. Heatmap is z-index 2.
+    // Cut off the left side of the heatmap so original shows through.
+    imgHeat.style.clipPath = `inset(0 0 0 ${sliderPos * 100}%)`;
   }
   setSlider(0.5);
 
