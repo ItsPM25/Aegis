@@ -43,9 +43,12 @@ dist/
 !*/models/.gitkeep
 # Runtime note captures from the counterfeit demo UI (per-scan artifacts).
 */output/captures/
+# Fusion runtime artifacts (LLM-generated eval text, per-run reports) — regenerated on demand.
+command-centre/fusion/output/
 
-# --- Personal learning notes (local only, never commit) ---
+# --- Personal learning notes & work log (local only, never commit) ---
 learning.md
+WORKLOG.md
 BUG_REPORT.md
 
 # --- OS / editor ---
@@ -54,3 +57,4 @@ Thumbs.db
 .idea/
 .vscode/
 *.log
+tsconfig.tsbuildinfo

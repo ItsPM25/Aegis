@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 from . import PROMPT_VERSION
 from .correlator import correlate
-from .narrator import Narrative, get_narrator
+from .narrator import Narrative, narrate_safe
 
 FUSION_ROOT = Path(__file__).resolve().parents[2]  # command-centre/fusion/
 REPO_ROOT = FUSION_ROOT.parents[1]  # Aegis/
@@ -40,6 +40,14 @@ class AuditTrail(BaseModel):
     prompt_version: str
 
 
+class MoneyTrail(BaseModel):
+    scam_event_id: str
+    ring_id: str
+    account_id: str
+    amount: float
+    district: str | None = None
+
+
 class FusionOutput(BaseModel):
     schema_version: str = "1.0"
     generated_at: str = ""
@@ -49,6 +57,7 @@ class FusionOutput(BaseModel):
     correlation_basis: list[str] = Field(default_factory=list)
     recommended_actions: list[str] = Field(default_factory=list)
     map_hotspots: list[MapHotspot] = Field(default_factory=list)
+    money_trails: list[MoneyTrail] = Field(default_factory=list)
     audit_trail: AuditTrail | None = None
 
 
@@ -70,8 +79,7 @@ def fuse(
 ) -> FusionOutput:
     """The fusion moment: correlate deterministically, then narrate."""
     correlation = correlate(scams, counterfeits, fraud_graph)
-    narrator = get_narrator()
-    narrative: Narrative = narrator.narrate(correlation.facts)
+    narrative, narrator_name = narrate_safe(correlation.facts)
 
     return FusionOutput(
         generated_at=datetime.now(timezone.utc).isoformat(),
@@ -84,8 +92,9 @@ def fuse(
         correlation_basis=correlation.correlation_basis,
         recommended_actions=narrative.recommended_actions,
         map_hotspots=[MapHotspot(**h) for h in correlation.map_hotspots],
+        money_trails=[MoneyTrail(**t) for t in correlation.money_trails],
         audit_trail=AuditTrail(
-            model=narrator.name,
+            model=narrator_name,
             inputs_hash=_inputs_hash(scams, counterfeits, fraud_graph),
             prompt_version=PROMPT_VERSION,
         ),
@@ -114,11 +123,14 @@ def demo() -> FusionOutput:
 
     out_file = FUSION_ROOT / "output" / "fusion_output.json"
     out_file.parent.mkdir(parents=True, exist_ok=True)
-    out_file.write_text(output.model_dump_json(indent=2))
+    out_file.write_text(output.model_dump_json(indent=2), encoding="utf-8")
     return output
 
 
 if __name__ == "__main__":
+    import sys
+
+    sys.stdout.reconfigure(encoding="utf-8")  # Windows console defaults to cp1252; ₹ needs UTF-8
     result = demo()
     print(f"threat_level : {result.threat_level}")
     print(f"narrator     : {result.audit_trail.model}")

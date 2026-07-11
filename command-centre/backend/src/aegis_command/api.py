@@ -109,7 +109,7 @@ async def analyze_scam(body: dict) -> dict:
             r.raise_for_status()
     except httpx.HTTPError as exc:
         raise HTTPException(502, f"fraud-shield service unreachable: {exc}") from exc
-    event = r.json()
+    event = _validated("scam_detection", r.json())
     store.add_scam(event)
     return event
 
@@ -126,7 +126,7 @@ async def analyze_counterfeit(body: dict) -> dict:
             r.raise_for_status()
     except httpx.HTTPError as exc:
         raise HTTPException(502, f"counterfeit-vision service unreachable: {exc}") from exc
-    event = r.json()
+    event = _validated("counterfeit", r.json())
     store.add_counterfeit(event)
     return event
 
@@ -140,6 +140,70 @@ async def refresh_fraud_graph() -> dict:
             r.raise_for_status()
             store.set_fraud_graph(r.json())
             return {"refreshed": True, "rings": len(store.fraud_graph.get("rings", []))}
+    except httpx.HTTPError as exc:
+        raise HTTPException(502, f"fraud-graph service unreachable: {exc}") from exc
+
+
+@app.post("/demo/inject-ring")
+async def demo_inject_ring(body: dict | None = None) -> dict:
+    """Inject a fresh ring into the fraud graph, then refresh dashboard state."""
+    payload = body or {}
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            r = await client.post(f"{MODULES['fraud-graph']}/demo/inject-ring", json=payload)
+    except httpx.HTTPError as exc:
+        raise HTTPException(502, f"fraud-graph service unreachable: {exc}") from exc
+    if r.status_code >= 400:
+        # Pass module validation errors (e.g. "need at least 3 names") through
+        # as-is instead of masking them as a 502 "unreachable".
+        try:
+            detail = r.json().get("detail", r.text)
+        except ValueError:
+            detail = r.text
+        raise HTTPException(r.status_code, detail)
+    graph = r.json()
+    store.set_fraud_graph(graph)
+    return graph
+
+
+@app.post("/demo/score-custom")
+async def demo_score_custom(body: dict | None = None) -> dict:
+    """Fraud console proxy: forward human-designed transactions for scoring;
+    if the engine caught a ring (and committed it), refresh dashboard state."""
+    payload = body or {}
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            r = await client.post(f"{MODULES['fraud-graph']}/demo/score-custom", json=payload)
+    except httpx.HTTPError as exc:
+        raise HTTPException(502, f"fraud-graph service unreachable: {exc}") from exc
+    if r.status_code >= 400:
+        try:
+            detail = r.json().get("detail", r.text)
+        except ValueError:
+            detail = r.text
+        raise HTTPException(r.status_code, detail)
+    result = r.json()
+    if result.get("committed"):
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                g = await client.get(f"{MODULES['fraud-graph']}/fraud-graph")
+                if g.status_code == 200:
+                    store.set_fraud_graph(g.json())
+        except httpx.HTTPError:
+            pass  # scoring succeeded; the dashboard will catch up on next refresh
+    return result
+
+
+@app.post("/demo/reset")
+async def demo_reset() -> dict:
+    """Drop injected rings (rehearsal cleanup), then refresh dashboard state."""
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            r = await client.post(f"{MODULES['fraud-graph']}/demo/reset")
+            r.raise_for_status()
+            graph = r.json()
+            store.set_fraud_graph(graph)
+            return {"reset": True, "rings": len(graph.get("rings", []))}
     except httpx.HTTPError as exc:
         raise HTTPException(502, f"fraud-graph service unreachable: {exc}") from exc
 

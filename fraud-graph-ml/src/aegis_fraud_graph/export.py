@@ -23,6 +23,15 @@ class AccountFeatures(BaseModel):
     clustering_coefficient: float
     in_degree: int
     out_degree: int
+    # Behavioural evidence for the dashboard's "why flagged" view. Optional in
+    # the contract (the features object allows extra keys), so older consumers
+    # are unaffected.
+    throughput_ratio: float | None = None
+    burst_ratio: float | None = None
+    round_amount_ratio: float | None = None
+    tx_count: int | None = None
+    mule_score: float | None = None
+    fan_in_ratio: float | None = None
 
 
 class AccountOut(BaseModel):
@@ -99,6 +108,12 @@ def build_output(
                     clustering_coefficient=round(float(f["clustering_coeff"]), 6),
                     in_degree=int(f["in_degree"]),
                     out_degree=int(f["out_degree"]),
+                    throughput_ratio=round(float(f["throughput_ratio"]), 4),
+                    burst_ratio=round(float(f["burst_ratio"]), 4),
+                    round_amount_ratio=round(float(f["round_amount_ratio"]), 4),
+                    tx_count=int(f["tx_count"]),
+                    mule_score=round(float(f["mule_score"]), 4),
+                    fan_in_ratio=round(float(f["fan_in_ratio"]), 4),
                 ),
             )
         )
@@ -108,6 +123,12 @@ def build_output(
     tx = ds.transactions
     ring_tx = tx[tx["source"].isin(ringed_ids) & tx["target"].isin(ringed_ids)]
     ring_tx = ring_tx.sort_values("amount", ascending=False).head(cfg.max_export_edges)
+    # Inflows: payments from OUTSIDE the rings landing in a ring account —
+    # victim -> collector transfers. Fusion traces a scam's reported_payment
+    # against these (amount + time window + district), turning "same district"
+    # into "this exact payment landed in this exact account".
+    inflow_tx = tx[~tx["source"].isin(ringed_ids) & tx["target"].isin(ringed_ids)]
+    inflow_tx = inflow_tx.sort_values("amount", ascending=False).head(cfg.max_inflow_edges)
     edges = [
         EdgeOut(
             source=row.source,
@@ -115,7 +136,8 @@ def build_output(
             amount=round(float(row.amount), 2),
             timestamp=str(row.timestamp) if pd.notna(row.timestamp) else None,
         )
-        for row in ring_tx.itertuples(index=False)
+        for chunk in (ring_tx, inflow_tx)
+        for row in chunk.itertuples(index=False)
     ]
 
     return FraudGraphOut(

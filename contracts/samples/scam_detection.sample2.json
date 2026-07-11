@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "event_id": "scam_0002",
+  "source": "call_transcript",
+  "timestamp": "2026-06-24T10:00:00Z",
+  "raw_text": "This is Inspector Sharma from Alwar cyber cell. A money laundering case is registered against your Aadhaar. Transfer Rs 49,999 as a refundable security deposit immediately or an arrest warrant will be issued today.",
+  "verdict": "scam",
+  "risk_score": 0.99,
+  "scam_type": "digital_arrest",
+  "markers": ["authority_impersonation", "fake_fir_or_case", "urgency_pressure"],
+  "explanation": "Impersonates police, cites a fake case, demands an urgent refundable deposit - classic digital-arrest pattern. Victim reported paying Rs 49,999 by UPI.",
+  "phone_number": "+91-8801234567",
+  "location_hint": { "district": "Alwar", "lat": 27.55, "lon": 76.63 },
+  "reported_payment": { "amount": 49999, "method": "upi" }
+}

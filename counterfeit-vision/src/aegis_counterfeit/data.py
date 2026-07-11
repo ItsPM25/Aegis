@@ -25,16 +25,21 @@ def kaggle_available() -> bool:
 
 def download_kaggle(dataset: str = KAGGLE_DATASET, out_dir: Path = KAGGLE_DIR) -> Path:
     """Download + unzip a Kaggle dataset (requires kaggle API credentials)."""
-    if not kaggle_available():
-        raise RuntimeError(
-            "No Kaggle credentials. Put your API token at ~/.kaggle/kaggle.json "
-            "(kaggle.com -> Account -> Create New Token), then retry."
-        )
-    # Imported lazily: the kaggle package errors at import time without creds.
-    import kaggle
-
+    import kagglehub
+    import shutil
+    
     out_dir.mkdir(parents=True, exist_ok=True)
-    kaggle.api.dataset_download_files(dataset, path=str(out_dir), unzip=True)
+    # Download dataset using kagglehub
+    path = kagglehub.dataset_download(dataset)
+    
+    # Move files from cache path to out_dir
+    for item in Path(path).iterdir():
+        dest = out_dir / item.name
+        if item.is_dir():
+            shutil.copytree(item, dest, dirs_exist_ok=True)
+        else:
+            shutil.copy2(item, dest)
+            
     return out_dir
 
 
@@ -59,7 +64,7 @@ def prepare_real_dataset(src_dir: Path = KAGGLE_DIR, out_dir: Path | None = None
             hint = str(p.relative_to(src_dir)).lower()
             if any(k in hint for k in ("fake", "counterfeit", "forged")):
                 bucket = "fake"
-            elif any(k in hint for k in ("real", "genuine", "original")):
+            elif any(k in hint for k in ("real", "genuine", "original", "_dataset")):
                 bucket = "genuine"
             else:
                 continue

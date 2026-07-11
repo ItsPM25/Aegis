@@ -11,6 +11,7 @@ from aegis_fraud_graph.graph import FEATURE_COLUMNS, compute_features
 from aegis_fraud_graph.model import train
 from aegis_fraud_graph.rings import detect_rings
 from aegis_fraud_graph.export import build_output
+from aegis_fraud_graph.demo import build_custom_dataset, clean_account_names, inject_demo_ring
 from aegis_fraud_graph.synth import generate
 
 
@@ -47,6 +48,53 @@ def test_model_learns(features, small_world):
     assert report.precision_at_threshold >= 0.8, "precision-first thresholding failed"
 
 
+def test_fan_and_mule_features_bounded(features):
+    """fan_in/fan_out ratios partition to ~1, mule_score stays in [0,1]."""
+    total = features["fan_in_ratio"] + features["fan_out_ratio"]
+    # accounts with any activity: the two ratios must sum to 1
+    active = features[features["tx_count"] > 0]
+    assert (abs(total.loc[active.index] - 1.0) < 1e-6).all()
+    assert (features["mule_score"] >= 0).all() and (features["mule_score"] <= 1).all()
+
+
+def test_collector_has_high_fan_in():
+    """A hand-built collector (many senders, one receiver) must score fan_in ~1."""
+    import pandas as pd
+
+    from aegis_fraud_graph.data import Dataset
+
+    accounts = pd.DataFrame(
+        {"account_id": [f"a{i}" for i in range(6)], "district": "X",
+         "is_illicit": False, "ring_id": None}
+    )
+    # a0..a4 each pay the collector a5; a5 forwards once to a0
+    txs = pd.DataFrame(
+        [{"tx_id": f"t{i}", "source": f"a{i}", "target": "a5", "amount": 50000.0,
+          "timestamp": f"2026-06-01T10:0{i}:00+00:00"} for i in range(5)]
+        + [{"tx_id": "t5", "source": "a5", "target": "a0", "amount": 240000.0,
+            "timestamp": "2026-06-01T11:00:00+00:00"}]
+    )
+    feats = compute_features(Dataset(accounts=accounts, transactions=txs, name="t"))
+    assert feats.loc["a5", "fan_in_ratio"] > 0.7, "collector should read as fan-in"
+
+
+def test_multi_hub_topology_detected():
+    """Two collection hubs cross-feeding must label as multi-hub, not the
+    vague 'mixed laundering network' catch-all."""
+    import networkx as nx
+
+    from aegis_fraud_graph.rings import _topology_label
+
+    g = nx.DiGraph()
+    # two hubs H1, H2 each collect from 3 feeders, and cross-feed each other
+    for i in range(3):
+        g.add_edge(f"f1_{i}", "H1")
+        g.add_edge(f"f2_{i}", "H2")
+    g.add_edge("H1", "H2")
+    g.add_edge("H2", "H1")
+    assert _topology_label(g) == "multi-hub laundering network"
+
+
 def test_end_to_end_contract_compliance(features, small_world):
     """The output JSON must validate against the shared contract schema."""
     from jsonschema import validate
@@ -70,3 +118,136 @@ def test_end_to_end_contract_compliance(features, small_world):
     ring_ids = {r["ring_id"] for r in payload["rings"]}
     for acc in payload["accounts"]:
         assert acc["ring_id"] in ring_ids
+
+
+def test_export_includes_victim_inflow_edges(features, small_world):
+    """Victim -> collector payments must reach the command centre so fusion can
+    trace a scam's reported_payment into a ring account (the money trail)."""
+    from aegis_fraud_graph.model import score_all
+
+    labels = small_world.accounts.set_index("account_id")["is_illicit"]
+    clf, _ = train(features, labels)
+    scores = score_all(clf, features)
+    rings, accounts = detect_rings(small_world, scores)
+    payload = json.loads(build_output(small_world, rings, accounts, features).model_dump_json())
+
+    ringed = {a["account_id"] for a in payload["accounts"]}
+    inflows = [e for e in payload["edges"] if e["source"] not in ringed and e["target"] in ringed]
+    assert inflows, "no victim->ring inflow edges exported"
+    assert all(e["timestamp"] for e in inflows), "inflow edges must carry timestamps"
+
+
+def test_demo_ring_injection_detects_a_fresh_ring(small_world):
+    injected = inject_demo_ring(small_world, district="Alwar")
+    features = compute_features(injected)
+    labels = injected.accounts.set_index("account_id")["is_illicit"]
+    clf, _ = train(features, labels)
+
+    from aegis_fraud_graph.model import score_all
+
+    scores = score_all(clf, features)
+    rings, accounts = detect_rings(injected, scores)
+    payload = json.loads(build_output(injected, rings, accounts, features).model_dump_json())
+
+    assert any(r["district"] == "Alwar" and r["size"] == 6 for r in payload["rings"])
+
+
+def test_demo_ring_with_custom_account_names(small_world):
+    """The name-the-criminals moment: typed names must appear in a caught ring."""
+    names = ["ravi", "pinky", "quickcash", "mule_raju"]
+    injected = inject_demo_ring(small_world, district="Jamtara", account_names=names)
+    features = compute_features(injected)
+    labels = injected.accounts.set_index("account_id")["is_illicit"]
+    clf, _ = train(features, labels)
+
+    from aegis_fraud_graph.model import score_all
+
+    scores = score_all(clf, features)
+    rings, _ = detect_rings(injected, scores)
+    named = [r for r in rings if set(names) <= set(r.account_ids)]
+    assert named, "all custom-named accounts should land in one detected ring"
+    assert named[0].district == "Jamtara"
+
+
+@pytest.fixture(scope="module")
+def console_world():
+    """Richer training world for console tests — the tiny 4-ring fixture has a
+    single cycle example, too little signal to learn the pattern (the
+    production model trains on 12 rings and catches hand-built loops live)."""
+    cfg = SynthConfig(n_legit_accounts=500, n_rings=9, n_background_tx=3000, seed=11)
+    result = generate(cfg)
+    return Dataset(accounts=result.accounts, transactions=result.transactions, name="console")
+
+
+@pytest.fixture(scope="module")
+def console_model(console_world):
+    """Model trained on the base console world (before any custom accounts)."""
+    features = compute_features(console_world)
+    labels = console_world.accounts.set_index("account_id")["is_illicit"]
+    clf, _ = train(features, labels)
+    return clf
+
+
+def _score_custom(world, clf, transactions, speed):
+    """Mirror the /demo/score-custom flow: the model is trained on the base
+    world FIRST, then scores accounts it has never seen (training on the
+    already-injected dataset would teach it the judge's pattern is legit)."""
+    from aegis_fraud_graph.model import score_all
+
+    eval_ds, user_accounts = build_custom_dataset(
+        world, transactions, district="Alwar", speed=speed
+    )
+    features = compute_features(eval_ds)
+    scores = score_all(clf, features)
+    rings, _ = detect_rings(eval_ds, scores)
+    user_set = set(user_accounts)
+    hit = next((r for r in rings if len(user_set & set(r.account_ids)) >= 3), None)
+    return hit, {a: float(scores.get(a, 0.0)) for a in user_accounts}
+
+
+def test_console_catches_hand_built_laundering(console_world, console_model):
+    """A human-designed fast round-tripping loop must be caught."""
+    loop = ["judge_a", "judge_b", "judge_c", "judge_d"]
+    txs = []
+    for rep in range(3):  # loop the money three times, big round amounts
+        for i in range(len(loop)):
+            txs.append(
+                {"source": loop[i], "target": loop[(i + 1) % len(loop)], "amount": 250_000}
+            )
+    hit, scores = _score_custom(console_world, console_model, txs, speed="minutes")
+    assert hit is not None, f"laundering loop not caught; scores={scores}"
+    assert set(loop) <= set(hit.account_ids)
+
+
+def test_console_ignores_normal_behaviour(console_world, console_model):
+    """A couple of ordinary slow payments must NOT form a flagged ring."""
+    txs = [
+        {"source": "meena", "target": "landlord", "amount": 12_500},
+        {"source": "meena", "target": "grocer", "amount": 1_840},
+        {"source": "employer", "target": "meena", "amount": 45_000},
+    ]
+    hit, scores = _score_custom(console_world, console_model, txs, speed="days")
+    assert hit is None, f"normal behaviour wrongly ringed; scores={scores}"
+
+
+def test_build_custom_dataset_validation(small_world):
+    with pytest.raises(ValueError):
+        build_custom_dataset(small_world, [{"source": "a", "target": "a", "amount": 100}])
+    with pytest.raises(ValueError):
+        build_custom_dataset(small_world, [{"source": "a", "target": "b", "amount": -5}])
+    with pytest.raises(ValueError):
+        build_custom_dataset(small_world, [{"source": "a", "target": "b"}])
+
+
+def test_clean_account_names_rules():
+    assert clean_account_names(None) == []
+    assert clean_account_names([]) == []
+    # trims whitespace; case-insensitive dedupe keeps first spelling, order preserved
+    assert clean_account_names(["  ravi ", "PINKY", "pinky", "", "quickcash"]) == [
+        "ravi",
+        "PINKY",
+        "quickcash",
+    ]
+    # 1-2 usable names is an error (ring needs >= 3 members to be detectable)
+    with pytest.raises(ValueError):
+        clean_account_names(["only", "two"])

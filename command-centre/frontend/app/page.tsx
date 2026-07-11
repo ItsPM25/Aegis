@@ -1,294 +1,242 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
-import {
-  api,
-  type EventsPayload,
-  type FusionOutput,
-  type HealthPayload,
-  type HotspotsPayload,
+import { useCallback, useMemo, useState } from "react";
+import type {
+  EventsResponse,
+  FusionOutput,
+  HealthResponse,
+  HotspotsResponse,
+  Ring,
 } from "@/lib/api";
+import { injectDemoRing } from "@/lib/api";
+import { usePolling } from "@/lib/usePolling";
+import FraudConsole from "@/components/FraudConsole";
+import FusionPanel from "@/components/FusionPanel";
+import LeftPanel from "@/components/LeftPanel";
+import PipelineStrip from "@/components/PipelineStrip";
+import RingViewer from "@/components/RingViewer";
+import TopNav from "@/components/TopNav";
+import VolumePanel from "@/components/VolumePanel";
+import WarningPanel from "@/components/WarningPanel";
 
-// Leaflet touches `window` — must skip SSR.
-const CrimeMap = dynamic(() => import("./components/CrimeMap"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full items-center justify-center text-slate-500">loading map…</div>
-  ),
-});
+const CrimeMap = dynamic(() => import("@/components/CrimeMap"), { ssr: false });
 
-const THREAT_STYLE: Record<string, string> = {
-  critical: "bg-red-500/15 text-red-400 border-red-500/40",
-  high: "bg-orange-500/15 text-orange-400 border-orange-500/40",
-  medium: "bg-amber-500/15 text-amber-300 border-amber-500/40",
-  low: "bg-emerald-500/15 text-emerald-400 border-emerald-500/40",
+export type RingAlert = {
+  id: string;
+  district: string;
+  label: string;
+  size: number;
+  total: number | null;
+  at: string;
+  lat?: number;
+  lon?: number;
 };
 
-function Pill({ label, state }: { label: string; state: string }) {
-  const up = state === "up";
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs ${
-        up ? "border-emerald-500/40 text-emerald-400" : "border-slate-600 text-slate-500"
-      }`}
-    >
-      <span className={`h-1.5 w-1.5 rounded-full ${up ? "bg-emerald-400" : "bg-slate-600"}`} />
-      {label}
-    </span>
-  );
-}
+const DEMO_DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = {
+  Jamtara: { lat: 23.795, lon: 86.803 },
+  Deoghar: { lat: 24.48, lon: 86.7 },
+  Alwar: { lat: 27.55, lon: 76.63 },
+  Bharatpur: { lat: 27.22, lon: 77.49 },
+  Nuh: { lat: 28.1, lon: 77.0 },
+  "Chennai Central": { lat: 13.08, lon: 80.27 },
+  "Mumbai South": { lat: 18.93, lon: 72.83 },
+  "Delhi East": { lat: 28.65, lon: 77.3 },
+};
 
-function Card({
-  title,
-  accent,
-  children,
-}: {
-  title: string;
-  accent: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-      <h2 className={`mb-3 text-xs font-semibold uppercase tracking-widest ${accent}`}>{title}</h2>
-      {children}
-    </section>
+export default function Page() {
+  const { data: events, refresh: refreshEvents } = usePolling<EventsResponse>("/api/events", 5000);
+  const { data: health } = usePolling<HealthResponse>("/api/health", 10000);
+  const { data: hotspots, refresh: refreshHotspots } = usePolling<HotspotsResponse>(
+    "/api/hotspots",
+    8000
   );
-}
 
-export default function Dashboard() {
-  const [events, setEvents] = useState<EventsPayload | null>(null);
-  const [hotspots, setHotspots] = useState<HotspotsPayload | null>(null);
-  const [health, setHealth] = useState<HealthPayload | null>(null);
   const [fusion, setFusion] = useState<FusionOutput | null>(null);
-  const [fusing, setFusing] = useState(false);
-  const [offline, setOffline] = useState(false);
+  const [focus, setFocus] = useState<{ lat: number; lon: number } | null>(null);
+  const [injecting, setInjecting] = useState(false);
+  const [ringAlerts, setRingAlerts] = useState<RingAlert[]>([]);
+  const [viewRing, setViewRing] = useState<Ring | null>(null);
+  const [consoleOpen, setConsoleOpen] = useState(false);
+  const [realRing, setRealRing] = useState<{
+    source: string;
+    label: string;
+    size: number;
+    nodes: { id: string }[];
+    edges: { source: string; target: string }[];
+  } | null>(null);
 
-  const refresh = useCallback(async () => {
+  const openRealRing = useCallback(async () => {
     try {
-      const [ev, hs] = await Promise.all([api.events(), api.hotspots()]);
-      setEvents(ev);
-      setHotspots(hs);
-      if (ev.last_fusion) setFusion(ev.last_fusion);
-      setOffline(false);
+      const r = await fetch("/real_ring.json");
+      if (r.ok) setRealRing(await r.json());
     } catch {
-      setOffline(true);
+      /* asset missing — button is best-effort */
     }
   }, []);
 
-  useEffect(() => {
-    refresh();
-    const t1 = setInterval(refresh, 5000);
-    const t2 = setInterval(() => api.health().then(setHealth).catch(() => setHealth(null)), 10000);
-    api.health().then(setHealth).catch(() => setHealth(null));
-    return () => {
-      clearInterval(t1);
-      clearInterval(t2);
-    };
-  }, [refresh]);
+  const handleConsoleCommitted = useCallback(
+    (district: string) => {
+      const coords = DEMO_DISTRICT_COORDS[district];
+      if (coords) setFocus(coords);
+      refreshEvents();
+      refreshHotspots();
+    },
+    [refreshEvents, refreshHotspots]
+  );
 
-  const runFusion = async () => {
-    setFusing(true);
-    try {
-      setFusion(await api.fuse());
-    } catch {
-      /* backend down — banner already shows */
-    } finally {
-      setFusing(false);
-    }
-  };
+  const lastFusion = fusion ?? events?.last_fusion ?? null;
 
-  const scam = events?.scams.at(-1);
-  const note = events?.counterfeits.at(-1);
-  const rings = events?.fraud_graph?.rings ?? [];
+  const viewerData = useMemo(() => {
+    if (!viewRing) return null;
+    const g = events?.fraud_graph;
+    const member = new Set(viewRing.account_ids);
+    const nodes = viewRing.account_ids.map((id) => {
+      const acc = g?.accounts?.find((a) => a.account_id === id);
+      return { id, score: acc?.illicit_probability, features: acc?.features ?? null };
+    });
+    const intra = (g?.edges ?? []).filter((e) => member.has(e.source) && member.has(e.target));
+    const trail =
+      (lastFusion?.money_trails ?? []).find((t) => t.ring_id === viewRing.ring_id) ?? null;
+    // victim payments INTO the ring — traced edge first, then biggest, capped
+    // so the drawing stays readable
+    const inflow = (g?.edges ?? [])
+      .filter((e) => !member.has(e.source) && member.has(e.target))
+      .sort((a, b) => {
+        const hit = (e: { target: string; amount: number }) =>
+          trail && e.target === trail.account_id && Math.abs(e.amount - trail.amount) < 1 ? 1 : 0;
+        return hit(b) - hit(a) || b.amount - a.amount;
+      })
+      .slice(0, 10);
+    const satellites = [...new Set(inflow.map((e) => e.source))].map((id) => ({
+      id,
+      satellite: true,
+    }));
+    return { nodes: [...nodes, ...satellites], edges: [...intra, ...inflow], trail };
+  }, [viewRing, events, lastFusion]);
+  const alertCount =
+    (events?.scams.filter((s) => s.verdict !== "legit").length ?? 0) +
+    (events?.counterfeits.filter((c) => c.verdict === "fake").length ?? 0) +
+    (hotspots?.n_cross_domain ?? 0) +
+    ringAlerts.length;
+
+  const handleFused = useCallback(
+    (f: FusionOutput) => {
+      setFusion(f);
+      const p = f.map_hotspots?.[0];
+      if (p) setFocus({ lat: p.lat, lon: p.lon });
+      refreshHotspots();
+    },
+    [refreshHotspots]
+  );
+
+  const handleInjectRing = useCallback(
+    async (district: string, accounts?: string[]) => {
+      setInjecting(true);
+      try {
+        const before = new Set(
+          (events?.fraud_graph?.rings ?? []).map((r) => [...r.account_ids].sort().join("|"))
+        );
+        const graph = await injectDemoRing(district, accounts);
+        const fresh = graph.rings.find(
+          (r) => !before.has([...r.account_ids].sort().join("|"))
+        );
+        if (fresh) {
+          const coords = DEMO_DISTRICT_COORDS[fresh.district ?? district];
+          setRingAlerts((prev) =>
+            [
+              {
+                id: `${Date.now()}`,
+                district: fresh.district ?? district,
+                label: fresh.label ?? "fraud ring",
+                size: fresh.size,
+                total: fresh.total_amount ?? null,
+                at: new Date().toISOString(),
+                ...coords,
+              },
+              ...prev,
+            ].slice(0, 3)
+          );
+        }
+        const coords = DEMO_DISTRICT_COORDS[district];
+        if (coords) setFocus(coords);
+        await Promise.all([refreshEvents(), refreshHotspots()]);
+        return graph;
+      } finally {
+        setInjecting(false);
+      }
+    },
+    [events, refreshEvents, refreshHotspots]
+  );
 
   return (
-    <main className="min-h-screen bg-[#0b1117] px-5 py-4 font-sans text-slate-200">
-      {/* header */}
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-xl font-bold tracking-[0.3em] text-slate-100">AEGIS</h1>
-          <span className="text-xs uppercase tracking-widest text-slate-500">
-            digital public safety command centre
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {health ? (
-            Object.entries(health.modules).map(([m, s]) => <Pill key={m} label={m} state={s} />)
-          ) : (
-            <Pill label="command-centre" state="down" />
-          )}
-        </div>
-      </header>
+    <main className="relative h-dvh w-screen select-none overflow-hidden bg-zinc-950">
+      <CrimeMap points={hotspots?.points ?? []} hubs={hotspots?.hubs ?? []} focus={focus} />
 
-      {offline && (
-        <div className="mb-4 rounded border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm text-red-300">
-          Backend unreachable — start it with:{" "}
-          <code className="text-red-200">uvicorn aegis_command.api:app --port 8000</code>
-        </div>
-      )}
+      {/* readability gradients over the map */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-[40rem] bg-gradient-to-r from-zinc-950/85 via-zinc-950/35 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-zinc-950/80 to-transparent" />
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        {/* left column — the three signals */}
-        <div className="flex flex-col gap-4">
-          <Card title="Fraud Shield · scam calls" accent="text-amber-400">
-            {scam ? (
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-slate-500">{scam.event_id}</span>
-                  <span
-                    className={`rounded border px-2 py-0.5 text-xs font-semibold uppercase ${
-                      scam.verdict === "scam"
-                        ? "border-red-500/40 bg-red-500/10 text-red-400"
-                        : "border-emerald-500/40 text-emerald-400"
-                    }`}
-                  >
-                    {scam.verdict} · {(scam.risk_score * 100).toFixed(0)}%
-                  </span>
-                </div>
-                {scam.raw_text && (
-                  <p className="line-clamp-3 rounded bg-slate-950/60 p-2 text-xs italic text-slate-400">
-                    “{scam.raw_text}”
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-1">
-                  {(scam.markers ?? []).map((m) => (
-                    <span
-                      key={m}
-                      className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-300"
-                    >
-                      {m.replaceAll("_", " ")}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-xs text-slate-500">
-                  {scam.scam_type?.replaceAll("_", " ")} · {scam.location_hint?.district ?? "unknown"}
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500">no detections yet</p>
-            )}
-          </Card>
+      <TopNav health={health} alertCount={alertCount} />
+      <PipelineStrip events={events} fusion={lastFusion} />
 
-          <Card title="Counterfeit Vision · currency" accent="text-cyan-400">
-            {note ? (
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-slate-500">{note.event_id}</span>
-                  <span
-                    className={`rounded border px-2 py-0.5 text-xs font-semibold uppercase ${
-                      note.verdict === "fake"
-                        ? "border-red-500/40 bg-red-500/10 text-red-400"
-                        : "border-emerald-500/40 text-emerald-400"
-                    }`}
-                  >
-                    ₹{note.denomination} {note.verdict} · {(note.confidence * 100).toFixed(0)}%
-                  </span>
-                </div>
-                {(note.missing_features?.length ?? 0) > 0 && (
-                  <p className="text-xs text-slate-400">
-                    missing:{" "}
-                    <span className="text-cyan-300">
-                      {note.missing_features!.map((f) => f.replaceAll("_", " ")).join(", ")}
-                    </span>
-                  </p>
-                )}
-                <p className="text-xs text-slate-500">
-                  seized in {note.location_hint?.district ?? "unknown"}
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500">no scans yet</p>
-            )}
-          </Card>
-
-          <Card title="Fraud Graph · rings" accent="text-violet-400">
-            {rings.length ? (
-              <ul className="space-y-1.5 text-sm">
-                {rings.slice(0, 6).map((r) => (
-                  <li
-                    key={r.ring_id}
-                    className="flex items-center justify-between rounded bg-slate-950/60 px-2 py-1.5"
-                  >
-                    <span className="font-mono text-xs text-slate-400">{r.ring_id}</span>
-                    <span className="text-xs text-slate-500">
-                      {r.label} · {r.district ?? "?"}
-                    </span>
-                    <span className="text-xs font-semibold text-violet-300">
-                      {r.size} acc · {(r.risk_score * 100).toFixed(0)}%
-                    </span>
-                  </li>
-                ))}
-                {rings.length > 6 && (
-                  <li className="text-center text-xs text-slate-600">+{rings.length - 6} more</li>
-                )}
-              </ul>
-            ) : (
-              <p className="text-sm text-slate-500">no rings detected</p>
-            )}
-          </Card>
-        </div>
-
-        {/* right 2/3 — map + fusion */}
-        <div className="flex flex-col gap-4 xl:col-span-2">
-          <section className="h-[380px] overflow-hidden rounded-lg border border-slate-800">
-            <CrimeMap points={hotspots?.points ?? []} hubs={hotspots?.hubs ?? []} />
-          </section>
-
-          <Card title="Gen AI Fusion · correlated intelligence" accent="text-red-400">
-            <div className="mb-3 flex items-center justify-between">
-              <button
-                onClick={runFusion}
-                disabled={fusing}
-                className="rounded bg-red-500/90 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-red-500 disabled:opacity-50"
-              >
-                {fusing ? "correlating…" : "▶ RUN FUSION"}
-              </button>
-              {fusion && (
-                <span
-                  className={`rounded border px-3 py-1 text-xs font-bold uppercase tracking-widest ${THREAT_STYLE[fusion.threat_level]}`}
-                >
-                  threat: {fusion.threat_level}
-                </span>
-              )}
-            </div>
-
-            {fusion ? (
-              <div className="space-y-3 text-sm">
-                <p className="rounded border-l-2 border-red-500/60 bg-slate-950/60 p-3 leading-relaxed text-slate-200">
-                  {fusion.summary}
-                </p>
-                {(fusion.recommended_actions?.length ?? 0) > 0 && (
-                  <ul className="grid gap-1 text-xs text-slate-300 md:grid-cols-2">
-                    {fusion.recommended_actions!.map((a) => (
-                      <li key={a} className="rounded bg-slate-950/60 px-2 py-1.5">
-                        → {a}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-600">
-                  <span>{fusion.linked_signals.length} linked signals</span>
-                  {fusion.correlation_basis?.map((b) => (
-                    <span key={b} className="rounded bg-slate-800 px-1.5 py-0.5">
-                      {b.replaceAll("_", " ")}
-                    </span>
-                  ))}
-                  {fusion.audit_trail && (
-                    <span className="ml-auto font-mono">
-                      audit {fusion.audit_trail.inputs_hash} · {fusion.audit_trail.model}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500">
-                Press RUN FUSION to correlate all current signals into one intelligence package.
-              </p>
-            )}
-          </Card>
+      {/* hero title, like the reference */}
+      <div className="pointer-events-none absolute left-[23rem] top-16 z-10 hidden lg:block">
+        <h1 className="text-4xl font-extralight tracking-wide text-zinc-100 drop-shadow">
+          Public Safety Intelligence
+        </h1>
+        <div className="mt-2 flex gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
+          <span className="glass pointer-events-auto px-2.5 py-1">Scam · Fraud Shield</span>
+          <span className="glass pointer-events-auto px-2.5 py-1">Counterfeit · Vision</span>
+          <span className="glass pointer-events-auto px-2.5 py-1">Rings · Graph ML</span>
         </div>
       </div>
+
+      <LeftPanel
+        events={events}
+        health={health}
+        hotspots={hotspots}
+        onInjectRing={handleInjectRing}
+        onViewRing={setViewRing}
+        onOpenConsole={() => setConsoleOpen(true)}
+        onShowRealRing={openRealRing}
+        injecting={injecting}
+      />
+      {realRing && (
+        <RingViewer
+          title={`real illicit cluster · ${realRing.label}`}
+          subtitle={`${realRing.size} confirmed-illicit wallets · caught by the same engine (AUC 0.9945)`}
+          badge="REAL — BITCOIN BLOCKCHAIN"
+          label={realRing.label}
+          nodes={realRing.nodes}
+          edges={realRing.edges}
+          onClose={() => setRealRing(null)}
+        />
+      )}
+      {consoleOpen && (
+        <FraudConsole onClose={() => setConsoleOpen(false)} onCommitted={handleConsoleCommitted} />
+      )}
+      {viewRing && viewerData && (
+        <RingViewer
+          title={`${viewRing.ring_id} · ${viewRing.label ?? "fraud ring"}`}
+          subtitle={`${viewRing.district ?? "unknown district"} · ${viewRing.size} accounts · risk ${Math.round(viewRing.risk_score * 100)}%${viewRing.total_amount != null ? ` · ₹${Math.round(viewRing.total_amount / 100000)}L` : ""}`}
+          badge="SIMULATED CITY"
+          label={viewRing.label}
+          nodes={viewerData.nodes}
+          edges={viewerData.edges}
+          trail={viewerData.trail}
+          onClose={() => setViewRing(null)}
+        />
+      )}
+      <WarningPanel
+        events={events}
+        hotspots={hotspots}
+        fusion={lastFusion}
+        ringAlerts={ringAlerts}
+        onLocate={setFocus}
+      />
+      <FusionPanel fusion={lastFusion} onFused={handleFused} />
+      <VolumePanel events={events} />
     </main>
   );
 }

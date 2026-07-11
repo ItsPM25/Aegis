@@ -42,6 +42,12 @@ STRICT RULES:
 - Only reference links present in the FACTS. Never invent connections.
 - If there are no cross-domain links, say the signals appear isolated.
 - Keep every claim traceable to a fact (use the district names and ring labels given).
+- A link of kind "scam-ring-payment" is a TRACED MONEY TRAIL — the victim's reported
+  payment was matched to a transaction landing in a named ring account. It is the
+  strongest evidence available and must LEAD the summary (name the amount and account).
+  This match is on amount + timing, NOT district — mule rings often operate far from
+  their victims by design, so do not assume or claim the ring and victim are co-located
+  unless the fact explicitly says same_district is true.
 """
 
 
@@ -74,6 +80,23 @@ class TemplateNarrator:
             link_districts = sorted({l.get("district") for l in links if l.get("district")})
             where = link_districts[0] if link_districts else "the monitored area"
             parts = []
+            trails = [l for l in links if l.get("kind") == "scam-ring-payment"]
+            if trails:
+                t = trails[0]
+                ring_where = t.get("ring_district")
+                victim_where = t.get("district")
+                if t.get("same_district"):
+                    place = f"in {ring_where}, the same district as the victim"
+                elif ring_where and victim_where:
+                    place = f"in {ring_where} — victim was in {victim_where}, hundreds of km away"
+                elif ring_where:
+                    place = f"in {ring_where}"
+                else:
+                    place = "in an unlisted district"
+                parts.append(
+                    f"a victim's payment of ₹{t['amount']:,.0f} made after a scam call was "
+                    f"traced into collection account {t['account']} of {t['ring']} {place}"
+                )
             if any(l["kind"] == "scam-ring" for l in links):
                 parts.append(f"an active scam call is linked to a fraud ring operating in {where}")
             if any(l["kind"] in ("scam-counterfeit", "counterfeit-ring") for l in links):
@@ -93,6 +116,13 @@ class TemplateNarrator:
             summary = "No active threats detected across the monitored signal streams."
 
         actions = []
+        trail_links = [l for l in links if l.get("kind") == "scam-ring-payment"]
+        if trail_links:
+            t = trail_links[0]
+            actions.append(
+                f"Freeze account {t['account']} immediately and request transaction "
+                "reversal through the bank's nodal officer."
+            )
         if rings:
             # Prefer the ring that is actually implicated in a link; fall back to
             # the highest-risk ring only when nothing is linked.
@@ -115,7 +145,7 @@ class TemplateNarrator:
 
 
 class ClaudeNarrator:
-    """The real Gen AI narrator."""
+    """Anthropic narrator — first choice when ANTHROPIC_API_KEY is set."""
 
     name = f"{MODEL}+prompt-v{PROMPT_VERSION}"
 
@@ -140,6 +170,89 @@ class ClaudeNarrator:
         return response.parsed_output
 
 
+# JSON-only instruction appended for providers without native pydantic parsing.
+_JSON_INSTRUCTION = (
+    "\n\nRespond with ONLY a JSON object, no markdown fences, matching exactly:\n"
+    '{"summary": "<2-4 sentence summary>", "recommended_actions": ["<action>", ...]}'
+)
+
+
+def _parse_json_narrative(text: str) -> Narrative:
+    import json as _json
+
+    text = text.strip()
+    if text.startswith("```"):  # tolerate fenced output anyway
+        text = text.strip("`")
+        text = text.split("\n", 1)[1] if "\n" in text else text
+        text = text.rsplit("```", 1)[0] if "```" in text else text
+    start, end = text.find("{"), text.rfind("}")
+    if start == -1 or end == -1 or end < start:
+        # No JSON object in the response — raise a clear error instead of slicing
+        # garbage. narrate_safe() catches this and falls through to the next provider.
+        raise ValueError(f"no JSON object in narrator response: {text[:120]!r}")
+    return Narrative(**_json.loads(text[start : end + 1]))
+
+
+class GroqNarrator:
+    """Groq-hosted open model (OpenAI-compatible API). Fast + free tier."""
+
+    GROQ_MODEL = "llama-3.3-70b-versatile"
+    name = f"groq/{GROQ_MODEL}+prompt-v{PROMPT_VERSION}"
+
+    def __init__(self) -> None:
+        self._key = os.environ["GROQ_API_KEY"]
+
+    def narrate(self, facts: dict) -> Narrative:
+        import httpx
+
+        r = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {self._key}"},
+            json={
+                "model": self.GROQ_MODEL,
+                "temperature": 0.2,
+                "max_tokens": 1024,
+                "response_format": {"type": "json_object"},
+                "messages": [
+                    {"role": "system", "content": SYSTEM_PROMPT + _JSON_INSTRUCTION},
+                    {"role": "user", "content": "FACTS:\n" + _facts_block(facts)},
+                ],
+            },
+            timeout=30.0,
+        )
+        r.raise_for_status()
+        return _parse_json_narrative(r.json()["choices"][0]["message"]["content"])
+
+
+class GeminiNarrator:
+    """Google Gemini via the Generative Language REST API."""
+
+    GEMINI_MODEL = "gemini-2.0-flash"
+    name = f"gemini/{GEMINI_MODEL}+prompt-v{PROMPT_VERSION}"
+
+    def __init__(self) -> None:
+        self._key = os.environ["GEMINI_API_KEY"]
+
+    def narrate(self, facts: dict) -> Narrative:
+        import httpx
+
+        r = httpx.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/{self.GEMINI_MODEL}:generateContent",
+            headers={"x-goog-api-key": self._key},
+            json={
+                "system_instruction": {"parts": [{"text": SYSTEM_PROMPT + _JSON_INSTRUCTION}]},
+                "contents": [{"parts": [{"text": "FACTS:\n" + _facts_block(facts)}]}],
+                "generationConfig": {
+                    "temperature": 0.2,
+                    "responseMimeType": "application/json",
+                },
+            },
+            timeout=30.0,
+        )
+        r.raise_for_status()
+        return _parse_json_narrative(r.json()["candidates"][0]["content"]["parts"][0]["text"])
+
+
 def _load_dotenv() -> None:
     """Load command-centre/fusion/.env (gitignored) if present — lets Prayag
     drop ANTHROPIC_API_KEY in a file instead of setting a system env var."""
@@ -155,12 +268,41 @@ def _load_dotenv() -> None:
             os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
-def get_narrator() -> TemplateNarrator | ClaudeNarrator:
-    """Pick the best available narrator. Never raises."""
+def get_narrator() -> TemplateNarrator | ClaudeNarrator | GroqNarrator | GeminiNarrator:
+    """Pick the best available narrator: Claude > Groq > Gemini > template.
+    Construction never raises; call-time failures are handled by narrate_safe."""
     _load_dotenv()
-    if os.environ.get("ANTHROPIC_API_KEY"):
-        try:
-            return ClaudeNarrator()
-        except Exception:
-            pass
+    for env_key, cls in (
+        ("ANTHROPIC_API_KEY", ClaudeNarrator),
+        ("GROQ_API_KEY", GroqNarrator),
+        ("GEMINI_API_KEY", GeminiNarrator),
+    ):
+        if os.environ.get(env_key):
+            try:
+                return cls()
+            except Exception:
+                continue
     return TemplateNarrator()
+
+
+def narrate_safe(facts: dict) -> tuple[Narrative, str]:
+    """Run the best narrator; on ANY failure fall through the chain down to the
+    template. Returns (narrative, narrator_name) — the demo can never die."""
+    _load_dotenv()
+    chain: list = []
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        chain.append(ClaudeNarrator)
+    if os.environ.get("GROQ_API_KEY"):
+        chain.append(GroqNarrator)
+    if os.environ.get("GEMINI_API_KEY"):
+        chain.append(GeminiNarrator)
+    chain.append(TemplateNarrator)
+    for cls in chain:
+        try:
+            narrator = cls()
+            return narrator.narrate(facts), narrator.name
+        except Exception:
+            continue
+    # unreachable — TemplateNarrator cannot fail — but keep a hard floor anyway
+    t = TemplateNarrator()
+    return t.narrate(facts), t.name
