@@ -30,6 +30,8 @@ class AccountFeatures(BaseModel):
     burst_ratio: float | None = None
     round_amount_ratio: float | None = None
     tx_count: int | None = None
+    mule_score: float | None = None
+    fan_in_ratio: float | None = None
 
 
 class AccountOut(BaseModel):
@@ -110,6 +112,8 @@ def build_output(
                     burst_ratio=round(float(f["burst_ratio"]), 4),
                     round_amount_ratio=round(float(f["round_amount_ratio"]), 4),
                     tx_count=int(f["tx_count"]),
+                    mule_score=round(float(f["mule_score"]), 4),
+                    fan_in_ratio=round(float(f["fan_in_ratio"]), 4),
                 ),
             )
         )

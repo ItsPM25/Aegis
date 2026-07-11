@@ -48,6 +48,53 @@ def test_model_learns(features, small_world):
     assert report.precision_at_threshold >= 0.8, "precision-first thresholding failed"
 
 
+def test_fan_and_mule_features_bounded(features):
+    """fan_in/fan_out ratios partition to ~1, mule_score stays in [0,1]."""
+    total = features["fan_in_ratio"] + features["fan_out_ratio"]
+    # accounts with any activity: the two ratios must sum to 1
+    active = features[features["tx_count"] > 0]
+    assert (abs(total.loc[active.index] - 1.0) < 1e-6).all()
+    assert (features["mule_score"] >= 0).all() and (features["mule_score"] <= 1).all()
+
+
+def test_collector_has_high_fan_in():
+    """A hand-built collector (many senders, one receiver) must score fan_in ~1."""
+    import pandas as pd
+
+    from aegis_fraud_graph.data import Dataset
+
+    accounts = pd.DataFrame(
+        {"account_id": [f"a{i}" for i in range(6)], "district": "X",
+         "is_illicit": False, "ring_id": None}
+    )
+    # a0..a4 each pay the collector a5; a5 forwards once to a0
+    txs = pd.DataFrame(
+        [{"tx_id": f"t{i}", "source": f"a{i}", "target": "a5", "amount": 50000.0,
+          "timestamp": f"2026-06-01T10:0{i}:00+00:00"} for i in range(5)]
+        + [{"tx_id": "t5", "source": "a5", "target": "a0", "amount": 240000.0,
+            "timestamp": "2026-06-01T11:00:00+00:00"}]
+    )
+    feats = compute_features(Dataset(accounts=accounts, transactions=txs, name="t"))
+    assert feats.loc["a5", "fan_in_ratio"] > 0.7, "collector should read as fan-in"
+
+
+def test_multi_hub_topology_detected():
+    """Two collection hubs cross-feeding must label as multi-hub, not the
+    vague 'mixed laundering network' catch-all."""
+    import networkx as nx
+
+    from aegis_fraud_graph.rings import _topology_label
+
+    g = nx.DiGraph()
+    # two hubs H1, H2 each collect from 3 feeders, and cross-feed each other
+    for i in range(3):
+        g.add_edge(f"f1_{i}", "H1")
+        g.add_edge(f"f2_{i}", "H2")
+    g.add_edge("H1", "H2")
+    g.add_edge("H2", "H1")
+    assert _topology_label(g) == "multi-hub laundering network"
+
+
 def test_end_to_end_contract_compliance(features, small_world):
     """The output JSON must validate against the shared contract schema."""
     from jsonschema import validate
