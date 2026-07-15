@@ -283,24 +283,108 @@ export default function Page() {
         </Drawer>
       )}
 
-      {/* Full screen blur overlay for Fraud Rings */}
+      {/* Full screen blur overlay for Fraud Rings — side-by-side layout */}
       {activeTab === "fraud-rings" && (
-        <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-8 pointer-events-auto">
-          <div className="w-full max-w-4xl max-h-full overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl relative">
+        <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-6 pointer-events-auto">
+          <div className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
+            {/* Close button */}
             <button 
-              onClick={() => setActiveTab("map")}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-100 p-2 rounded-full hover:bg-white/10 transition z-10"
+              onClick={() => { setActiveTab("map"); setViewRing(null); }}
+              className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 rounded-full hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
-            <FraudRingsDrawer
-              events={events}
-              onInjectRing={handleInjectRing}
-              onViewRing={setViewRing}
-              onOpenConsole={() => setConsoleOpen(true)}
-              onError={(msg) => pushToast(msg, "error")}
-              injecting={injecting}
-            />
+
+            {/* LEFT: Fraud ring list */}
+            <div className="w-[380px] shrink-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl">
+              <FraudRingsDrawer
+                events={events}
+                onInjectRing={handleInjectRing}
+                onViewRing={setViewRing}
+                onOpenConsole={() => setConsoleOpen(true)}
+                onError={(msg) => pushToast(msg, "error")}
+                injecting={injecting}
+              />
+            </div>
+
+            {/* RIGHT: GenAI summary OR RingViewer */}
+            <div className="flex-1 min-w-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl">
+              {viewRing && viewerData ? (
+                <div className="p-5">
+                  <RingViewer
+                    title={`${viewRing.ring_id} · ${viewRing.label ?? "fraud ring"}`}
+                    subtitle={`${viewRing.district ?? "unknown district"} · ${viewRing.size} accounts · risk ${Math.round(viewRing.risk_score * 100)}%${viewRing.total_amount != null ? ` · ₹${Math.round(viewRing.total_amount / 100000)}L` : ""}`}
+                    badge="SIMULATED CITY"
+                    label={viewRing.label}
+                    nodes={viewerData.nodes}
+                    edges={viewerData.edges}
+                    trail={viewerData.trail}
+                    onClose={() => setViewRing(null)}
+                    inline
+                  />
+                </div>
+              ) : (
+                /* Default GenAI Summary Card */
+                <div className="p-6 flex flex-col gap-6 h-full">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/20">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5 text-violet-400"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                    </div>
+                    <div>
+                      <h2 className="text-base font-semibold text-zinc-100">Fraud Network AI Analysis</h2>
+                      <p className="text-[11px] text-zinc-500">Graph ML · Real-time detection engine</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+                    <div className="text-xs font-medium text-zinc-300 mb-3 flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                      Network Status
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="bg-black/20 rounded-lg p-3 text-center">
+                        <div className="text-2xl font-semibold text-violet-300">{events?.fraud_graph?.rings?.length ?? 0}</div>
+                        <div className="text-[10px] text-zinc-500 mt-1">Active Rings</div>
+                      </div>
+                      <div className="bg-black/20 rounded-lg p-3 text-center">
+                        <div className="text-2xl font-semibold text-amber-300">{events?.fraud_graph?.accounts?.length ?? 0}</div>
+                        <div className="text-[10px] text-zinc-500 mt-1">Flagged Accounts</div>
+                      </div>
+                      <div className="bg-black/20 rounded-lg p-3 text-center">
+                        <div className="text-2xl font-semibold text-red-300">{events?.fraud_graph?.edges?.length ?? 0}</div>
+                        <div className="text-[10px] text-zinc-500 mt-1">Transactions</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-5 flex-1">
+                    <div className="text-xs font-medium text-zinc-300 mb-3">Consolidated AI Summary</div>
+                    <div className="text-[12px] leading-relaxed text-zinc-400 space-y-3">
+                      <p>
+                        The Graph ML engine is actively monitoring <strong className="text-zinc-200">{events?.fraud_graph?.rings?.length ?? 0} fraud rings</strong> across 
+                        multiple districts. The detection model uses spectral clustering combined with temporal velocity analysis to identify suspicious circular money flows.
+                      </p>
+                      {(events?.fraud_graph?.rings?.length ?? 0) > 0 && (
+                        <p>
+                          The most prevalent topology detected is <strong className="text-violet-300">
+                          {events?.fraud_graph?.rings?.[0]?.label ?? "organized ring"}</strong> patterns, 
+                          where funds are rapidly cycled through mule accounts to obscure the origin. 
+                          High-risk accounts exhibit near-100% throughput ratios and burst transaction patterns.
+                        </p>
+                      )}
+                      <p>
+                        <strong className="text-zinc-200">Recommendation:</strong> Click any ring on the left panel to visualize its money flow topology, 
+                        run the simulation, and inspect per-account evidence. Use the "Inject ring" feature to stress-test detection on synthetic fraud scenarios.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-[10px] text-zinc-600 text-center">
+                    Click a ring on the left to view its detailed money flow graph →
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -323,18 +407,6 @@ export default function Page() {
 
       {consoleOpen && (
         <FraudConsole onClose={() => setConsoleOpen(false)} onCommitted={handleConsoleCommitted} />
-      )}
-      {viewRing && viewerData && (
-        <RingViewer
-          title={`${viewRing.ring_id} · ${viewRing.label ?? "fraud ring"}`}
-          subtitle={`${viewRing.district ?? "unknown district"} · ${viewRing.size} accounts · risk ${Math.round(viewRing.risk_score * 100)}%${viewRing.total_amount != null ? ` · ₹${Math.round(viewRing.total_amount / 100000)}L` : ""}`}
-          badge="SIMULATED CITY"
-          label={viewRing.label}
-          nodes={viewerData.nodes}
-          edges={viewerData.edges}
-          trail={viewerData.trail}
-          onClose={() => setViewRing(null)}
-        />
       )}
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />

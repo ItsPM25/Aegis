@@ -108,6 +108,7 @@ export default function RingViewer({
   edges,
   trail,
   onClose,
+  inline = false,
 }: {
   title: string;
   subtitle?: string;
@@ -117,6 +118,7 @@ export default function RingViewer({
   edges: ViewEdge[];
   trail?: { account_id: string; amount: number } | null;
   onClose: () => void;
+  inline?: boolean;
 }) {
   const [picked, setPicked] = useState<ViewNode | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -230,83 +232,79 @@ export default function RingViewer({
     }, containerRef);
   };
 
-  return (
+  const content = (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm"
-      onClick={onClose}
+      ref={containerRef}
+      className={inline ? "relative" : "glass w-[860px] max-w-[94vw] p-5 relative"}
+      onClick={(e) => e.stopPropagation()}
     >
-      <div
-        ref={containerRef}
-        className="glass w-[860px] max-w-[94vw] p-5 relative"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-zinc-100">{title}</h2>
-              {badge && (
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${
-                    badge.startsWith("REAL")
-                      ? "bg-emerald-500/15 text-emerald-300"
-                      : "bg-violet-500/15 text-violet-300"
-                  }`}
-                >
-                  {badge}
-                </span>
-              )}
-            </div>
-            {subtitle && <p className="mt-0.5 text-[11px] text-zinc-400">{subtitle}</p>}
-            {trail && (
-              <p className="mt-1 text-[10px] font-semibold text-red-300">
-                ⚠ ₹{trail.amount.toLocaleString("en-IN")} victim payment traced into{" "}
-                <span className="font-mono">{trail.account_id}</span> — red arrow below
-              </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-zinc-100">{title}</h2>
+            {badge && (
+              <span
+                className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${
+                  badge.startsWith("REAL")
+                    ? "bg-emerald-500/15 text-emerald-300"
+                    : "bg-violet-500/15 text-violet-300"
+                }`}
+              >
+                {badge}
+              </span>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={startSimulation}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-500/20 text-violet-300 hover:bg-violet-500/30 transition text-[11px] font-medium"
-            >
-              <Play className="h-3 w-3" /> Simulate
-            </button>
-            <button onClick={onClose} className="text-zinc-500 transition hover:text-zinc-200">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          {subtitle && <p className="mt-0.5 text-[11px] text-zinc-400">{subtitle}</p>}
+          {trail && (
+            <p className="mt-1 text-[10px] font-semibold text-red-300">
+              ⚠ ₹{trail.amount.toLocaleString("en-IN")} victim payment traced into{" "}
+              <span className="font-mono">{trail.account_id}</span> — red arrow below
+            </p>
+          )}
         </div>
-
-        <div className="mt-3 flex gap-4">
-          {/* money-flow drawing */}
-          <svg
-            viewBox={`0 0 ${W} ${H}`}
-            className="min-w-0 flex-1 rounded-xl border border-white/5 bg-zinc-950/60 transition-all duration-500"
+        <div className="flex items-center gap-3">
+          <button
+            onClick={startSimulation}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-500/20 text-violet-300 hover:bg-violet-500/30 transition text-[11px] font-medium"
           >
-            <defs>
-              <marker
-                id="arrow"
-                viewBox="0 0 8 8"
-                refX="7"
-                refY="4"
-                markerWidth="7"
-                markerHeight="7"
-                orient="auto-start-reverse"
-              >
-                <path d="M 0 0 L 8 4 L 0 8 z" fill="#a78bfa" opacity="0.85" />
-              </marker>
-              <marker
-                id="arrowRed"
-                viewBox="0 0 8 8"
-                refX="7"
-                refY="4"
-                markerWidth="7"
-                markerHeight="7"
-                orient="auto-start-reverse"
-              >
-                <path d="M 0 0 L 8 4 L 0 8 z" fill="#f87171" />
-              </marker>
-            </defs>
+            <Play className="h-3 w-3" /> Simulate
+          </button>
+          <button onClick={onClose} className="text-zinc-500 transition hover:text-zinc-200">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-3 flex gap-4">
+        {/* money-flow drawing */}
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          className="min-w-0 flex-1 rounded-xl border border-white/5 bg-zinc-950/60 transition-all duration-500"
+        >
+          <defs>
+            <marker
+              id="arrow"
+              viewBox="0 0 8 8"
+              refX="7"
+              refY="4"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 0 L 8 4 L 0 8 z" fill="#a78bfa" opacity="0.85" />
+            </marker>
+            <marker
+              id="arrowRed"
+              viewBox="0 0 8 8"
+              refX="7"
+              refY="4"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 0 L 8 4 L 0 8 z" fill="#f87171" />
+            </marker>
+          </defs>
             {merged.map((e, i) => {
               const a = pos.get(e.source);
               const b = pos.get(e.target);
@@ -493,6 +491,17 @@ export default function RingViewer({
           </div>
         </div>
       </div>
+    </div>
+  );
+
+  if (inline) return content;
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      {content}
     </div>
   );
 }
