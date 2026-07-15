@@ -115,7 +115,10 @@ export default function RingViewer({
   label?: string | null;
   nodes: ViewNode[];
   edges: ViewEdge[];
-  /** fusion money trail for this ring — the traced victim payment to highlight */
+  trail?: { account_id: string; amount: number } | null;
+  onClose: () => void;
+}) {
+  const [picked, setPicked] = useState<ViewNode | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // merge parallel transfers between the same pair so the drawing stays clean

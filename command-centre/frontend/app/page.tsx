@@ -285,7 +285,7 @@ export default function Page() {
 
       {/* Full screen blur overlay for Fraud Rings */}
       {activeTab === "fraud-rings" && (
-        <div className="absolute inset-0 z-30 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-8 pointer-events-auto">
+        <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-8 pointer-events-auto">
           <div className="w-full max-w-4xl max-h-full overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl relative">
             <button 
               onClick={() => setActiveTab("map")}
