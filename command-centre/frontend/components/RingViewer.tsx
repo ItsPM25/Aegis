@@ -193,19 +193,19 @@ export default function RingViewer({
       gsap.set(".gsap-edge", { opacity: 0 });
       gsap.set(".gsap-anim-flow", { opacity: 0 });
 
-      // Step through: show source node → draw edge → show target node → repeat
-      orderedNodeIds.forEach((nodeId, i) => {
+      // Step through: account pops in → its arrows draw → next account → its arrows → …
+      orderedNodeIds.forEach((nodeId) => {
         const nodeEl = `.gsap-node-${nodeId.replace(/[^a-zA-Z0-9]/g, "_")}`;
 
-        // Pop the node in with a nice bounce
+        // Pop the account node in
         tl.to(nodeEl, {
           opacity: 1,
           scale: 1,
-          duration: 0.6,
+          duration: 0.4,
           ease: "back.out(1.7)",
         });
 
-        // After this node appears, draw all edges that originate from it (in order)
+        // Then draw all outgoing edges from this account one by one
         const nodeEdgeIndices = orderedEdgeIndices.filter(
           (idx) => merged[idx].source === nodeId
         );
@@ -213,19 +213,19 @@ export default function RingViewer({
           const edgeEl = `.gsap-edge-${edgeIdx}`;
           tl.to(edgeEl, {
             opacity: 1,
-            duration: 0.5,
+            duration: 0.35,
             ease: "power1.inOut",
-          }, "-=0.15"); // slight overlap for smooth flow
+          });
         });
       });
 
       // Finally, activate all the flowing dash animations
       tl.to(".gsap-anim-flow", {
         opacity: 1,
-        duration: 0.8,
-        stagger: 0.06,
+        duration: 0.5,
+        stagger: 0.04,
         ease: "power1.inOut",
-      }, "+=0.3");
+      }, "+=0.2");
 
     }, containerRef);
   };
