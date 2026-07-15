@@ -136,3 +136,9 @@ export const Info = ({ className }: { className?: string }) => (
     <path d="M12 16v-4M12 8h.01" />
   </I>
 );
+
+export const Play = ({ className }: { className?: string }) => (
+  <I className={className}>
+    <polygon points="5 3 19 12 5 21 5 3" />
+  </I>
+);
