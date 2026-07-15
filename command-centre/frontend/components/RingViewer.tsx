@@ -232,7 +232,7 @@ export default function RingViewer({
     }, containerRef);
   };
 
-  const content = (
+  const renderContent = () => (
     <div
       ref={containerRef}
       className={inline ? "relative" : "glass w-[860px] max-w-[94vw] p-5 relative"}
@@ -276,232 +276,134 @@ export default function RingViewer({
       </div>
 
       <div className="mt-3 flex gap-4">
-        {/* money-flow drawing */}
         <svg
           viewBox={`0 0 ${W} ${H}`}
           className="min-w-0 flex-1 rounded-xl border border-white/5 bg-zinc-950/60 transition-all duration-500"
         >
           <defs>
-            <marker
-              id="arrow"
-              viewBox="0 0 8 8"
-              refX="7"
-              refY="4"
-              markerWidth="7"
-              markerHeight="7"
-              orient="auto-start-reverse"
-            >
+            <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M 0 0 L 8 4 L 0 8 z" fill="#a78bfa" opacity="0.85" />
             </marker>
-            <marker
-              id="arrowRed"
-              viewBox="0 0 8 8"
-              refX="7"
-              refY="4"
-              markerWidth="7"
-              markerHeight="7"
-              orient="auto-start-reverse"
-            >
+            <marker id="arrowRed" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M 0 0 L 8 4 L 0 8 z" fill="#f87171" />
             </marker>
           </defs>
-            {merged.map((e, i) => {
-              const a = pos.get(e.source);
-              const b = pos.get(e.target);
-              if (!a || !b) return null;
-              // stop the line at the node edge so the arrowhead shows
-              const dx = b.x - a.x;
-              const dy = b.y - a.y;
-              const len = Math.hypot(dx, dy) || 1;
-              const trim = 16;
-              const x2 = b.x - (dx / len) * trim;
-              const y2 = b.y - (dy / len) * trim;
-              const x1 = a.x + (dx / len) * trim;
-              const y1 = a.y + (dy / len) * trim;
-              const wgt = 1 + 2.5 * ((e.amount ?? 0) / maxAmt);
-              const traced =
-                trail != null &&
-                e.target === trail.account_id &&
-                e.amount != null &&
-                Math.abs(e.amount - trail.amount) <= Math.max(0.01 * trail.amount, 1);
+          {merged.map((e, i) => {
+            const a = pos.get(e.source);
+            const b = pos.get(e.target);
+            if (!a || !b) return null;
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const len = Math.hypot(dx, dy) || 1;
+            const trim = 16;
+            const x2 = b.x - (dx / len) * trim;
+            const y2 = b.y - (dy / len) * trim;
+            const x1 = a.x + (dx / len) * trim;
+            const y1 = a.y + (dy / len) * trim;
+            const wgt = 1 + 2.5 * ((e.amount ?? 0) / maxAmt);
+            const traced =
+              trail != null &&
+              e.target === trail.account_id &&
+              e.amount != null &&
+              Math.abs(e.amount - trail.amount) <= Math.max(0.01 * trail.amount, 1);
+            return (
+              <g key={i} className={`gsap-edge gsap-edge-${i}`}>
+                <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={traced ? "#f87171" : "#a78bfa"} strokeOpacity={traced ? 0.95 : 0.4} strokeWidth={traced ? 2.5 : wgt} markerEnd={traced ? "url(#arrowRed)" : "url(#arrow)"} />
+                <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={traced ? "#f87171" : "#d8b4fe"} strokeOpacity={traced ? 1 : 0.8} strokeWidth={wgt * 0.8} strokeDasharray="4 8" className="gsap-anim-flow">
+                  <animate attributeName="stroke-dashoffset" values="12;0" dur={`${2 / wgt}s`} repeatCount="indefinite" />
+                </line>
+                <title>
+                  {traced ? "TRACED VICTIM PAYMENT · " : ""}
+                  {e.source} → {e.target}
+                  {e.amount ? ` · ${inr(e.amount)}` : ""}
+                  {e.n > 1 ? ` (${e.n} transfers)` : ""}
+                </title>
+              </g>
+            );
+          })}
+          {nodes.map((n) => {
+            const p = pos.get(n.id);
+            if (!p) return null;
+            if (n.satellite) {
               return (
-                <g key={i} className={`gsap-edge gsap-edge-${i}`}>
-                  <line
-                    x1={x1}
-                    y1={y1}
-                    x2={x2}
-                    y2={y2}
-                    stroke={traced ? "#f87171" : "#a78bfa"}
-                    strokeOpacity={traced ? 0.95 : 0.4}
-                    strokeWidth={traced ? 2.5 : wgt}
-                    markerEnd={traced ? "url(#arrowRed)" : "url(#arrow)"}
-                  />
-                  {/* Animated flow line on top */}
-                  <line
-                    x1={x1}
-                    y1={y1}
-                    x2={x2}
-                    y2={y2}
-                    stroke={traced ? "#f87171" : "#d8b4fe"}
-                    strokeOpacity={traced ? 1 : 0.8}
-                    strokeWidth={wgt * 0.8}
-                    strokeDasharray="4 8"
-                    className="gsap-anim-flow"
-                  >
-                    <animate 
-                      attributeName="stroke-dashoffset" 
-                      values="12;0" 
-                      dur={`${2 / wgt}s`} 
-                      repeatCount="indefinite" 
-                    />
-                  </line>
-                  <title>
-                    {traced ? "TRACED VICTIM PAYMENT · " : ""}
-                    {e.source} → {e.target}
-                    {e.amount ? ` · ${inr(e.amount)}` : ""}
-                    {e.n > 1 ? ` (${e.n} transfers)` : ""}
-                  </title>
+                <g key={n.id} className={`gsap-node gsap-node-${n.id.replace(/[^a-zA-Z0-9]/g, "_")}`} style={{ transformOrigin: `${p.x}px ${p.y}px` }}>
+                  <circle cx={p.x} cy={p.y} r={6} fill="#27272a" stroke="#52525b" strokeWidth={1} />
+                  <text x={p.x} y={p.y + 16} textAnchor="middle" fontSize="7.5" fill="#71717a">{short(n.id)}</text>
+                  <title>{n.id} — outside account paying into the ring (victim)</title>
                 </g>
               );
-            })}
-            {nodes.map((n) => {
-              const p = pos.get(n.id);
-              if (!p) return null;
-              if (n.satellite) {
-                return (
-                  <g key={n.id} className={`gsap-node gsap-node-${n.id.replace(/[^a-zA-Z0-9]/g, "_")} animate-in zoom-in duration-300`} style={{ transformOrigin: `${p.x}px ${p.y}px` }}>
-                    <circle cx={p.x} cy={p.y} r={6} fill="#27272a" stroke="#52525b" strokeWidth={1} />
-                    <text x={p.x} y={p.y + 16} textAnchor="middle" fontSize="7.5" fill="#71717a">
-                      {short(n.id)}
-                    </text>
-                    <title>{n.id} — outside account paying into the ring (victim)</title>
-                  </g>
-                );
-              }
-              const hot = (n.score ?? 0) >= 0.9;
-              return (
-                <g
-                  key={n.id}
-                  onClick={() => setPicked(n)}
-                  className={`cursor-pointer gsap-node gsap-node-${n.id.replace(/[^a-zA-Z0-9]/g, "_")} animate-in zoom-in duration-300`}
-                  style={{ transformOrigin: `${p.x}px ${p.y}px` }}
-                >
-                  <circle
-                    cx={p.x}
-                    cy={p.y}
-                    r={12}
-                    fill={hot ? "#7c3aed" : "#3f3f46"}
-                    stroke={picked?.id === n.id ? "#f0abfc" : hot ? "#c4b5fd" : "#71717a"}
-                    strokeWidth={picked?.id === n.id ? 2.5 : 1.2}
-                  />
-                  <text
-                    x={p.x}
-                    y={p.y + 26}
-                    textAnchor="middle"
-                    fontSize="9"
-                    fill="#d4d4d8"
-                  >
-                    {short(n.id)}
-                  </text>
-                  {n.score != null && (
-                    <text
-                      x={p.x}
-                      y={p.y + 3.5}
-                      textAnchor="middle"
-                      fontSize="8"
-                      fontWeight="bold"
-                      fill="#fafafa"
-                    >
-                      {Math.round(n.score * 100)}
-                    </text>
-                  )}
-                  <title>{n.id}</title>
-                </g>
-              );
-            })}
-          </svg>
-
-          {/* evidence panel */}
-          <div className="w-64 shrink-0 rounded-xl border border-white/5 bg-zinc-950/60 p-3 flex flex-col h-full overflow-y-auto scroll-thin">
-            {/* Gen AI Summary */}
-            <div className="mb-4 pb-4 border-b border-white/5">
-              <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-violet-400 mb-2">
-                <Zap className="h-3.5 w-3.5" /> AI Summary
-              </div>
-              <div className="text-[11px] text-zinc-300 leading-relaxed font-light">
-                {label?.includes("hub") ? (
-                  <p>Graph ML detects a <strong>Hub-and-Spoke</strong> topology. Central account acts as a collector, aggregating funds from victims before layering via mules.</p>
-                ) : label?.includes("chain") ? (
-                  <p>Graph ML detects a <strong>Chain</strong> topology. Funds are transferred sequentially across multiple accounts to obfuscate the money trail.</p>
-                ) : (
-                  <p>Graph ML detects an <strong>Organized Ring</strong>. Multiple accounts exhibit high-velocity transfers with synchronized timing and identical amounts.</p>
+            }
+            const hot = (n.score ?? 0) >= 0.9;
+            return (
+              <g key={n.id} onClick={() => setPicked(n)} className={`cursor-pointer gsap-node gsap-node-${n.id.replace(/[^a-zA-Z0-9]/g, "_")}`} style={{ transformOrigin: `${p.x}px ${p.y}px` }}>
+                <circle cx={p.x} cy={p.y} r={12} fill={hot ? "#7c3aed" : "#3f3f46"} stroke={picked?.id === n.id ? "#f0abfc" : hot ? "#c4b5fd" : "#71717a"} strokeWidth={picked?.id === n.id ? 2.5 : 1.2} />
+                <text x={p.x} y={p.y + 26} textAnchor="middle" fontSize="9" fill="#d4d4d8">{short(n.id)}</text>
+                {n.score != null && (
+                  <text x={p.x} y={p.y + 3.5} textAnchor="middle" fontSize="8" fontWeight="bold" fill="#fafafa">{Math.round(n.score * 100)}</text>
                 )}
-              </div>
-            </div>
+                <title>{n.id}</title>
+              </g>
+            );
+          })}
+        </svg>
 
-            {picked ? (
-              <>
-                <div className="text-[11px] font-semibold text-zinc-100">{picked.id}</div>
-                {picked.score != null && (
-                  <div className="mt-1 text-[10px] text-violet-300">
-                    illicit probability {Math.round(picked.score * 100)}%
+        <div className="w-64 shrink-0 rounded-xl border border-white/5 bg-zinc-950/60 p-3 flex flex-col h-full overflow-y-auto scroll-thin">
+          <div className="mb-4 pb-4 border-b border-white/5">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-violet-400 mb-2">
+              <Zap className="h-3.5 w-3.5" /> AI Summary
+            </div>
+            <div className="text-[11px] text-zinc-300 leading-relaxed font-light">
+              {label?.includes("hub") ? (
+                <p>Graph ML detects a <strong>Hub-and-Spoke</strong> topology. Central account acts as a collector, aggregating funds from victims before layering via mules.</p>
+              ) : label?.includes("chain") ? (
+                <p>Graph ML detects a <strong>Chain</strong> topology. Funds are transferred sequentially across multiple accounts to obfuscate the money trail.</p>
+              ) : (
+                <p>Graph ML detects an <strong>Organized Ring</strong>. Multiple accounts exhibit high-velocity transfers with synchronized timing and identical amounts.</p>
+              )}
+            </div>
+          </div>
+
+          {picked ? (
+            <>
+              <div className="text-[11px] font-semibold text-zinc-100">{picked.id}</div>
+              {picked.score != null && (
+                <div className="mt-1 text-[10px] text-violet-300">
+                  illicit probability {Math.round(picked.score * 100)}%
+                </div>
+              )}
+              <div className="mt-3 space-y-2">
+                <Evidence when={picked.features?.throughput_ratio != null} strong={(picked.features?.throughput_ratio ?? 0) > 0.8} text={`money out ≈ money in (${Math.round((picked.features?.throughput_ratio ?? 0) * 100)}%) — nothing sticks, classic mule`} weak="keeps money like a normal account" />
+                <Evidence when={picked.features?.burst_ratio != null} strong={(picked.features?.burst_ratio ?? 0) > 0.5} text={`${Math.round((picked.features?.burst_ratio ?? 0) * 100)}% of transfers within 60 min of the last — machine-speed movement`} weak="human-paced transactions" />
+                <Evidence when={picked.features?.round_amount_ratio != null} strong={(picked.features?.round_amount_ratio ?? 0) > 0.5} text={`${Math.round((picked.features?.round_amount_ratio ?? 0) * 100)}% suspiciously round amounts (₹49,999-style)`} weak="organic, non-round amounts" />
+                {picked.features?.tx_count != null && (
+                  <div className="text-[10px] text-zinc-400">
+                    {picked.features.tx_count} transactions · {picked.features.in_degree ?? "?"} in / {picked.features.out_degree ?? "?"} out
                   </div>
                 )}
-                <div className="mt-3 space-y-2">
-                  <Evidence
-                    when={picked.features?.throughput_ratio != null}
-                    strong={(picked.features?.throughput_ratio ?? 0) > 0.8}
-                    text={`money out ≈ money in (${Math.round((picked.features?.throughput_ratio ?? 0) * 100)}%) — nothing sticks, classic mule`}
-                    weak="keeps money like a normal account"
-                  />
-                  <Evidence
-                    when={picked.features?.burst_ratio != null}
-                    strong={(picked.features?.burst_ratio ?? 0) > 0.5}
-                    text={`${Math.round((picked.features?.burst_ratio ?? 0) * 100)}% of transfers within 60 min of the last — machine-speed movement`}
-                    weak="human-paced transactions"
-                  />
-                  <Evidence
-                    when={picked.features?.round_amount_ratio != null}
-                    strong={(picked.features?.round_amount_ratio ?? 0) > 0.5}
-                    text={`${Math.round((picked.features?.round_amount_ratio ?? 0) * 100)}% suspiciously round amounts (₹49,999-style)`}
-                    weak="organic, non-round amounts"
-                  />
-                  {picked.features?.tx_count != null && (
-                    <div className="text-[10px] text-zinc-400">
-                      {picked.features.tx_count} transactions ·{" "}
-                      {picked.features.in_degree ?? "?"} in / {picked.features.out_degree ?? "?"} out
-                    </div>
-                  )}
-                  {!picked.features && (
-                    <div className="text-[10px] text-zinc-500">
-                      no per-account evidence in this dataset (anonymised)
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="text-[11px] leading-relaxed text-zinc-500">
-                Click an account to see <span className="text-zinc-300">why it was flagged</span> —
-                the evidence the model used, in plain words.
-                <div className="mt-3 text-[10px] text-zinc-600">
-                  Node number = illicit probability. Arrow thickness = money volume.
-                </div>
+                {!picked.features && (
+                  <div className="text-[10px] text-zinc-500">no per-account evidence in this dataset (anonymised)</div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <div className="text-[11px] leading-relaxed text-zinc-500">
+              Click an account to see <span className="text-zinc-300">why it was flagged</span> — the evidence the model used, in plain words.
+              <div className="mt-3 text-[10px] text-zinc-600">Node number = illicit probability. Arrow thickness = money volume.</div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 
-  if (inline) return content;
+  if (inline) return renderContent();
 
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm"
       onClick={onClose}
     >
-      {content}
+      {renderContent()}
     </div>
   );
 }
