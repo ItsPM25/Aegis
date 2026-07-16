@@ -110,6 +110,10 @@ export default function CrimeMap({
         attributionControl: false,
       });
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+      // Attribution bottom-right (under the zoom buttons) — bottom-LEFT collided
+      // with the Satellite toggle + compass. It stays collapsed to just the ⓘ
+      // via CSS in globals.css (the credits show on hover); doing it in JS was
+      // unreliable because MapLibre re-opens the <details> after load.
       map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
       libRef.current = maplibregl;
       mapRef.current = map;
@@ -165,13 +169,17 @@ export default function CrimeMap({
       // wrap: MapLibre owns the wrap's transform for positioning; we scale `inner`.
       const wrap = document.createElement("div");
       const inner = document.createElement("div");
-      inner.className = `hub ${h.cross_domain ? "hub-cross" : ""}`;
+      // Only a TRULY coordinated hub (all 3 crime types) gets the red badge;
+      // a 2-domain overlap is an honest "multi-signal" hub, not "coordinated".
+      const coordinated = h.tier === "coordinated";
+      inner.className = `hub ${coordinated ? "hub-cross" : ""}`;
       const size = Math.round(Math.min(150, 64 + h.intensity * 32));
       inner.style.width = inner.style.height = `${size}px`;
-      if (h.cross_domain) {
+      if (h.tier) {
         const label = document.createElement("span");
         label.className = "hub-label";
-        label.textContent = `COORDINATED HUB${h.district ? ` · ${h.district.toUpperCase()}` : ""}`;
+        const kind = coordinated ? "COORDINATED HUB" : "MULTI-SIGNAL HUB";
+        label.textContent = `${kind}${h.district ? ` · ${h.district.toUpperCase()}` : ""}`;
         inner.appendChild(label);
       }
       wrap.appendChild(inner);
@@ -190,8 +198,9 @@ export default function CrimeMap({
             `</div>`
         )
         .join("");
+      const hubTitle = h.tier === "coordinated" ? "Coordinated hub" : h.tier === "multi_signal" ? "Multi-signal hub" : "Signal cluster";
       const hubPopup = new lib.Popup({ offset: 18, closeButton: true, maxWidth: "260px" }).setHTML(
-        `<strong>Coordinated hub${h.district ? ` — ${h.district}` : ""}</strong>` +
+        `<strong>${hubTitle}${h.district ? ` — ${h.district}` : ""}</strong>` +
           `<div style="margin-top:2px;color:#a1a1aa">${h.n_points} signals · ${h.domains
             .map(titleCase)
             .join(" + ")}</div>` +
@@ -240,7 +249,7 @@ export default function CrimeMap({
       <div ref={container} className="h-full w-full" />
       <button
         onClick={() => setSatellite((s) => !s)}
-        className="glass pointer-events-auto absolute bottom-32 left-[60px] z-20 flex items-center gap-1.5 px-3 py-2 text-[11px] text-zinc-300 transition hover:text-white"
+        className="glass pointer-events-auto absolute bottom-10 left-[60px] z-20 flex items-center gap-1.5 px-3 py-2 text-[11px] text-zinc-300 transition hover:text-white"
         title="toggle basemap"
       >
         <Layers className="h-3.5 w-3.5" />
