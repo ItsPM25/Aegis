@@ -7,5 +7,5 @@
   "confidence": 0.91,
   "missing_features": ["security_thread", "microprint"],
   "image_ref": "captures/note_0001.jpg",
-  "location_hint": { "district": "Jamtara", "lat": 23.79, "lon": 86.81 }
+  "location_hint": { "district": "Jamtara", "lat": 23.958, "lon": 86.812 }
 }

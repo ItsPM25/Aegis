@@ -37,7 +37,7 @@ WINDOW_HOURS = 96.0
 # Rings carry a district but no coordinates — this lookup puts them on the
 # crime map so a hub can genuinely show all three domains converging.
 DISTRICT_COORDS: dict[str, tuple[float, float]] = {
-    "Jamtara": (23.79, 86.80),
+    "Jamtara": (23.963, 86.804),  # Jamtara town (was 23.79 — that fell on Maithon reservoir)
     "Deoghar": (24.48, 86.70),
     "Alwar": (27.55, 76.63),
     "Bharatpur": (27.22, 77.49),
