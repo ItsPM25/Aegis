@@ -1,10 +1,23 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
-import type { EventsResponse, FusionOutput, HotspotsResponse } from "@/lib/api";
+import type {
+  CampaignsResponse,
+  EventsResponse,
+  FusionOutput,
+  HotspotsResponse,
+  PlateFamiliesResponse,
+} from "@/lib/api";
+import { fetchCampaigns, fetchPlateFamilies } from "@/lib/api";
 import { clockTime, inr, titleCase } from "@/lib/format";
 import { AlertTriangle, Banknote, MapPin, Network, Phone, ArrowUpRight } from "./Icons";
+
+const TIER_BADGE: Record<string, string> = {
+  high: "bg-red-500/15 text-red-300 border-red-500/40",
+  probable: "bg-orange-500/15 text-orange-300 border-orange-500/40",
+  possible: "bg-amber-500/15 text-amber-300 border-amber-500/40",
+};
 
 export type RingAlert = {
   id: string;
@@ -42,6 +55,13 @@ export default function AlertsDrawer({
   onLocate: (p: { lat: number; lon: number }) => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
+  // Intelligence layer: fetched once when the drawer opens (cheap endpoints).
+  const [families, setFamilies] = useState<PlateFamiliesResponse | null>(null);
+  const [campaigns, setCampaigns] = useState<CampaignsResponse | null>(null);
+  useEffect(() => {
+    fetchPlateFamilies().then(setFamilies).catch(() => {});
+    fetchCampaigns().then(setCampaigns).catch(() => {});
+  }, []);
 
   useGSAP(() => {
     // Fade + subtle scale (compositor transform) instead of a positional x
@@ -122,6 +142,45 @@ export default function AlertsDrawer({
       </section>
 
       <div className="gsap-alert-item border-t border-white/5 my-2"></div>
+
+      {/* intelligence: scam campaigns — one gang, one script, many districts */}
+      {(campaigns?.campaigns ?? []).map((c) => (
+        <div key={c.campaign_id} className="gsap-alert-item rounded-xl border border-fuchsia-500/30 bg-fuchsia-950/30 p-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-fuchsia-300">
+              Campaign detected · {titleCase(c.scam_type)}
+            </span>
+            <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${TIER_BADGE[c.tier]}`}>
+              {c.tier}
+            </span>
+          </div>
+          <p className="mt-1 text-[10px] leading-relaxed text-zinc-300">
+            Same script behind <strong>{c.n_events} reports</strong>: {c.district_spread.join(" → ")}
+            {c.phone_numbers.length > 0 && <> · {c.phone_numbers.length} number(s)</>}
+          </p>
+          <p className="mt-1 text-[9px] text-zinc-500 line-clamp-2">“{c.sample_text}…”</p>
+          <p className="mt-1 text-[9px] text-zinc-600">{c.note}</p>
+        </div>
+      ))}
+
+      {/* intelligence: plate families — shared printing defects = common source */}
+      {(families?.families ?? []).map((f) => (
+        <div key={f.family_id} className="gsap-alert-item rounded-xl border border-teal-500/30 bg-teal-950/30 p-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-teal-300">
+              Plate family · ₹{f.denomination} × {f.n_notes} notes
+            </span>
+            <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${TIER_BADGE[f.tier]}`}>
+              {f.tier}
+            </span>
+          </div>
+          <p className="mt-1 text-[10px] leading-relaxed text-zinc-300">
+            Same failed features (<strong>{f.shared_defects.join(", ") || "partial overlap"}</strong>) across{" "}
+            {f.districts.join(", ")} · {Math.round(f.span_km)} km apart
+          </p>
+          <p className="mt-1 text-[9px] text-zinc-600">{f.note}</p>
+        </div>
+      ))}
 
       {/* fusion verdict */}
       {fusion && (

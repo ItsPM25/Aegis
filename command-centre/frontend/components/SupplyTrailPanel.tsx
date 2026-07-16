@@ -34,6 +34,7 @@ const EVIDENCE_ICON: Record<string, string> = {
   corridor_terminus: "⚑",
   fir_mention: "📄",
   transport_gap: "⋯",
+  temporal_flow: "➤",
 };
 
 function ConfidenceBar({ value }: { value: number }) {
@@ -291,6 +292,52 @@ export default function SupplyTrailPanel({
                   <circle cx="12" cy="9" r="2.5" />
                 </svg>
               </button>
+
+              {/* Temporal flow — direction & speed proven from seizure timing */}
+              {trail.flow && (
+                <div className="rounded-xl border border-red-500/25 bg-red-500/5 px-4 py-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] font-semibold text-red-300">
+                      Movement flow
+                    </div>
+                    <span className="text-[9px] uppercase tracking-widest text-zinc-500">
+                      R² {Math.round(trail.flow.consistency * 100)}%
+                    </span>
+                  </div>
+                  <div className="text-xs text-zinc-100">
+                    ➤ toward <span className="font-medium">{trail.flow.direction_toward}</span>
+                    {" "}at ~{Math.round(trail.flow.speed_km_per_day)} km/day
+                    {trail.flow.origin_consistent && (
+                      <span className="ml-2 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[9px] text-emerald-300 border border-emerald-500/30">
+                        corroborates origin
+                      </span>
+                    )}
+                  </div>
+                  {trail.flow.next_hub_at_risk && (
+                    <button
+                      onClick={() =>
+                        onFlyTo(
+                          trail.flow!.next_hub_at_risk!.lat,
+                          trail.flow!.next_hub_at_risk!.lon,
+                          trail.flow!.next_hub_at_risk!.name
+                        )
+                      }
+                      className="w-full rounded-lg border border-red-500/30 bg-red-950/40 px-3 py-2 text-left transition hover:border-red-400/50"
+                    >
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-red-300">
+                        Next hub at risk
+                      </div>
+                      <div className="text-xs text-zinc-100 mt-0.5">
+                        {trail.flow.next_hub_at_risk.name} ·{" "}
+                        {Math.round(trail.flow.next_hub_at_risk.distance_km)} km ahead · ETA{" "}
+                        {trail.flow.next_hub_at_risk.eta_days_min}–
+                        {trail.flow.next_hub_at_risk.eta_days_max} days
+                      </div>
+                    </button>
+                  )}
+                  <p className="text-[9px] leading-relaxed text-zinc-500">{trail.flow.note}</p>
+                </div>
+              )}
             </div>
 
             {/* Evidence chain */}
