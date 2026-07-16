@@ -67,6 +67,7 @@ export default function CrimeMap({
   const modeRef = useRef<"dark" | "sat">("dark");
   const blockedRef = useRef({ dark: false, sat: false });
   const trailAnimRef = useRef<number | null>(null);   // rAF handle for trail dash animation
+  const trailMarkersRef = useRef<any[]>([]);          // DOM markers owned by the trail (arrows, labels)
   const [ready, setReady] = useState(false);
   const [satellite, setSatellite] = useState(false);
 
@@ -258,13 +259,15 @@ export default function CrimeMap({
       trailAnimRef.current = null;
     }
 
-    // Remove old trail layers / sources
+    // Remove old trail layers / sources / DOM markers
     ["trail-corridor", "trail-glow", "trail-dashes", "trail-seizures", "trail-origin"].forEach((id) => {
       if (map.getLayer(id)) map.removeLayer(id);
     });
     ["trail-line-src", "trail-seizures-src", "trail-origin-src"].forEach((id) => {
       if (map.getSource(id)) map.removeSource(id);
     });
+    trailMarkersRef.current.forEach((m) => m.remove());
+    trailMarkersRef.current = [];
 
     if (!trail) return;
 
@@ -325,8 +328,15 @@ export default function CrimeMap({
     ].map((a) => [a[1], a[2]] as [number, number]);
     void dashPatterns; // suppress unused warning — we use rAF approach instead
 
+    // Dash march direction follows the PROVEN flow when timestamps gave us one
+    // (temporal analysis) — otherwise default to node order. The animation
+    // itself becomes truthful instead of decorative.
+    const nodes = trail.corridor.node_path;
+    const flowReverse = trail.flow != null && trail.flow.direction_toward === nodes[0]?.name;
+    const dashStep = flowReverse ? 0.15 : -0.15;
+
     const animateDashes = () => {
-      offset = (offset - 0.15) % 8; // moves dashes "forward" along the line
+      offset = (offset + dashStep) % 8; // marches dashes in the flow direction
       if (map.getLayer("trail-dashes")) {
         map.setPaintProperty("trail-dashes", "line-dasharray", [
           Math.abs(offset % 4),
@@ -387,6 +397,70 @@ export default function CrimeMap({
         "circle-blur": 0.3,
       },
     });
+
+    // 6 — Origin label (the origin pin alone doesn't explain itself)
+    const lib = libRef.current;
+    {
+      const el = document.createElement("div");
+      el.className = "trail-tag trail-tag-origin";
+      el.textContent = `LIKELY ORIGIN · ${trail.inferred_origin.name.toUpperCase()}`;
+      trailMarkersRef.current.push(
+        new lib.Marker({ element: el, anchor: "bottom", offset: [0, -16] })
+          .setLngLat([trail.inferred_origin.lon, trail.inferred_origin.lat])
+          .addTo(map)
+      );
+    }
+
+    // 7 — Temporal flow: direction arrows + the next hub at risk with its ETA
+    if (trail.flow) {
+      const flow = trail.flow;
+      // cumulative km along node_path (flat-earth is fine at arrow scale)
+      const seg: number[] = [0];
+      for (let i = 1; i < nodes.length; i++) {
+        const dx = (nodes[i].lon - nodes[i - 1].lon) * Math.cos((nodes[i].lat * Math.PI) / 180);
+        const dy = nodes[i].lat - nodes[i - 1].lat;
+        seg.push(seg[i - 1] + Math.hypot(dx, dy));
+      }
+      const total = seg[seg.length - 1];
+      // three arrows at 30/50/70% along the corridor, rotated to flow direction
+      for (const frac of [0.3, 0.5, 0.7]) {
+        const target = total * frac;
+        let i = seg.findIndex((s) => s >= target);
+        if (i <= 0) i = 1;
+        const t = (target - seg[i - 1]) / (seg[i] - seg[i - 1] || 1);
+        const lat = nodes[i - 1].lat + t * (nodes[i].lat - nodes[i - 1].lat);
+        const lon = nodes[i - 1].lon + t * (nodes[i].lon - nodes[i - 1].lon);
+        let dx = (nodes[i].lon - nodes[i - 1].lon) * Math.cos((lat * Math.PI) / 180);
+        let dy = nodes[i].lat - nodes[i - 1].lat;
+        if (flowReverse) { dx = -dx; dy = -dy; }
+        const deg = (Math.atan2(-dy, dx) * 180) / Math.PI; // CSS angle, screen y down
+        const el = document.createElement("div");
+        el.className = "trail-flow-arrow";
+        el.style.transform = `rotate(${deg}deg)`;
+        el.textContent = "➤";
+        el.title = `Flow: toward ${flow.direction_toward} at ~${flow.speed_km_per_day} km/day (R²=${flow.consistency})`;
+        trailMarkersRef.current.push(
+          new lib.Marker({ element: el }).setLngLat([lon, lat]).addTo(map)
+        );
+      }
+      // next hub at risk — pulsing warning ring + ETA tag
+      const nxt = flow.next_hub_at_risk;
+      if (nxt) {
+        const ring = document.createElement("div");
+        ring.className = "trail-next-hub";
+        trailMarkersRef.current.push(
+          new lib.Marker({ element: ring }).setLngLat([nxt.lon, nxt.lat]).addTo(map)
+        );
+        const tag = document.createElement("div");
+        tag.className = "trail-tag trail-tag-risk";
+        tag.textContent = `NEXT AT RISK · ${nxt.name.toUpperCase()} · ETA ${nxt.eta_days_min}–${nxt.eta_days_max}d`;
+        trailMarkersRef.current.push(
+          new lib.Marker({ element: tag, anchor: "bottom", offset: [0, -18] })
+            .setLngLat([nxt.lon, nxt.lat])
+            .addTo(map)
+        );
+      }
+    }
 
     // Fly to show the full corridor
     if (lineCoords.length >= 2) {

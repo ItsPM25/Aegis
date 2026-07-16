@@ -239,6 +239,23 @@ export interface TrailSeizure {
   timestamp?: string;
 }
 
+export interface TrailFlow {
+  direction_toward: string;
+  speed_km_per_day: number;
+  consistency: number; // R² of the position-vs-time fit, 0..1
+  basis: string;
+  next_hub_at_risk?: {
+    name: string;
+    lat: number;
+    lon: number;
+    distance_km: number;
+    eta_days_min: number;
+    eta_days_max: number;
+  } | null;
+  origin_consistent?: boolean | null;
+  note?: string;
+}
+
 export interface SupplyTrail {
   schema_version: string;
   trail_id: string;
@@ -253,6 +270,63 @@ export interface SupplyTrail {
   confidence_band: "low" | "medium" | "high";
   evidence: TrailEvidence[];
   disclaimer: string;
+  flow?: TrailFlow | null;
+}
+
+// ── Intelligence layer: plate families + scam campaigns ─────────────────────
+
+export interface PlateFamily {
+  family_id: string;
+  denomination: string;
+  tier: "high" | "probable" | "possible";
+  n_notes: number;
+  shared_defects: string[];
+  districts: string[];
+  span_km: number;
+  first_seen?: string;
+  last_seen?: string;
+  events: { event_id: string; district?: string; lat?: number; lon?: number; timestamp?: string; missing_features: string[] }[];
+  links: { a: string; b: string; tier: string; shared: string[] }[];
+  note: string;
+}
+
+export interface ScamCampaign {
+  campaign_id: string;
+  tier: "high" | "probable" | "possible";
+  n_events: number;
+  scam_type: string;
+  district_spread: string[];
+  phone_numbers: string[];
+  first_seen?: string;
+  last_seen?: string;
+  sample_text: string;
+  events: { event_id: string; district?: string; timestamp?: string; phone_number?: string | null }[];
+  links: { a: string; b: string; tier: string; similarity: number; basis: string[] }[];
+  note: string;
+}
+
+export interface PlateFamiliesResponse {
+  families: PlateFamily[];
+  summary: { n_families: number; n_linked_notes: number; multi_district: number };
+  disclaimer: string;
+}
+
+export interface CampaignsResponse {
+  campaigns: ScamCampaign[];
+  summary: { n_campaigns: number; n_linked_events: number; multi_district: number };
+  disclaimer: string;
+}
+
+export async function fetchPlateFamilies(): Promise<PlateFamiliesResponse> {
+  const r = await fetch(`${API_BASE}/intel/plate-families`);
+  if (!r.ok) throw new Error(`plate-families failed: ${r.status}`);
+  return r.json();
+}
+
+export async function fetchCampaigns(): Promise<CampaignsResponse> {
+  const r = await fetch(`${API_BASE}/intel/campaigns`);
+  if (!r.ok) throw new Error(`campaigns failed: ${r.status}`);
+  return r.json();
 }
 
 export interface SupplyTrailResponse {

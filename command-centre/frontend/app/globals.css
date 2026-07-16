@@ -316,6 +316,50 @@ body {
   }
 }
 
+/* ---------- supply-trail flow markers (arrows, origin/risk tags) ---------- */
+.trail-flow-arrow {
+  color: #fb923c;
+  font-size: 15px;
+  line-height: 1;
+  text-shadow: 0 0 6px rgb(249 115 22 / 0.8), 0 1px 2px rgb(0 0 0 / 0.8);
+  pointer-events: none;
+  user-select: none;
+}
+.trail-tag {
+  white-space: nowrap;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 2px 8px;
+  background: rgb(24 24 27 / 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: none;
+}
+.trail-tag-origin {
+  color: #fed7aa;
+  border: 1px solid rgb(249 115 22 / 0.45);
+}
+.trail-tag-risk {
+  color: #fecaca;
+  border: 1px solid rgb(239 68 68 / 0.5);
+}
+/* pulsing warning ring on the predicted next hub */
+.trail-next-hub {
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  border: 2px solid rgb(239 68 68 / 0.8);
+  box-shadow: 0 0 10px 1px rgb(239 68 68 / 0.4);
+  animation: next-hub-pulse 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes next-hub-pulse {
+  0%, 100% { transform: scale(0.85); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 0.5; }
+}
+
 /* Darkened OSM fallback: when the dark/satellite CDNs are blocked (ad-blocker,
    firewall, region) we fall back to OpenStreetMap and invert the tile canvas so
    it still reads as a dark map. Only the WebGL tile canvas is filtered —
