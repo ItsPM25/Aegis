@@ -104,6 +104,9 @@ export interface Hub {
   lon: number;
   domains: string[];
   cross_domain: boolean;
+  // "coordinated" = all 3 crime types converge (the strongest signal);
+  // "multi_signal" = exactly 2; null = single-domain cluster.
+  tier: "coordinated" | "multi_signal" | null;
   intensity: number;
   district: string | null;
   n_points: number;
