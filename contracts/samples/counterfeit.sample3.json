@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "event_id": "note_seed_03",
+  "timestamp": "2026-07-11T09:05:44Z",
+  "denomination": "500",
+  "verdict": "fake",
+  "confidence": 0.88,
+  "missing_features": ["see_through_register", "color_shifting_ink"],
+  "image_ref": "captures/note_seed_03.jpg",
+  "location_hint": { "district": "Deoghar", "lat": 24.4764, "lon": 86.6944 }
+}

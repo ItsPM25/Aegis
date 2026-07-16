@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "event_id": "note_seed_02",
+  "timestamp": "2026-07-09T14:22:10Z",
+  "denomination": "500",
+  "verdict": "fake",
+  "confidence": 0.94,
+  "missing_features": ["security_thread", "latent_image"],
+  "image_ref": "captures/note_seed_02.jpg",
+  "location_hint": { "district": "Dhanbad", "lat": 23.7957, "lon": 86.4304 }
+}
