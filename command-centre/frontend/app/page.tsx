@@ -39,7 +39,7 @@ export type RingAlert = {
 };
 
 const DEMO_DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = {
-  Jamtara: { lat: 23.795, lon: 86.803 },
+  Jamtara: { lat: 23.963, lon: 86.804 },
   Deoghar: { lat: 24.48, lon: 86.7 },
   Alwar: { lat: 27.55, lon: 76.63 },
   Bharatpur: { lat: 27.22, lon: 77.49 },
@@ -48,6 +48,32 @@ const DEMO_DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = {
   "Mumbai South": { lat: 18.93, lon: 72.83 },
   "Delhi East": { lat: 28.65, lon: 77.3 },
 };
+
+/** Geocode any place name to coordinates via the free, keyless OpenStreetMap
+ *  Nominatim API — so search works for EVERY city, not just the demo districts.
+ *  Biases results toward India first; falls back to a global lookup. */
+async function geocodePlace(
+  query: string,
+): Promise<{ lat: number; lon: number; label: string } | null> {
+  const hit = async (url: string) => {
+    const r = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!r.ok) return null;
+    const rows = (await r.json()) as Array<{ lat: string; lon: string; display_name: string }>;
+    if (!rows.length) return null;
+    const top = rows[0];
+    return {
+      lat: parseFloat(top.lat),
+      lon: parseFloat(top.lon),
+      label: top.display_name.split(",")[0] || query,
+    };
+  };
+  const base = "https://nominatim.openstreetmap.org/search?format=json&limit=1&q=";
+  // India-biased first (countrycodes=in), then unrestricted global fallback.
+  return (
+    (await hit(`${base}${encodeURIComponent(query)}&countrycodes=in`)) ??
+    (await hit(`${base}${encodeURIComponent(query)}`))
+  );
+}
 
 export default function Page() {
   const { data: events, refresh: refreshEvents } = usePolling<EventsResponse>("/api/events", 5000);
@@ -176,22 +202,54 @@ export default function Page() {
     [events, refreshEvents, refreshHotspots]
   );
 
-  const handleSearch = (query: string) => {
-    const districtKey = Object.keys(DEMO_DISTRICT_COORDS).find(k => k.toLowerCase().includes(query.toLowerCase()));
+  const handleSearch = async (query: string) => {
+    const q = query.trim();
+    if (!q) return;
+
+    // 1) A known demo district → fly there AND surface its related alerts.
+    const districtKey = Object.keys(DEMO_DISTRICT_COORDS).find((k) =>
+      k.toLowerCase().includes(q.toLowerCase()),
+    );
     if (districtKey) {
       locate(DEMO_DISTRICT_COORDS[districtKey]);
-      
-      const relatedScams = events?.scams.filter(s => s.location_hint?.district?.toLowerCase().includes(districtKey.toLowerCase()) || districtKey.toLowerCase().includes(s.location_hint?.district?.toLowerCase() || "")) || [];
-      const relatedFakes = events?.counterfeits.filter(c => c.location_hint?.district?.toLowerCase().includes(districtKey.toLowerCase()) || districtKey.toLowerCase().includes(c.location_hint?.district?.toLowerCase() || "")) || [];
-      
+      const dk = districtKey.toLowerCase();
+      const inDistrict = (d?: string) =>
+        !!d && (d.toLowerCase().includes(dk) || dk.includes(d.toLowerCase()));
+      const relatedScams = events?.scams.filter((s) => inDistrict(s.location_hint?.district)) || [];
+      const relatedFakes = events?.counterfeits.filter((c) => inDistrict(c.location_hint?.district)) || [];
+      // Fraud rings carry a district too — include them so a ring-only district
+      // (e.g. Bharatpur) still surfaces its alerts instead of "no alerts".
+      const relatedRings =
+        (events?.fraud_graph?.rings ?? [])
+          .filter((r) => inDistrict(r.district))
+          .map((r) => ({
+            kind: "ring",
+            summary: `${r.label ?? "Fraud ring"} — ${r.size} accounts, risk ${Math.round(
+              (r.risk_score ?? 0) * 100,
+            )}%`,
+          })) || [];
       setCityAlerts({
         district: districtKey,
-        alerts: [...relatedScams, ...relatedFakes]
+        alerts: [...relatedScams, ...relatedFakes, ...relatedRings],
       });
-      // auto-dismiss city alerts panel after 10 seconds
       setTimeout(() => setCityAlerts(null), 10000);
-    } else {
-      pushToast(`Location not found: ${query}`, "error");
+      return;
+    }
+
+    // 2) Any other place → geocode it (free, keyless OSM Nominatim) so search
+    //    works for EVERY city, not just the demo districts. Bias to India but
+    //    fall back to a global lookup so nothing is unreachable.
+    try {
+      const coords = await geocodePlace(q);
+      if (coords) {
+        locate(coords);
+        setCityAlerts({ district: coords.label, alerts: [] });
+        setTimeout(() => setCityAlerts(null), 10000);
+      } else {
+        pushToast(`Location not found: ${q}`, "error");
+      }
+    } catch {
+      pushToast(`Search failed — could not reach the geocoder.`, "error");
     }
   };
 
@@ -212,9 +270,9 @@ export default function Page() {
         onSearch={handleSearch}
       />
 
-      {/* Top right localized alerts panel */}
+      {/* Centered localized alerts panel (from search) */}
       {cityAlerts && (
-        <div className="absolute top-16 right-5 z-40 w-80 rounded-2xl bg-zinc-900/90 backdrop-blur-md border border-zinc-800 shadow-2xl overflow-hidden pointer-events-auto">
+        <div className="absolute left-1/2 top-1/2 z-40 w-80 max-w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-zinc-900/90 backdrop-blur-md border border-zinc-800 shadow-2xl overflow-hidden pointer-events-auto animate-slide-up">
           <div className="bg-zinc-800/50 px-4 py-2 border-b border-zinc-800 flex justify-between items-center">
             <h3 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
@@ -228,7 +286,13 @@ export default function Page() {
             ) : (
               cityAlerts.alerts.map((a, i) => (
                 <div key={i} className="mb-2 p-2 bg-zinc-800/30 rounded-lg border border-zinc-800/50">
-                  <div className="text-xs font-medium text-zinc-200">{a.verdict ? (a.verdict === 'fake' ? 'Counterfeit Note' : 'Scam Call') : 'Alert'}</div>
+                  <div className="text-xs font-medium text-zinc-200">
+                    {a.kind === 'ring'
+                      ? 'Fraud Ring'
+                      : a.verdict
+                      ? (a.verdict === 'fake' ? 'Counterfeit Note' : 'Scam Call')
+                      : 'Alert'}
+                  </div>
                   <div className="text-[10px] text-zinc-500 mt-1">{a.summary || "Suspicious activity detected."}</div>
                 </div>
               ))
