@@ -28,13 +28,33 @@ def _haversine_km(a: dict, b: dict) -> float:
     return 2 * r * math.asin(math.sqrt(h))
 
 
+# The three crime domains. A hub is only truly "coordinated" when ALL THREE
+# converge — that is the strongest, most specific signal (a scam call AND a
+# counterfeit seizure AND a fraud ring in one place). A 2-domain overlap is
+# still a real, reportable multi-signal cluster, but calling it "coordinated"
+# would overstate it — accuracy over drama.
+ALL_DOMAINS = frozenset({"scam", "counterfeit", "fraud_ring"})
+
+
+def hub_tier(domains: list[str]) -> str | None:
+    """The honest label for a hub, by how many crime domains actually converge.
+    coordinated = all 3; multi_signal = exactly 2; None = single-domain cluster."""
+    d = set(domains) & ALL_DOMAINS
+    if len(d) >= 3:
+        return "coordinated"
+    if len(d) == 2:
+        return "multi_signal"
+    return None
+
+
 @dataclass
 class Hub:
     hub_id: str
     lat: float  # centroid
     lon: float
     domains: list[str]  # which signal types converge here
-    cross_domain: bool  # >= 2 distinct domains -> coordinated hub candidate
+    cross_domain: bool  # >= 2 distinct domains (kept for the map's legacy field)
+    tier: str | None  # "coordinated" (all 3) | "multi_signal" (2) | None (1)
     intensity: float  # sum of point weights
     district: str | None
     points: list[dict] = field(default_factory=list)
@@ -46,6 +66,7 @@ class Hub:
             "lon": round(self.lon, 5),
             "domains": self.domains,
             "cross_domain": self.cross_domain,
+            "tier": self.tier,
             "intensity": round(self.intensity, 3),
             "district": self.district,
             "n_points": len(self.points),
@@ -91,6 +112,7 @@ def cluster_hotspots(points: list[dict], eps_km: float = EPS_KM, min_points: int
             continue
         domains = sorted({m["type"] for m in members})
         districts = [m.get("district") for m in members if m.get("district")]
+        tier = hub_tier(domains)
         hubs.append(
             Hub(
                 hub_id=f"hub_{cid + 1:02d}",
@@ -98,11 +120,15 @@ def cluster_hotspots(points: list[dict], eps_km: float = EPS_KM, min_points: int
                 lon=sum(m["lon"] for m in members) / len(members),
                 domains=domains,
                 cross_domain=len(domains) >= 2,
+                tier=tier,
                 intensity=sum(float(m.get("weight", 0.5)) for m in members),
                 district=max(set(districts), key=districts.count) if districts else None,
                 points=members,
             )
         )
-    # cross-domain hubs first, then by intensity — render order for the map
-    hubs.sort(key=lambda h: (not h.cross_domain, -h.intensity))
+    # Render order: fully coordinated hubs (all 3 domains) first, then multi-
+    # signal (2), then single — each tier by intensity. So the truly coordinated
+    # hub always leads, never out-ranked by a bigger 2-domain cluster.
+    _tier_rank = {"coordinated": 0, "multi_signal": 1, None: 2}
+    hubs.sort(key=lambda h: (_tier_rank[h.tier], -h.intensity))
     return hubs
