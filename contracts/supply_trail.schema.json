@@ -92,7 +92,8 @@
               "corridor_snap",
               "corridor_terminus",
               "fir_mention",
-              "transport_gap"
+              "transport_gap",
+              "temporal_flow"
             ]
           },
           "detail": { "type": "string" },
@@ -103,6 +104,33 @@
     },
     "disclaimer": {
       "type": "string"
+    },
+    "flow": {
+      "type": ["object", "null"],
+      "description": "Optional temporal flow analysis: time-ordered seizure positions along the corridor prove direction and speed of movement. A forecast aid, never a claim — requires >=2 time-stamped seizures at distinct corridor positions.",
+      "required": ["direction_toward", "speed_km_per_day", "consistency", "basis"],
+      "additionalProperties": false,
+      "properties": {
+        "direction_toward": { "type": "string", "description": "Corridor node name the flow is moving toward." },
+        "speed_km_per_day": { "type": "number" },
+        "consistency": { "type": "number", "minimum": 0, "maximum": 1, "description": "R² of the position-vs-time fit — how cleanly seizures progress along the corridor." },
+        "basis": { "type": "string" },
+        "next_hub_at_risk": {
+          "type": ["object", "null"],
+          "required": ["name", "lat", "lon", "distance_km", "eta_days_min", "eta_days_max"],
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string" },
+            "lat": { "type": "number" },
+            "lon": { "type": "number" },
+            "distance_km": { "type": "number" },
+            "eta_days_min": { "type": "number" },
+            "eta_days_max": { "type": "number" }
+          }
+        },
+        "origin_consistent": { "type": ["boolean", "null"], "description": "True when the flow direction points away from the inferred origin (independent corroboration)." },
+        "note": { "type": "string" }
+      }
     }
   }
 }
