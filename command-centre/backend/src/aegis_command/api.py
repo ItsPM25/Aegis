@@ -277,6 +277,25 @@ def intel_plate_families() -> dict:
     }
 
 
+@app.get("/intel/campaigns")
+def intel_campaigns() -> dict:
+    """Scam campaign fingerprinting — near-identical scripts and shared
+    callback numbers across districts are ONE operation, not isolated
+    complaints. Deterministic text-overlap clustering; fully auditable."""
+    from .intel import campaign_summary, scam_campaigns
+
+    scams, _, _ = store.snapshot()
+    campaigns = scam_campaigns(scams)
+    return {
+        "campaigns": campaigns,
+        "summary": campaign_summary(campaigns),
+        "disclaimer": (
+            "Script similarity links complaints for investigation — it does not "
+            "by itself prove a common perpetrator."
+        ),
+    }
+
+
 @app.get("/supply-trail")
 def supply_trail(mode: str | None = None) -> dict:
     """Supply Trail — infer counterfeit note provenance along transport corridors.

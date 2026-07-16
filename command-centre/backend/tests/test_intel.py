@@ -69,3 +69,74 @@ def test_events_ordered_by_time_and_links_reported():
     ev = fams[0]["events"]
     assert [e["event_id"] for e in ev] == ["n1", "n2"]  # chronological
     assert fams[0]["links"][0]["tier"] == "high"
+
+
+# ── campaign fingerprinting ──────────────────────────────────────────────────
+
+from aegis_command.intel import scam_campaigns
+
+SCRIPT_A = (
+    "This is Inspector Sharma from CBI. An FIR has been registered against your "
+    "Aadhaar for money laundering. Stay on this video call and do not disconnect."
+)
+SCRIPT_A_VARIANT = (
+    "This is Inspector Sharma from Alwar cyber cell. A money laundering case is "
+    "registered against your Aadhaar. Transfer Rs 49,999 as a refundable deposit."
+)
+SCRIPT_B = "Congratulations! You won the mega lottery jackpot. Claim your prize now."
+
+
+def _scam(eid, text, district, ts, phone=None, verdict="scam"):
+    return {
+        "event_id": eid, "raw_text": text, "verdict": verdict,
+        "scam_type": "digital_arrest", "phone_number": phone,
+        "timestamp": ts, "location_hint": {"district": district},
+    }
+
+
+def test_identical_script_high_tier():
+    camps = scam_campaigns([
+        _scam("s1", SCRIPT_A, "Jamtara", "2026-07-07T10:00:00Z"),
+        _scam("s2", SCRIPT_A, "Deoghar", "2026-07-08T10:00:00Z"),
+    ])
+    assert len(camps) == 1
+    assert camps[0]["tier"] == "high"
+    assert camps[0]["district_spread"] == ["Jamtara", "Deoghar"]  # chronological
+
+
+def test_script_variant_links_as_campaign():
+    """Localized edits of one template still cluster (the real seed data)."""
+    camps = scam_campaigns([
+        _scam("s1", SCRIPT_A, "Jamtara", "2026-07-07T10:00:00Z"),
+        _scam("s2", SCRIPT_A_VARIANT, "Alwar", "2026-07-08T10:00:00Z"),
+    ])
+    assert len(camps) == 1
+    assert camps[0]["tier"] in ("possible", "probable")
+    assert camps[0]["links"][0]["similarity"] > 0.3
+
+
+def test_unrelated_scripts_do_not_link():
+    camps = scam_campaigns([
+        _scam("s1", SCRIPT_A, "Jamtara", "2026-07-07T10:00:00Z"),
+        _scam("s2", SCRIPT_B, "Alwar", "2026-07-08T10:00:00Z"),
+    ])
+    assert camps == []
+
+
+def test_shared_phone_links_even_with_different_scripts():
+    """Same callback device = same operator, whatever the script says."""
+    camps = scam_campaigns([
+        _scam("s1", SCRIPT_A, "Jamtara", "2026-07-07T10:00:00Z", phone="+91-99999"),
+        _scam("s2", SCRIPT_B, "Alwar", "2026-07-08T10:00:00Z", phone="+91-99999"),
+    ])
+    assert len(camps) == 1
+    assert camps[0]["tier"] == "high"
+    assert "phone" in camps[0]["links"][0]["basis"]
+
+
+def test_legit_messages_excluded():
+    camps = scam_campaigns([
+        _scam("s1", SCRIPT_A, "Jamtara", "2026-07-07T10:00:00Z"),
+        _scam("s2", SCRIPT_A, "Deoghar", "2026-07-08T10:00:00Z", verdict="legit"),
+    ])
+    assert camps == []

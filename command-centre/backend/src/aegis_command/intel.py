@@ -162,3 +162,141 @@ def plate_family_summary(families: list[dict]) -> dict[str, Any]:
         "n_linked_notes": sum(f["n_notes"] for f in families),
         "multi_district": sum(1 for f in families if len(f["districts"]) > 1),
     }
+
+
+# ── scam campaign fingerprinting ─────────────────────────────────────────────
+#
+# One gang runs one script. Near-identical scam texts hitting different
+# districts are ONE campaign, not isolated complaints — the same insight
+# phishing-campaign attribution uses. Detection is deterministic (token/bigram
+# overlap + shared callback numbers), so the linkage is auditable.
+#
+#     high      token Jaccard >= 0.7, or the same callback phone number
+#     probable  token Jaccard >= 0.5
+#     possible  token Jaccard >= 0.3 AND >= 3 shared distinctive bigrams
+#               (bigrams guard against generic-word coincidence)
+
+import re as _re
+
+
+def _tokens(text: str) -> frozenset[str]:
+    return frozenset(_re.findall(r"[a-z]{3,}", (text or "").lower()))
+
+
+def _bigrams(text: str) -> frozenset[tuple[str, str]]:
+    ws = _re.findall(r"[a-z]{3,}", (text or "").lower())
+    return frozenset(zip(ws, ws[1:]))
+
+
+def _script_tier(t1: frozenset, t2: frozenset, b1: frozenset, b2: frozenset) -> tuple[str | None, float]:
+    if not t1 or not t2:
+        return None, 0.0
+    jac = len(t1 & t2) / len(t1 | t2)
+    if jac >= 0.7:
+        return "high", jac
+    if jac >= 0.5:
+        return "probable", jac
+    if jac >= 0.3 and len(b1 & b2) >= 3:
+        return "possible", jac
+    return None, jac
+
+
+def scam_campaigns(scams: list[dict]) -> list[dict]:
+    """Cluster non-legit scam events into campaigns (>=2 events each)."""
+    events = [s for s in scams if s.get("verdict") != "legit" and s.get("raw_text")]
+    n = len(events)
+    if n < 2:
+        return []
+    toks = [_tokens(s["raw_text"]) for s in events]
+    bigs = [_bigrams(s["raw_text"]) for s in events]
+    phones = [s.get("phone_number") for s in events]
+
+    parent = list(range(n))
+
+    def find(i: int) -> int:
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    links: list[dict] = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            tier, jac = _script_tier(toks[i], toks[j], bigs[i], bigs[j])
+            basis = []
+            if tier:
+                basis.append("script")
+            if phones[i] and phones[i] == phones[j]:
+                basis.append("phone")
+                tier = "high"  # same callback device = same operator
+            if not basis:
+                continue
+            links.append({
+                "a": events[i].get("event_id"), "b": events[j].get("event_id"),
+                "i": i, "j": j, "tier": tier,
+                "similarity": round(jac, 3), "basis": basis,
+            })
+            ri, rj = find(i), find(j)
+            if ri != rj:
+                parent[ri] = rj
+
+    groups: dict[int, list[int]] = defaultdict(list)
+    for i in range(n):
+        groups[find(i)].append(i)
+
+    campaigns: list[dict] = []
+    for members in groups.values():
+        if len(members) < 2:
+            continue
+        mset = set(members)
+        camp_links = [l for l in links if l["i"] in mset and l["j"] in mset]
+        tier = min((l["tier"] for l in camp_links), key=_TIERS.index)
+        evs = sorted((events[i] for i in members), key=lambda s: s.get("timestamp") or "")
+        # district spread in chronological order — the campaign's movement story
+        spread: list[str] = []
+        for s in evs:
+            d = (s.get("location_hint") or {}).get("district")
+            if d and d not in spread:
+                spread.append(d)
+        camp_phones = sorted({p for i in members if (p := phones[i])})
+        types = [s.get("scam_type") for s in evs if s.get("scam_type")]
+        campaigns.append({
+            "campaign_id": f"campaign_{min(members):02d}",
+            "tier": tier,
+            "n_events": len(evs),
+            "scam_type": max(set(types), key=types.count) if types else "other",
+            "district_spread": spread,
+            "phone_numbers": camp_phones,
+            "first_seen": evs[0].get("timestamp"),
+            "last_seen": evs[-1].get("timestamp"),
+            "sample_text": (evs[0].get("raw_text") or "")[:180],
+            "events": [
+                {
+                    "event_id": s.get("event_id"),
+                    "district": (s.get("location_hint") or {}).get("district"),
+                    "timestamp": s.get("timestamp"),
+                    "phone_number": s.get("phone_number"),
+                }
+                for s in evs
+            ],
+            "links": [
+                {k: v for k, v in l.items() if k not in ("i", "j")}
+                for l in camp_links
+            ],
+            "note": (
+                "Near-identical scripts (and/or a shared callback number) across "
+                "events indicate one operation — an investigative lead for "
+                "consolidating complaints into a single case."
+            ),
+        })
+
+    campaigns.sort(key=lambda c: (_TIERS.index(c["tier"]), -c["n_events"]))
+    return campaigns
+
+
+def campaign_summary(campaigns: list[dict]) -> dict[str, Any]:
+    return {
+        "n_campaigns": len(campaigns),
+        "n_linked_events": sum(c["n_events"] for c in campaigns),
+        "multi_district": sum(1 for c in campaigns if len(c["district_spread"]) > 1),
+    }
