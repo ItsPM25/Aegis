@@ -58,10 +58,17 @@ class EventStore:
         traced = SAMPLES / "scam_detection.sample2.json"
         if traced.exists():
             self.add_scam(json.loads(traced.read_text(encoding="utf-8")))
+        # Seed the three Jharkhand counterfeit detections so Supply Trail has
+        # a cluster to work with from the moment the demo starts.
         self.add_counterfeit(json.loads((SAMPLES / "counterfeit.sample.json").read_text(encoding="utf-8")))
+        for extra in ("counterfeit.sample2.json", "counterfeit.sample3.json"):
+            path = SAMPLES / extra
+            if path.exists():
+                self.add_counterfeit(json.loads(path.read_text(encoding="utf-8")))
         live = REPO_ROOT / "fraud-graph-ml" / "output" / "fraud_graph.json"
         source = live if live.exists() else SAMPLES / "fraud_graph.sample.json"
         self.set_fraud_graph(json.loads(source.read_text(encoding="utf-8")))
+
 
 
 store = EventStore()
