@@ -1,0 +1,13 @@
+[project]
+name = "aegis-supply-trail"
+version = "0.1.0"
+description = "Aegis Supply Trail — counterfeit note provenance inference along transport corridors"
+requires-python = ">=3.11"
+dependencies = []   # pure stdlib + project data files; heavy deps (networkx, sklearn) not needed at demo scale
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aegis_supply_trail"]
