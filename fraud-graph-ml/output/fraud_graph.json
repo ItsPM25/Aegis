@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-16T18:55:53.126799+00:00",
+  "generated_at": "2026-07-17T23:08:26.731993+00:00",
   "model": "graph_features+xgboost",
   "rings": [
     {
@@ -16,7 +16,7 @@
         "acc_02023",
         "acc_02024"
       ],
-      "risk_score": 0.9998,
+      "risk_score": 0.9997,
       "size": 9,
       "total_amount": 8893747.85,
       "label": "round-tripping cycle",
@@ -44,20 +44,20 @@
     {
       "ring_id": "ring_03",
       "account_ids": [
-        "acc_02000",
-        "acc_02001",
-        "acc_02002",
-        "acc_02003",
-        "acc_02004",
-        "acc_02005",
-        "acc_02006",
-        "acc_02007"
+        "acc_02008",
+        "acc_02009",
+        "acc_02010",
+        "acc_02011",
+        "acc_02012",
+        "acc_02013",
+        "acc_02014",
+        "acc_02015"
       ],
-      "risk_score": 0.9826,
+      "risk_score": 0.9893,
       "size": 8,
-      "total_amount": 6771467.1,
-      "label": "layering chain",
-      "district": "Alwar"
+      "total_amount": 211459.48,
+      "label": "mule collection hub",
+      "district": "Chennai Central"
     },
     {
       "ring_id": "ring_04",
@@ -80,6 +80,24 @@
     {
       "ring_id": "ring_05",
       "account_ids": [
+        "acc_02033",
+        "acc_02034",
+        "acc_02035",
+        "acc_02036",
+        "acc_02037",
+        "acc_02038",
+        "acc_02039",
+        "acc_02040"
+      ],
+      "risk_score": 0.9979,
+      "size": 8,
+      "total_amount": 354823.68,
+      "label": "mule collection hub",
+      "district": "Alwar"
+    },
+    {
+      "ring_id": "ring_06",
+      "account_ids": [
         "acc_02041",
         "acc_02042",
         "acc_02043",
@@ -89,31 +107,31 @@
         "acc_02047",
         "acc_02048"
       ],
-      "risk_score": 0.9998,
+      "risk_score": 0.9999,
       "size": 8,
       "total_amount": 2656292.7,
       "label": "round-tripping cycle",
       "district": "Alwar"
     },
     {
-      "ring_id": "ring_06",
+      "ring_id": "ring_07",
       "account_ids": [
-        "acc_02033",
-        "acc_02034",
-        "acc_02035",
-        "acc_02036",
-        "acc_02037",
-        "acc_02038",
-        "acc_02040"
+        "acc_02000",
+        "acc_02001",
+        "acc_02002",
+        "acc_02003",
+        "acc_02004",
+        "acc_02005",
+        "acc_02006"
       ],
-      "risk_score": 0.9991,
+      "risk_score": 0.9989,
       "size": 7,
-      "total_amount": 299597.28,
-      "label": "mule collection hub",
+      "total_amount": 5901619.87,
+      "label": "layering chain",
       "district": "Alwar"
     },
     {
-      "ring_id": "ring_07",
+      "ring_id": "ring_08",
       "account_ids": [
         "acc_02053",
         "acc_02054",
@@ -123,14 +141,30 @@
         "acc_02058",
         "acc_02059"
       ],
-      "risk_score": 0.9988,
+      "risk_score": 0.9915,
       "size": 7,
       "total_amount": 224779.61,
       "label": "mule collection hub",
       "district": "Bharatpur"
     },
     {
-      "ring_id": "ring_08",
+      "ring_id": "ring_09",
+      "account_ids": [
+        "acc_02083",
+        "acc_02084",
+        "acc_02085",
+        "acc_02086",
+        "acc_02087",
+        "acc_02088"
+      ],
+      "risk_score": 0.9999,
+      "size": 6,
+      "total_amount": 7048091.4,
+      "label": "round-tripping cycle",
+      "district": "Jamtara"
+    },
+    {
+      "ring_id": "ring_10",
       "account_ids": [
         "acc_02073",
         "acc_02074",
@@ -138,14 +172,14 @@
         "acc_02076",
         "acc_02077"
       ],
-      "risk_score": 0.9942,
+      "risk_score": 0.9988,
       "size": 5,
       "total_amount": 363445.96,
       "label": "mule collection hub",
       "district": "Deoghar"
     },
     {
-      "ring_id": "ring_09",
+      "ring_id": "ring_11",
       "account_ids": [
         "acc_02078",
         "acc_02079",
@@ -153,49 +187,35 @@
         "acc_02081",
         "acc_02082"
       ],
-      "risk_score": 0.9997,
+      "risk_score": 0.9999,
       "size": 5,
       "total_amount": 2335118.82,
       "label": "round-tripping cycle",
       "district": "Jamtara"
     },
     {
-      "ring_id": "ring_10",
-      "account_ids": [
-        "acc_02008",
-        "acc_02012",
-        "acc_02014",
-        "acc_02015"
-      ],
-      "risk_score": 0.9971,
-      "size": 4,
-      "total_amount": 96027.28,
-      "label": "mule collection hub",
-      "district": "Chennai Central"
-    },
-    {
-      "ring_id": "ring_11",
+      "ring_id": "ring_12",
       "account_ids": [
         "acc_02049",
         "acc_02050",
         "acc_02051",
         "acc_02052"
       ],
-      "risk_score": 0.9994,
+      "risk_score": 0.9984,
       "size": 4,
       "total_amount": 3565913.48,
       "label": "layering chain",
       "district": "Jamtara"
     },
     {
-      "ring_id": "ring_12",
+      "ring_id": "ring_13",
       "account_ids": [
         "acc_02069",
         "acc_02070",
         "acc_02071",
         "acc_02072"
       ],
-      "risk_score": 0.9994,
+      "risk_score": 0.9988,
       "size": 4,
       "total_amount": 3097964.93,
       "label": "layering chain",
@@ -205,10 +225,10 @@
   "accounts": [
     {
       "account_id": "acc_02000",
-      "illicit_probability": 0.9993,
-      "ring_id": "ring_03",
+      "illicit_probability": 0.9938,
+      "ring_id": "ring_07",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
         "out_degree": 4,
@@ -222,10 +242,10 @@
     },
     {
       "account_id": "acc_02001",
-      "illicit_probability": 0.9997,
-      "ring_id": "ring_03",
+      "illicit_probability": 0.9992,
+      "ring_id": "ring_07",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.1,
         "in_degree": 4,
         "out_degree": 3,
@@ -240,9 +260,9 @@
     {
       "account_id": "acc_02002",
       "illicit_probability": 0.9999,
-      "ring_id": "ring_03",
+      "ring_id": "ring_07",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 2,
@@ -257,9 +277,9 @@
     {
       "account_id": "acc_02003",
       "illicit_probability": 0.9999,
-      "ring_id": "ring_03",
+      "ring_id": "ring_07",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 3,
@@ -273,10 +293,10 @@
     },
     {
       "account_id": "acc_02004",
-      "illicit_probability": 0.9999,
-      "ring_id": "ring_03",
+      "illicit_probability": 0.9997,
+      "ring_id": "ring_07",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 5,
@@ -291,9 +311,9 @@
     {
       "account_id": "acc_02005",
       "illicit_probability": 0.9999,
-      "ring_id": "ring_03",
+      "ring_id": "ring_07",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 2,
@@ -308,9 +328,9 @@
     {
       "account_id": "acc_02006",
       "illicit_probability": 0.9999,
-      "ring_id": "ring_03",
+      "ring_id": "ring_07",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 3,
@@ -323,28 +343,11 @@
       }
     },
     {
-      "account_id": "acc_02007",
-      "illicit_probability": 0.8622,
+      "account_id": "acc_02008",
+      "illicit_probability": 0.9896,
       "ring_id": "ring_03",
       "features": {
-        "degree_centrality": 0.001921,
-        "clustering_coefficient": 0.0,
-        "in_degree": 4,
-        "out_degree": 1,
-        "throughput_ratio": 0.0004,
-        "burst_ratio": 0.0,
-        "round_amount_ratio": 0.0,
-        "tx_count": 5,
-        "mule_score": 0.1502,
-        "fan_in_ratio": 0.75
-      }
-    },
-    {
-      "account_id": "acc_02008",
-      "illicit_probability": 0.993,
-      "ring_id": "ring_10",
-      "features": {
-        "degree_centrality": 0.008165,
+        "degree_centrality": 0.008142,
         "clustering_coefficient": 0.0,
         "in_degree": 10,
         "out_degree": 7,
@@ -357,11 +360,62 @@
       }
     },
     {
-      "account_id": "acc_02012",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_10",
+      "account_id": "acc_02009",
+      "illicit_probability": 0.9561,
+      "ring_id": "ring_03",
       "features": {
-        "degree_centrality": 0.000961,
+        "degree_centrality": 0.001916,
+        "clustering_coefficient": 0.0,
+        "in_degree": 4,
+        "out_degree": 0,
+        "throughput_ratio": 0.0,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4,
+        "mule_score": 0.2,
+        "fan_in_ratio": 1.0
+      }
+    },
+    {
+      "account_id": "acc_02010",
+      "illicit_probability": 0.9987,
+      "ring_id": "ring_03",
+      "features": {
+        "degree_centrality": 0.001916,
+        "clustering_coefficient": 0.0,
+        "in_degree": 2,
+        "out_degree": 2,
+        "throughput_ratio": 0.0239,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 4,
+        "mule_score": 0.112,
+        "fan_in_ratio": 0.5
+      }
+    },
+    {
+      "account_id": "acc_02011",
+      "illicit_probability": 0.9985,
+      "ring_id": "ring_03",
+      "features": {
+        "degree_centrality": 0.001437,
+        "clustering_coefficient": 0.0,
+        "in_degree": 2,
+        "out_degree": 1,
+        "throughput_ratio": 0.0472,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 3,
+        "mule_score": 0.1569,
+        "fan_in_ratio": 0.6667
+      }
+    },
+    {
+      "account_id": "acc_02012",
+      "illicit_probability": 0.9987,
+      "ring_id": "ring_03",
+      "features": {
+        "degree_centrality": 0.000958,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
         "out_degree": 1,
@@ -374,11 +428,28 @@
       }
     },
     {
-      "account_id": "acc_02014",
-      "illicit_probability": 0.9965,
-      "ring_id": "ring_10",
+      "account_id": "acc_02013",
+      "illicit_probability": 0.9799,
+      "ring_id": "ring_03",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
+        "clustering_coefficient": 0.0,
+        "in_degree": 2,
+        "out_degree": 1,
+        "throughput_ratio": 0.0221,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 3,
+        "mule_score": 0.1444,
+        "fan_in_ratio": 0.6667
+      }
+    },
+    {
+      "account_id": "acc_02014",
+      "illicit_probability": 0.9958,
+      "ring_id": "ring_03",
+      "features": {
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
         "out_degree": 2,
@@ -392,10 +463,10 @@
     },
     {
       "account_id": "acc_02015",
-      "illicit_probability": 0.9994,
-      "ring_id": "ring_10",
+      "illicit_probability": 0.9973,
+      "ring_id": "ring_03",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 2,
@@ -409,10 +480,10 @@
     },
     {
       "account_id": "acc_02016",
-      "illicit_probability": 0.9997,
+      "illicit_probability": 0.9998,
       "ring_id": "ring_01",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
         "out_degree": 3,
@@ -426,10 +497,10 @@
     },
     {
       "account_id": "acc_02017",
-      "illicit_probability": 0.9998,
+      "illicit_probability": 0.9996,
       "ring_id": "ring_01",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 5,
@@ -443,10 +514,10 @@
     },
     {
       "account_id": "acc_02018",
-      "illicit_probability": 0.9999,
+      "illicit_probability": 0.9998,
       "ring_id": "ring_01",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 3,
@@ -460,10 +531,10 @@
     },
     {
       "account_id": "acc_02019",
-      "illicit_probability": 0.9996,
+      "illicit_probability": 0.9995,
       "ring_id": "ring_01",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 5,
@@ -480,7 +551,7 @@
       "illicit_probability": 0.9998,
       "ring_id": "ring_01",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 4,
@@ -494,10 +565,10 @@
     },
     {
       "account_id": "acc_02021",
-      "illicit_probability": 0.9998,
+      "illicit_probability": 0.9997,
       "ring_id": "ring_01",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 5,
@@ -511,10 +582,10 @@
     },
     {
       "account_id": "acc_02022",
-      "illicit_probability": 0.9997,
+      "illicit_probability": 0.9998,
       "ring_id": "ring_01",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
         "out_degree": 3,
@@ -528,10 +599,10 @@
     },
     {
       "account_id": "acc_02023",
-      "illicit_probability": 0.9997,
+      "illicit_probability": 0.9998,
       "ring_id": "ring_01",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
         "out_degree": 3,
@@ -545,10 +616,10 @@
     },
     {
       "account_id": "acc_02024",
-      "illicit_probability": 0.9998,
+      "illicit_probability": 0.9996,
       "ring_id": "ring_01",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 6,
@@ -562,10 +633,10 @@
     },
     {
       "account_id": "acc_02025",
-      "illicit_probability": 0.9993,
+      "illicit_probability": 0.9987,
       "ring_id": "ring_04",
       "features": {
-        "degree_centrality": 0.000961,
+        "degree_centrality": 0.000958,
         "clustering_coefficient": 0.0,
         "in_degree": 0,
         "out_degree": 3,
@@ -582,7 +653,7 @@
       "illicit_probability": 0.9998,
       "ring_id": "ring_04",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 3,
@@ -596,10 +667,10 @@
     },
     {
       "account_id": "acc_02027",
-      "illicit_probability": 0.9999,
+      "illicit_probability": 0.9998,
       "ring_id": "ring_04",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 3,
@@ -616,7 +687,7 @@
       "illicit_probability": 0.9999,
       "ring_id": "ring_04",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 3,
@@ -633,7 +704,7 @@
       "illicit_probability": 0.9999,
       "ring_id": "ring_04",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 4,
@@ -650,7 +721,7 @@
       "illicit_probability": 0.9999,
       "ring_id": "ring_04",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
         "out_degree": 2,
@@ -667,7 +738,7 @@
       "illicit_probability": 0.9999,
       "ring_id": "ring_04",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 4,
@@ -681,10 +752,10 @@
     },
     {
       "account_id": "acc_02032",
-      "illicit_probability": 0.9977,
+      "illicit_probability": 0.998,
       "ring_id": "ring_04",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 1,
@@ -698,10 +769,10 @@
     },
     {
       "account_id": "acc_02033",
-      "illicit_probability": 0.9976,
-      "ring_id": "ring_06",
+      "illicit_probability": 0.9981,
+      "ring_id": "ring_05",
       "features": {
-        "degree_centrality": 0.011527,
+        "degree_centrality": 0.011494,
         "clustering_coefficient": 0.0,
         "in_degree": 17,
         "out_degree": 7,
@@ -715,10 +786,10 @@
     },
     {
       "account_id": "acc_02034",
-      "illicit_probability": 0.9992,
-      "ring_id": "ring_06",
+      "illicit_probability": 0.9991,
+      "ring_id": "ring_05",
       "features": {
-        "degree_centrality": 0.000961,
+        "degree_centrality": 0.000958,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 0,
@@ -732,10 +803,10 @@
     },
     {
       "account_id": "acc_02035",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_06",
+      "illicit_probability": 0.9992,
+      "ring_id": "ring_05",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 1,
@@ -749,10 +820,10 @@
     },
     {
       "account_id": "acc_02036",
-      "illicit_probability": 0.9995,
-      "ring_id": "ring_06",
+      "illicit_probability": 0.9927,
+      "ring_id": "ring_05",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
         "out_degree": 3,
@@ -766,10 +837,10 @@
     },
     {
       "account_id": "acc_02037",
-      "illicit_probability": 0.9983,
-      "ring_id": "ring_06",
+      "illicit_probability": 0.9984,
+      "ring_id": "ring_05",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 2,
@@ -783,10 +854,10 @@
     },
     {
       "account_id": "acc_02038",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_06",
+      "illicit_probability": 0.9995,
+      "ring_id": "ring_05",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 2,
@@ -799,11 +870,28 @@
       }
     },
     {
-      "account_id": "acc_02040",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_06",
+      "account_id": "acc_02039",
+      "illicit_probability": 0.9972,
+      "ring_id": "ring_05",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.000958,
+        "clustering_coefficient": 0.0,
+        "in_degree": 1,
+        "out_degree": 1,
+        "throughput_ratio": 0.055,
+        "burst_ratio": 0.0,
+        "round_amount_ratio": 0.0,
+        "tx_count": 2,
+        "mule_score": 0.1275,
+        "fan_in_ratio": 0.5
+      }
+    },
+    {
+      "account_id": "acc_02040",
+      "illicit_probability": 0.9993,
+      "ring_id": "ring_05",
+      "features": {
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 2,
@@ -817,10 +905,10 @@
     },
     {
       "account_id": "acc_02041",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_05",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_06",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 4,
@@ -834,10 +922,10 @@
     },
     {
       "account_id": "acc_02042",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_05",
+      "illicit_probability": 1.0,
+      "ring_id": "ring_06",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 2,
@@ -852,9 +940,9 @@
     {
       "account_id": "acc_02043",
       "illicit_probability": 0.9999,
-      "ring_id": "ring_05",
+      "ring_id": "ring_06",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 3,
@@ -868,10 +956,10 @@
     },
     {
       "account_id": "acc_02044",
-      "illicit_probability": 0.9995,
-      "ring_id": "ring_05",
+      "illicit_probability": 1.0,
+      "ring_id": "ring_06",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 2,
@@ -885,10 +973,10 @@
     },
     {
       "account_id": "acc_02045",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_05",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_06",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 4,
@@ -902,10 +990,10 @@
     },
     {
       "account_id": "acc_02046",
-      "illicit_probability": 0.9996,
-      "ring_id": "ring_05",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_06",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 3,
@@ -919,10 +1007,10 @@
     },
     {
       "account_id": "acc_02047",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_05",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_06",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 4,
@@ -936,10 +1024,10 @@
     },
     {
       "account_id": "acc_02048",
-      "illicit_probability": 0.9999,
-      "ring_id": "ring_05",
+      "illicit_probability": 1.0,
+      "ring_id": "ring_06",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 2,
@@ -953,10 +1041,10 @@
     },
     {
       "account_id": "acc_02049",
-      "illicit_probability": 0.9992,
-      "ring_id": "ring_11",
+      "illicit_probability": 0.999,
+      "ring_id": "ring_12",
       "features": {
-        "degree_centrality": 0.000961,
+        "degree_centrality": 0.000958,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
         "out_degree": 2,
@@ -971,9 +1059,9 @@
     {
       "account_id": "acc_02050",
       "illicit_probability": 0.9998,
-      "ring_id": "ring_11",
+      "ring_id": "ring_12",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 3,
@@ -987,10 +1075,10 @@
     },
     {
       "account_id": "acc_02051",
-      "illicit_probability": 0.9999,
-      "ring_id": "ring_11",
+      "illicit_probability": 0.9998,
+      "ring_id": "ring_12",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 4,
@@ -1004,10 +1092,10 @@
     },
     {
       "account_id": "acc_02052",
-      "illicit_probability": 0.9987,
-      "ring_id": "ring_11",
+      "illicit_probability": 0.9948,
+      "ring_id": "ring_12",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 1,
@@ -1021,10 +1109,10 @@
     },
     {
       "account_id": "acc_02053",
-      "illicit_probability": 0.9988,
-      "ring_id": "ring_07",
+      "illicit_probability": 0.9984,
+      "ring_id": "ring_08",
       "features": {
-        "degree_centrality": 0.007685,
+        "degree_centrality": 0.007663,
         "clustering_coefficient": 0.0,
         "in_degree": 9,
         "out_degree": 7,
@@ -1038,10 +1126,10 @@
     },
     {
       "account_id": "acc_02054",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_07",
+      "illicit_probability": 0.9995,
+      "ring_id": "ring_08",
       "features": {
-        "degree_centrality": 0.000961,
+        "degree_centrality": 0.000958,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 0,
@@ -1055,10 +1143,10 @@
     },
     {
       "account_id": "acc_02055",
-      "illicit_probability": 0.9968,
-      "ring_id": "ring_07",
+      "illicit_probability": 0.965,
+      "ring_id": "ring_08",
       "features": {
-        "degree_centrality": 0.000961,
+        "degree_centrality": 0.000958,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 0,
@@ -1072,10 +1160,10 @@
     },
     {
       "account_id": "acc_02056",
-      "illicit_probability": 0.9978,
-      "ring_id": "ring_07",
+      "illicit_probability": 0.9824,
+      "ring_id": "ring_08",
       "features": {
-        "degree_centrality": 0.000961,
+        "degree_centrality": 0.000958,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 0,
@@ -1089,10 +1177,10 @@
     },
     {
       "account_id": "acc_02057",
-      "illicit_probability": 0.9996,
-      "ring_id": "ring_07",
+      "illicit_probability": 0.9988,
+      "ring_id": "ring_08",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 0,
@@ -1106,10 +1194,10 @@
     },
     {
       "account_id": "acc_02058",
-      "illicit_probability": 0.9993,
-      "ring_id": "ring_07",
+      "illicit_probability": 0.9985,
+      "ring_id": "ring_08",
       "features": {
-        "degree_centrality": 0.000961,
+        "degree_centrality": 0.000958,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 0,
@@ -1123,10 +1211,10 @@
     },
     {
       "account_id": "acc_02059",
-      "illicit_probability": 0.9995,
-      "ring_id": "ring_07",
+      "illicit_probability": 0.9981,
+      "ring_id": "ring_08",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 2,
@@ -1140,10 +1228,10 @@
     },
     {
       "account_id": "acc_02060",
-      "illicit_probability": 0.9989,
+      "illicit_probability": 0.9992,
       "ring_id": "ring_02",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 6,
@@ -1157,10 +1245,10 @@
     },
     {
       "account_id": "acc_02061",
-      "illicit_probability": 0.9998,
+      "illicit_probability": 0.9994,
       "ring_id": "ring_02",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
         "out_degree": 6,
@@ -1174,10 +1262,10 @@
     },
     {
       "account_id": "acc_02062",
-      "illicit_probability": 0.9996,
+      "illicit_probability": 0.9995,
       "ring_id": "ring_02",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 5,
@@ -1194,7 +1282,7 @@
       "illicit_probability": 0.9995,
       "ring_id": "ring_02",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 5,
@@ -1208,10 +1296,10 @@
     },
     {
       "account_id": "acc_02064",
-      "illicit_probability": 0.9996,
+      "illicit_probability": 0.9995,
       "ring_id": "ring_02",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
         "out_degree": 5,
@@ -1225,10 +1313,10 @@
     },
     {
       "account_id": "acc_02065",
-      "illicit_probability": 0.9993,
+      "illicit_probability": 0.9996,
       "ring_id": "ring_02",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 5,
@@ -1242,10 +1330,10 @@
     },
     {
       "account_id": "acc_02066",
-      "illicit_probability": 0.9996,
+      "illicit_probability": 0.9995,
       "ring_id": "ring_02",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 5,
@@ -1259,10 +1347,10 @@
     },
     {
       "account_id": "acc_02067",
-      "illicit_probability": 0.9996,
+      "illicit_probability": 0.9995,
       "ring_id": "ring_02",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
         "out_degree": 5,
@@ -1276,10 +1364,10 @@
     },
     {
       "account_id": "acc_02068",
-      "illicit_probability": 0.9996,
+      "illicit_probability": 0.9997,
       "ring_id": "ring_02",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
         "out_degree": 4,
@@ -1293,10 +1381,10 @@
     },
     {
       "account_id": "acc_02069",
-      "illicit_probability": 0.9989,
-      "ring_id": "ring_12",
+      "illicit_probability": 0.9984,
+      "ring_id": "ring_13",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
         "out_degree": 4,
@@ -1310,10 +1398,10 @@
     },
     {
       "account_id": "acc_02070",
-      "illicit_probability": 0.9999,
-      "ring_id": "ring_12",
+      "illicit_probability": 0.9998,
+      "ring_id": "ring_13",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 3,
@@ -1327,10 +1415,10 @@
     },
     {
       "account_id": "acc_02071",
-      "illicit_probability": 0.9999,
-      "ring_id": "ring_12",
+      "illicit_probability": 0.9998,
+      "ring_id": "ring_13",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
         "out_degree": 3,
@@ -1344,10 +1432,10 @@
     },
     {
       "account_id": "acc_02072",
-      "illicit_probability": 0.9992,
-      "ring_id": "ring_12",
+      "illicit_probability": 0.9971,
+      "ring_id": "ring_13",
       "features": {
-        "degree_centrality": 0.000961,
+        "degree_centrality": 0.000958,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 1,
@@ -1361,10 +1449,10 @@
     },
     {
       "account_id": "acc_02073",
-      "illicit_probability": 0.9988,
-      "ring_id": "ring_08",
+      "illicit_probability": 0.9995,
+      "ring_id": "ring_10",
       "features": {
-        "degree_centrality": 0.011047,
+        "degree_centrality": 0.011015,
         "clustering_coefficient": 0.0,
         "in_degree": 18,
         "out_degree": 5,
@@ -1378,10 +1466,10 @@
     },
     {
       "account_id": "acc_02074",
-      "illicit_probability": 0.9966,
-      "ring_id": "ring_08",
+      "illicit_probability": 0.9993,
+      "ring_id": "ring_10",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 1,
@@ -1395,10 +1483,10 @@
     },
     {
       "account_id": "acc_02075",
-      "illicit_probability": 0.9816,
-      "ring_id": "ring_08",
+      "illicit_probability": 0.9986,
+      "ring_id": "ring_10",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 3,
         "out_degree": 1,
@@ -1412,10 +1500,10 @@
     },
     {
       "account_id": "acc_02076",
-      "illicit_probability": 0.9947,
-      "ring_id": "ring_08",
+      "illicit_probability": 0.9973,
+      "ring_id": "ring_10",
       "features": {
-        "degree_centrality": 0.000961,
+        "degree_centrality": 0.000958,
         "clustering_coefficient": 0.0,
         "in_degree": 2,
         "out_degree": 0,
@@ -1429,10 +1517,10 @@
     },
     {
       "account_id": "acc_02077",
-      "illicit_probability": 0.9995,
-      "ring_id": "ring_08",
+      "illicit_probability": 0.9996,
+      "ring_id": "ring_10",
       "features": {
-        "degree_centrality": 0.000961,
+        "degree_centrality": 0.000958,
         "clustering_coefficient": 0.0,
         "in_degree": 1,
         "out_degree": 1,
@@ -1446,10 +1534,10 @@
     },
     {
       "account_id": "acc_02078",
-      "illicit_probability": 0.9996,
-      "ring_id": "ring_09",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_11",
       "features": {
-        "degree_centrality": 0.002402,
+        "degree_centrality": 0.002395,
         "clustering_coefficient": 0.0,
         "in_degree": 5,
         "out_degree": 4,
@@ -1463,10 +1551,10 @@
     },
     {
       "account_id": "acc_02079",
-      "illicit_probability": 0.9997,
-      "ring_id": "ring_09",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_11",
       "features": {
-        "degree_centrality": 0.001921,
+        "degree_centrality": 0.001916,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 4,
@@ -1480,10 +1568,10 @@
     },
     {
       "account_id": "acc_02080",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_09",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_11",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 3,
@@ -1497,10 +1585,10 @@
     },
     {
       "account_id": "acc_02081",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_09",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_11",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 3,
@@ -1514,10 +1602,10 @@
     },
     {
       "account_id": "acc_02082",
-      "illicit_probability": 0.9998,
-      "ring_id": "ring_09",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_11",
       "features": {
-        "degree_centrality": 0.001441,
+        "degree_centrality": 0.001437,
         "clustering_coefficient": 0.0,
         "in_degree": 4,
         "out_degree": 3,
@@ -1527,6 +1615,108 @@
         "tx_count": 7,
         "mule_score": 0.6281,
         "fan_in_ratio": 0.6667
+      }
+    },
+    {
+      "account_id": "acc_02083",
+      "illicit_probability": 0.9998,
+      "ring_id": "ring_09",
+      "features": {
+        "degree_centrality": 0.000958,
+        "clustering_coefficient": 0.0,
+        "in_degree": 3,
+        "out_degree": 3,
+        "throughput_ratio": 0.9039,
+        "burst_ratio": 0.8333,
+        "round_amount_ratio": 0.1667,
+        "tx_count": 6,
+        "mule_score": 0.802,
+        "fan_in_ratio": 0.5
+      }
+    },
+    {
+      "account_id": "acc_02084",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_09",
+      "features": {
+        "degree_centrality": 0.000958,
+        "clustering_coefficient": 0.0,
+        "in_degree": 3,
+        "out_degree": 3,
+        "throughput_ratio": 0.98,
+        "burst_ratio": 0.8333,
+        "round_amount_ratio": 0.1667,
+        "tx_count": 6,
+        "mule_score": 0.84,
+        "fan_in_ratio": 0.5
+      }
+    },
+    {
+      "account_id": "acc_02085",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_09",
+      "features": {
+        "degree_centrality": 0.000958,
+        "clustering_coefficient": 0.0,
+        "in_degree": 3,
+        "out_degree": 3,
+        "throughput_ratio": 0.98,
+        "burst_ratio": 0.8333,
+        "round_amount_ratio": 0.0,
+        "tx_count": 6,
+        "mule_score": 0.84,
+        "fan_in_ratio": 0.5
+      }
+    },
+    {
+      "account_id": "acc_02086",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_09",
+      "features": {
+        "degree_centrality": 0.000958,
+        "clustering_coefficient": 0.0,
+        "in_degree": 3,
+        "out_degree": 3,
+        "throughput_ratio": 0.98,
+        "burst_ratio": 0.8333,
+        "round_amount_ratio": 0.0,
+        "tx_count": 6,
+        "mule_score": 0.84,
+        "fan_in_ratio": 0.5
+      }
+    },
+    {
+      "account_id": "acc_02087",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_09",
+      "features": {
+        "degree_centrality": 0.000958,
+        "clustering_coefficient": 0.0,
+        "in_degree": 3,
+        "out_degree": 3,
+        "throughput_ratio": 0.98,
+        "burst_ratio": 0.8333,
+        "round_amount_ratio": 0.0,
+        "tx_count": 6,
+        "mule_score": 0.84,
+        "fan_in_ratio": 0.5
+      }
+    },
+    {
+      "account_id": "acc_02088",
+      "illicit_probability": 0.9999,
+      "ring_id": "ring_09",
+      "features": {
+        "degree_centrality": 0.000958,
+        "clustering_coefficient": 0.0,
+        "in_degree": 3,
+        "out_degree": 3,
+        "throughput_ratio": 0.98,
+        "burst_ratio": 0.8333,
+        "round_amount_ratio": 0.0,
+        "tx_count": 6,
+        "mule_score": 0.84,
+        "fan_in_ratio": 0.5
       }
     }
   ],
@@ -1584,12 +1774,6 @@
       "target": "acc_02006",
       "amount": 502531.27,
       "timestamp": "2026-06-04T02:40:00.571623+00:00"
-    },
-    {
-      "source": "acc_02006",
-      "target": "acc_02007",
-      "amount": 488633.36,
-      "timestamp": "2026-06-04T00:46:59.949006+00:00"
     },
     {
       "source": "acc_02000",
@@ -1652,10 +1836,46 @@
       "timestamp": "2026-06-05T00:41:43.174601+00:00"
     },
     {
+      "source": "acc_02083",
+      "target": "acc_02084",
+      "amount": 420000.0,
+      "timestamp": "2026-07-17T23:08:00+00:00"
+    },
+    {
       "source": "acc_02004",
       "target": "acc_02005",
       "amount": 419568.53,
       "timestamp": "2026-06-05T00:51:43.174601+00:00"
+    },
+    {
+      "source": "acc_02084",
+      "target": "acc_02085",
+      "amount": 411600.0,
+      "timestamp": "2026-07-17T23:12:00+00:00"
+    },
+    {
+      "source": "acc_02083",
+      "target": "acc_02084",
+      "amount": 411600.0,
+      "timestamp": "2026-07-17T23:38:00+00:00"
+    },
+    {
+      "source": "acc_02085",
+      "target": "acc_02086",
+      "amount": 403368.0,
+      "timestamp": "2026-07-17T23:16:00+00:00"
+    },
+    {
+      "source": "acc_02084",
+      "target": "acc_02085",
+      "amount": 403368.0,
+      "timestamp": "2026-07-17T23:42:00+00:00"
+    },
+    {
+      "source": "acc_02083",
+      "target": "acc_02084",
+      "amount": 403200.0,
+      "timestamp": "2026-07-18T00:08:00+00:00"
     },
     {
       "source": "acc_02025",
@@ -1676,22 +1896,88 @@
       "timestamp": "2026-06-23T00:56:00.848477+00:00"
     },
     {
+      "source": "acc_02086",
+      "target": "acc_02087",
+      "amount": 395300.64,
+      "timestamp": "2026-07-17T23:20:00+00:00"
+    },
+    {
+      "source": "acc_02085",
+      "target": "acc_02086",
+      "amount": 395300.64,
+      "timestamp": "2026-07-17T23:46:00+00:00"
+    },
+    {
+      "source": "acc_02084",
+      "target": "acc_02085",
+      "amount": 395136.0,
+      "timestamp": "2026-07-18T00:12:00+00:00"
+    },
+    {
+      "source": "acc_02086",
+      "target": "acc_02087",
+      "amount": 387394.63,
+      "timestamp": "2026-07-17T23:50:00+00:00"
+    },
+    {
+      "source": "acc_02087",
+      "target": "acc_02088",
+      "amount": 387394.63,
+      "timestamp": "2026-07-17T23:24:00+00:00"
+    },
+    {
+      "source": "acc_02085",
+      "target": "acc_02086",
+      "amount": 387233.28,
+      "timestamp": "2026-07-18T00:16:00+00:00"
+    },
+    {
       "source": "acc_02027",
       "target": "acc_02028",
       "amount": 385032.13,
       "timestamp": "2026-06-23T01:06:00.848477+00:00"
     },
     {
-      "source": "acc_02006",
-      "target": "acc_02007",
-      "amount": 381213.87,
-      "timestamp": "2026-06-05T01:11:43.174601+00:00"
+      "source": "acc_02087",
+      "target": "acc_02088",
+      "amount": 379646.73,
+      "timestamp": "2026-07-17T23:54:00+00:00"
+    },
+    {
+      "source": "acc_02088",
+      "target": "acc_02083",
+      "amount": 379646.73,
+      "timestamp": "2026-07-17T23:28:00+00:00"
+    },
+    {
+      "source": "acc_02086",
+      "target": "acc_02087",
+      "amount": 379488.61,
+      "timestamp": "2026-07-18T00:20:00+00:00"
+    },
+    {
+      "source": "acc_02088",
+      "target": "acc_02083",
+      "amount": 372053.8,
+      "timestamp": "2026-07-17T23:58:00+00:00"
+    },
+    {
+      "source": "acc_02087",
+      "target": "acc_02088",
+      "amount": 371898.84,
+      "timestamp": "2026-07-18T00:24:00+00:00"
     },
     {
       "source": "acc_02028",
       "target": "acc_02029",
       "amount": 368084.93,
       "timestamp": "2026-06-23T01:16:00.848477+00:00"
+    },
+    {
+      "source": "acc_02088",
+      "target": "acc_02083",
+      "amount": 364460.87,
+      "timestamp": "2026-07-18T00:28:00+00:00"
     },
     {
       "source": "acc_02025",
@@ -2385,6 +2671,12 @@
     },
     {
       "source": "acc_02033",
+      "target": "acc_02039",
+      "amount": 55226.4,
+      "timestamp": "2026-06-28T07:31:25.798895+00:00"
+    },
+    {
+      "source": "acc_02033",
       "target": "acc_02037",
       "amount": 54782.66,
       "timestamp": "2026-06-27T21:07:27.776336+00:00"
@@ -2457,6 +2749,12 @@
     },
     {
       "source": "acc_02008",
+      "target": "acc_02010",
+      "amount": 34645.87,
+      "timestamp": "2026-06-22T13:07:16.331473+00:00"
+    },
+    {
+      "source": "acc_02008",
       "target": "acc_02014",
       "amount": 32820.73,
       "timestamp": "2026-06-22T09:53:39.259445+00:00"
@@ -2468,10 +2766,22 @@
       "timestamp": "2026-06-22T09:25:22.096769+00:00"
     },
     {
-      "source": "acc_01742",
-      "target": "acc_02033",
-      "amount": 50000.0,
-      "timestamp": "2026-06-25T21:04:26.498799+00:00"
+      "source": "acc_02008",
+      "target": "acc_02011",
+      "amount": 27733.2,
+      "timestamp": "2026-06-21T14:26:41.199468+00:00"
+    },
+    {
+      "source": "acc_02008",
+      "target": "acc_02009",
+      "amount": 26792.28,
+      "timestamp": "2026-06-21T20:21:27.971499+00:00"
+    },
+    {
+      "source": "acc_02008",
+      "target": "acc_02013",
+      "amount": 26260.85,
+      "timestamp": "2026-06-21T22:11:01.910700+00:00"
     },
     {
       "source": "acc_01801",
@@ -2480,34 +2790,16 @@
       "timestamp": "2026-06-25T17:50:33.184823+00:00"
     },
     {
-      "source": "acc_00075",
-      "target": "acc_02073",
-      "amount": 50000.0,
-      "timestamp": "2026-06-17T18:54:51.840492+00:00"
-    },
-    {
-      "source": "acc_00427",
-      "target": "acc_02053",
-      "amount": 50000.0,
-      "timestamp": "2026-06-20T20:26:56.211774+00:00"
-    },
-    {
-      "source": "acc_00246",
-      "target": "acc_02053",
-      "amount": 50000.0,
-      "timestamp": "2026-06-19T22:23:57.491669+00:00"
-    },
-    {
       "source": "acc_00523",
       "target": "acc_02073",
       "amount": 50000.0,
       "timestamp": "2026-06-19T09:28:49.918383+00:00"
     },
     {
-      "source": "acc_00800",
-      "target": "acc_02073",
+      "source": "acc_01742",
+      "target": "acc_02033",
       "amount": 50000.0,
-      "timestamp": "2026-06-19T15:17:08.504256+00:00"
+      "timestamp": "2026-06-25T21:04:26.498799+00:00"
     },
     {
       "source": "acc_01763",
@@ -2516,10 +2808,28 @@
       "timestamp": "2026-06-17T19:11:45.917021+00:00"
     },
     {
-      "source": "acc_01248",
+      "source": "acc_00800",
+      "target": "acc_02073",
+      "amount": 50000.0,
+      "timestamp": "2026-06-19T15:17:08.504256+00:00"
+    },
+    {
+      "source": "acc_00427",
       "target": "acc_02053",
-      "amount": 49999.0,
-      "timestamp": "2026-06-21T17:51:53.954296+00:00"
+      "amount": 50000.0,
+      "timestamp": "2026-06-20T20:26:56.211774+00:00"
+    },
+    {
+      "source": "acc_00075",
+      "target": "acc_02073",
+      "amount": 50000.0,
+      "timestamp": "2026-06-17T18:54:51.840492+00:00"
+    },
+    {
+      "source": "acc_00246",
+      "target": "acc_02053",
+      "amount": 50000.0,
+      "timestamp": "2026-06-19T22:23:57.491669+00:00"
     },
     {
       "source": "acc_01439",
@@ -2528,10 +2838,16 @@
       "timestamp": "2026-06-21T11:56:01.878182+00:00"
     },
     {
-      "source": "acc_00742",
+      "source": "acc_00379",
       "target": "acc_02033",
       "amount": 49999.0,
-      "timestamp": "2026-06-27T04:07:19.728104+00:00"
+      "timestamp": "2026-06-26T05:45:11.699703+00:00"
+    },
+    {
+      "source": "acc_01248",
+      "target": "acc_02053",
+      "amount": 49999.0,
+      "timestamp": "2026-06-21T17:51:53.954296+00:00"
     },
     {
       "source": "acc_01148",
@@ -2540,10 +2856,10 @@
       "timestamp": "2026-06-24T16:04:22.185157+00:00"
     },
     {
-      "source": "acc_00379",
+      "source": "acc_00742",
       "target": "acc_02033",
       "amount": 49999.0,
-      "timestamp": "2026-06-26T05:45:11.699703+00:00"
+      "timestamp": "2026-06-27T04:07:19.728104+00:00"
     },
     {
       "source": "acc_00488",
@@ -2552,16 +2868,16 @@
       "timestamp": "2026-06-19T15:27:37.912798+00:00"
     },
     {
+      "source": "acc_01023",
+      "target": "acc_02073",
+      "amount": 25000.0,
+      "timestamp": "2026-06-19T23:06:49.029967+00:00"
+    },
+    {
       "source": "acc_00287",
       "target": "acc_02033",
       "amount": 25000.0,
       "timestamp": "2026-06-24T23:14:47.012063+00:00"
-    },
-    {
-      "source": "acc_01670",
-      "target": "acc_02073",
-      "amount": 25000.0,
-      "timestamp": "2026-06-19T11:05:28.859758+00:00"
     },
     {
       "source": "acc_00243",
@@ -2570,10 +2886,10 @@
       "timestamp": "2026-06-21T02:55:22.298415+00:00"
     },
     {
-      "source": "acc_01023",
+      "source": "acc_01670",
       "target": "acc_02073",
       "amount": 25000.0,
-      "timestamp": "2026-06-19T23:06:49.029967+00:00"
+      "timestamp": "2026-06-19T11:05:28.859758+00:00"
     },
     {
       "source": "acc_01259",
@@ -2582,10 +2898,10 @@
       "timestamp": "2026-06-17T11:12:12.473053+00:00"
     },
     {
-      "source": "acc_01532",
-      "target": "acc_02053",
+      "source": "acc_01915",
+      "target": "acc_02033",
       "amount": 24999.0,
-      "timestamp": "2026-06-21T02:27:24.775824+00:00"
+      "timestamp": "2026-06-25T23:02:23.850324+00:00"
     },
     {
       "source": "acc_00578",
@@ -2594,10 +2910,10 @@
       "timestamp": "2026-06-19T19:25:47.884168+00:00"
     },
     {
-      "source": "acc_01915",
+      "source": "acc_01088",
       "target": "acc_02033",
       "amount": 24999.0,
-      "timestamp": "2026-06-25T23:02:23.850324+00:00"
+      "timestamp": "2026-06-26T19:07:48.875588+00:00"
     },
     {
       "source": "acc_00175",
@@ -2606,16 +2922,10 @@
       "timestamp": "2026-06-17T14:28:56.300734+00:00"
     },
     {
-      "source": "acc_01088",
-      "target": "acc_02033",
+      "source": "acc_01532",
+      "target": "acc_02053",
       "amount": 24999.0,
-      "timestamp": "2026-06-26T19:07:48.875588+00:00"
-    },
-    {
-      "source": "acc_00693",
-      "target": "acc_02033",
-      "amount": 24999.0,
-      "timestamp": "2026-06-25T20:20:28.585106+00:00"
+      "timestamp": "2026-06-21T02:27:24.775824+00:00"
     },
     {
       "source": "acc_01977",
@@ -2624,10 +2934,16 @@
       "timestamp": "2026-06-19T11:07:16.650693+00:00"
     },
     {
-      "source": "acc_00961",
-      "target": "acc_02008",
+      "source": "acc_01287",
+      "target": "acc_02033",
       "amount": 24999.0,
-      "timestamp": "2026-06-21T10:45:09.124651+00:00"
+      "timestamp": "2026-06-27T09:02:50.019005+00:00"
+    },
+    {
+      "source": "acc_00693",
+      "target": "acc_02033",
+      "amount": 24999.0,
+      "timestamp": "2026-06-25T20:20:28.585106+00:00"
     },
     {
       "source": "acc_01910",
@@ -2636,10 +2952,10 @@
       "timestamp": "2026-06-20T21:24:16.340133+00:00"
     },
     {
-      "source": "acc_01287",
-      "target": "acc_02033",
+      "source": "acc_00961",
+      "target": "acc_02008",
       "amount": 24999.0,
-      "timestamp": "2026-06-27T09:02:50.019005+00:00"
+      "timestamp": "2026-06-21T10:45:09.124651+00:00"
     },
     {
       "source": "acc_01459",
@@ -2648,16 +2964,10 @@
       "timestamp": "2026-06-20T13:31:29.397705+00:00"
     },
     {
-      "source": "acc_01406",
+      "source": "acc_00214",
       "target": "acc_02033",
       "amount": 10000.0,
-      "timestamp": "2026-06-26T22:52:15.846771+00:00"
-    },
-    {
-      "source": "acc_01954",
-      "target": "acc_02008",
-      "amount": 10000.0,
-      "timestamp": "2026-06-20T03:55:59.257622+00:00"
+      "timestamp": "2026-06-24T14:57:28.303083+00:00"
     },
     {
       "source": "acc_00872",
@@ -2666,16 +2976,22 @@
       "timestamp": "2026-06-18T22:59:10.828954+00:00"
     },
     {
-      "source": "acc_00214",
-      "target": "acc_02033",
+      "source": "acc_01954",
+      "target": "acc_02008",
       "amount": 10000.0,
-      "timestamp": "2026-06-24T14:57:28.303083+00:00"
+      "timestamp": "2026-06-20T03:55:59.257622+00:00"
     },
     {
       "source": "acc_00394",
       "target": "acc_02073",
       "amount": 10000.0,
       "timestamp": "2026-06-20T00:03:20.559226+00:00"
+    },
+    {
+      "source": "acc_01406",
+      "target": "acc_02033",
+      "amount": 10000.0,
+      "timestamp": "2026-06-26T22:52:15.846771+00:00"
     },
     {
       "source": "acc_00672",
@@ -2688,6 +3004,30 @@
       "target": "acc_02073",
       "amount": 10000.0,
       "timestamp": "2026-06-17T12:34:01.028517+00:00"
+    },
+    {
+      "source": "acc_01988",
+      "target": "acc_02008",
+      "amount": 9999.0,
+      "timestamp": "2026-06-21T01:06:59.885870+00:00"
+    },
+    {
+      "source": "acc_01243",
+      "target": "acc_02008",
+      "amount": 9999.0,
+      "timestamp": "2026-06-21T06:04:41.835897+00:00"
+    },
+    {
+      "source": "acc_01107",
+      "target": "acc_02033",
+      "amount": 9999.0,
+      "timestamp": "2026-06-25T23:14:18.817610+00:00"
+    },
+    {
+      "source": "acc_00789",
+      "target": "acc_02033",
+      "amount": 9999.0,
+      "timestamp": "2026-06-25T15:44:40.091493+00:00"
     },
     {
       "source": "acc_01381",
@@ -2726,40 +3066,16 @@
       "timestamp": "2026-06-26T02:53:01.067398+00:00"
     },
     {
-      "source": "acc_01107",
-      "target": "acc_02033",
-      "amount": 9999.0,
-      "timestamp": "2026-06-25T23:14:18.817610+00:00"
-    },
-    {
-      "source": "acc_00205",
-      "target": "acc_02053",
-      "amount": 9999.0,
-      "timestamp": "2026-06-21T23:55:26.566248+00:00"
-    },
-    {
-      "source": "acc_01988",
-      "target": "acc_02008",
-      "amount": 9999.0,
-      "timestamp": "2026-06-21T01:06:59.885870+00:00"
-    },
-    {
-      "source": "acc_01243",
-      "target": "acc_02008",
-      "amount": 9999.0,
-      "timestamp": "2026-06-21T06:04:41.835897+00:00"
-    },
-    {
       "source": "acc_00365",
       "target": "acc_02008",
       "amount": 9999.0,
       "timestamp": "2026-06-19T22:00:09.770146+00:00"
     },
     {
-      "source": "acc_00789",
-      "target": "acc_02033",
+      "source": "acc_00205",
+      "target": "acc_02053",
       "amount": 9999.0,
-      "timestamp": "2026-06-25T15:44:40.091493+00:00"
+      "timestamp": "2026-06-21T23:55:26.566248+00:00"
     },
     {
       "source": "acc_00710",
@@ -2790,12 +3106,6 @@
       "target": "acc_02059",
       "amount": 2013.56,
       "timestamp": "2026-06-22T12:10:30.578434+00:00"
-    },
-    {
-      "source": "acc_01038",
-      "target": "acc_02007",
-      "amount": 1915.78,
-      "timestamp": "2026-06-03T22:36:52.307654+00:00"
     },
     {
       "source": "acc_00523",
@@ -2876,6 +3186,18 @@
       "timestamp": "2026-06-16T19:22:12.480415+00:00"
     },
     {
+      "source": "acc_00544",
+      "target": "acc_02009",
+      "amount": 1286.76,
+      "timestamp": "2026-06-21T06:38:17.139680+00:00"
+    },
+    {
+      "source": "acc_01462",
+      "target": "acc_02013",
+      "amount": 1268.61,
+      "timestamp": "2026-06-19T09:42:25.181243+00:00"
+    },
+    {
       "source": "acc_01752",
       "target": "acc_02081",
       "amount": 1259.3,
@@ -2918,6 +3240,12 @@
       "timestamp": "2026-06-24T00:03:30.391504+00:00"
     },
     {
+      "source": "acc_00027",
+      "target": "acc_02011",
+      "amount": 1110.78,
+      "timestamp": "2026-06-19T04:09:49.997078+00:00"
+    },
+    {
       "source": "acc_00539",
       "target": "acc_02033",
       "amount": 999.65,
@@ -2958,6 +3286,12 @@
       "target": "acc_02046",
       "amount": 891.94,
       "timestamp": "2026-06-23T01:26:06.117765+00:00"
+    },
+    {
+      "source": "acc_00354",
+      "target": "acc_02010",
+      "amount": 880.86,
+      "timestamp": "2026-06-21T22:24:40.794571+00:00"
     },
     {
       "source": "acc_00695",
@@ -3080,6 +3414,12 @@
       "timestamp": "2026-06-16T01:26:20.285482+00:00"
     },
     {
+      "source": "acc_01047",
+      "target": "acc_02009",
+      "amount": 409.98,
+      "timestamp": "2026-06-22T01:23:17.948808+00:00"
+    },
+    {
       "source": "acc_00299",
       "target": "acc_02008",
       "amount": 409.54,
@@ -3116,10 +3456,10 @@
       "timestamp": "2026-06-24T11:05:04.064320+00:00"
     },
     {
-      "source": "acc_00692",
-      "target": "acc_02007",
-      "amount": 337.79,
-      "timestamp": "2026-06-03T08:18:02.800471+00:00"
+      "source": "acc_00461",
+      "target": "acc_02009",
+      "amount": 333.53,
+      "timestamp": "2026-06-16T17:24:28.800367+00:00"
     },
     {
       "source": "acc_01391",

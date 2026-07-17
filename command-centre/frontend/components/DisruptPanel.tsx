@@ -107,19 +107,7 @@ export default function DisruptPanel({ onClose }: { onClose: () => void }) {
   const critical = actions.filter((a) => a.priority === "critical" && a.status === "proposed").length;
 
   return (
-    <div ref={container} className="relative h-full overflow-y-auto bg-zinc-950/95 p-6 scroll-thin">
-      <button
-        onClick={onClose}
-        aria-label="Close Disrupt queue"
-        className="absolute right-4 top-4 z-10 border border-white/10 bg-zinc-900/80 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-zinc-100"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-
-      <div className="mb-5 pr-12">
+    <div ref={container} className="relative h-full overflow-y-auto p-6 scroll-thin">      <div className="mb-5 pr-12">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold text-zinc-100">Disrupt &amp; Respond</h2>
           <span className="border border-red-500/40 bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-red-300">

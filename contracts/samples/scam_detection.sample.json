@@ -16,5 +16,5 @@
   ],
   "explanation": "Caller impersonates CBI, claims a fake FIR, isolates the victim on a video call, and demands crypto payment under threat of arrest — a textbook digital-arrest script.",
   "phone_number": "+91-9900112233",
-  "location_hint": { "district": "Jamtara", "lat": 23.968, "lon": 86.797 }
+  "location_hint": { "district": "Jamtara", "lat": 23.965, "lon": 86.809 }
 }

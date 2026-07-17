@@ -13,6 +13,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "fraud-rings", label: "Fraud Rings" },
   { key: "alerts", label: "Alerts & Analytics" },
   { key: "disrupt", label: "Disrupt" },
+  { key: "metrics", label: "Metrics" },
   { key: "research", label: "Research Lab" },
 ];
 
@@ -38,6 +39,11 @@ export default function TopNav({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [hasSearched, setHasSearched] = useState(true);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (searchOpen) inputRef.current?.focus();
+  }, [searchOpen]);
 
   useEffect(() => {
     if (!localStorage.getItem("aegis_has_searched")) {
@@ -143,16 +149,37 @@ export default function TopNav({
       <div className="ml-auto flex items-center gap-4">
         {/* Search */}
         <div className="relative flex items-center gsap-nav-item">
-          {searchOpen ? (
-            <form onSubmit={handleSearch} className="glass !rounded-full flex items-center pl-3 pr-1 py-1 w-48 animate-fade-in">
-              <button type="submit" className="text-zinc-400 transition-colors hover:text-zinc-200">
+          <div className={`grid items-center transition-[width] duration-300 ease-out overflow-hidden ${searchOpen ? "w-48" : "w-[115px]"}`}>
+            
+            {/* Open Form State */}
+            <form 
+              onSubmit={handleSearch} 
+              className={`col-start-1 row-start-1 glass !rounded-full flex items-center pl-3 pr-1 py-1 w-48 transition-all duration-300 ${
+                searchOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
+              }`}
+            >
+              <button type="submit" className="text-zinc-400 transition-colors hover:text-zinc-200 shrink-0">
                 <Search className="h-3.5 w-3.5 mr-2" />
               </button>
               <input
-                autoFocus
+                ref={inputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setSearchOpen(false);
+                    setSearchQuery("");
+                    onSearchClear?.();
+                  }
+                }}
+                onBlur={(e) => {
+                  if (!e.currentTarget.form?.contains(e.relatedTarget as Node)) {
+                    setSearchOpen(false);
+                    setSearchQuery("");
+                    onSearchClear?.();
+                  }
+                }}
                 placeholder="Search city..."
                 className="bg-transparent border-none outline-none text-sm text-zinc-100 w-full placeholder-zinc-500"
               />
@@ -161,28 +188,29 @@ export default function TopNav({
                 onClick={() => {
                   setSearchOpen(false);
                   setSearchQuery("");
-                  onSearchClear?.(); // drop map highlights — the search is over
+                  onSearchClear?.();
                 }}
-                className="p-1 text-zinc-500 transition-colors hover:text-zinc-200"
+                className="p-1 text-zinc-500 transition-colors hover:text-zinc-200 shrink-0"
               >
                 <X className="h-3 w-3" />
               </button>
             </form>
-          ) : (
-            <div className="relative group flex items-center">
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="flex items-center gap-2 rounded-full px-2 py-1 text-xs text-zinc-500 transition-colors hover:text-zinc-100"
-              >
-                <Search className="h-3.5 w-3.5" />
-                <span>Search</span>
-                <div className="ml-2 hidden md:flex items-center gap-1">
-                  <kbd className="inline-flex h-4 items-center justify-center rounded border border-zinc-700 bg-zinc-800/50 px-1.5 font-sans text-[9px] font-medium text-zinc-400">Ctrl</kbd>
-                  <kbd className="inline-flex h-4 items-center justify-center rounded border border-zinc-700 bg-zinc-800/50 px-1.5 font-sans text-[9px] font-medium text-zinc-400">K</kbd>
-                </div>
-              </button>
-              
-              {/* Callout Dialogue Box */}
+
+            <button
+              onClick={() => setSearchOpen(true)}
+              className={`col-start-1 row-start-1 flex items-center gap-2 rounded-full px-2 py-1 w-[115px] text-xs text-zinc-500 transition-all duration-300 hover:text-zinc-100 ${
+                searchOpen ? "opacity-0 scale-105 pointer-events-none" : "opacity-100 scale-100"
+              }`}
+            >
+              <Search className="h-3.5 w-3.5 shrink-0" />
+              <span>Search</span>
+              <kbd className="ml-1.5 hidden md:inline-flex h-3.5 items-center justify-center rounded border border-zinc-700/60 bg-zinc-800/40 px-1.5 font-sans text-[8px] font-medium text-zinc-500 shrink-0">
+                Ctrl K
+              </kbd>
+            </button>
+          </div>
+
+          {/* Callout Dialogue Box */}
               {!hasSearched && (
                 <div className="absolute right-full top-1/2 -translate-y-1/2 mr-4 w-44 p-2.5 text-[11px] leading-relaxed text-zinc-300 bg-zinc-800/90 backdrop-blur-md border border-white/10 rounded-lg shadow-xl z-50">
                   Search any place here to view its details.
@@ -191,8 +219,6 @@ export default function TopNav({
                 </div>
               )}
             </div>
-          )}
-        </div>
 
         {/* Backend Status */}
         <span className="gsap-nav-item relative flex" title={backendUp ? "backend online" : "backend unreachable"}>

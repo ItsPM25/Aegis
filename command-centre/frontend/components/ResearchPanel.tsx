@@ -36,21 +36,7 @@ export default function ResearchPanel({ onClose }: { onClose: () => void }) {
   }, [onClose]);
 
   return (
-    <div className="gsap-panel relative h-full overflow-y-auto bg-zinc-950/95 p-6 scroll-thin">
-      {/* Close — the tab covers the whole screen, so this is the way back. Esc
-          works too, wired in the effect above. */}
-      <button
-        onClick={onClose}
-        aria-label="Close Research Lab"
-        className="absolute right-4 top-4 z-10 border border-white/10 bg-zinc-900/80 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-zinc-100"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-
-      <div className="mb-6 pr-12">
+    <div className="gsap-panel relative h-full overflow-y-auto p-6 scroll-thin">      <div className="mb-6 pr-12">
         <h2 className="text-lg font-semibold text-zinc-100">Research Lab</h2>
         <p className="mt-1 text-xs text-zinc-500">
           Three graph-ML experiments, shown with their real measured numbers — caveats included.

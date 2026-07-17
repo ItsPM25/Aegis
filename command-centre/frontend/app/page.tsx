@@ -123,7 +123,6 @@ export default function Page() {
   } | null>(null);
   const [selectedModule, setSelectedModule] = useState<"scam" | "counterfeit" | null>(null);
   const [bankPartnerOpen, setBankPartnerOpen] = useState(false);
-  const [modelCardOpen, setModelCardOpen] = useState(false);
 
   // Supply Trail state
   const [supplyTrailOpen, setSupplyTrailOpen] = useState(false);
@@ -761,7 +760,7 @@ export default function Page() {
       {/* Research Lab — the three graph-ML experiments, made visible */}
       {activeTab === "research" && (
         <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
-          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
+          <div className="w-full max-w-[95vw] text-left mb-2 text-xs text-zinc-500">
             Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
           </div>
           <div className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
@@ -772,7 +771,7 @@ export default function Page() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
             <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden">
-              <ResearchPanel />
+              <ResearchPanel onClose={() => setActiveTab("map")} />
             </div>
           </div>
         </div>
@@ -781,7 +780,7 @@ export default function Page() {
       {/* Disrupt & Respond — detections turned into concrete, auditable actions */}
       {activeTab === "disrupt" && (
         <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
-          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
+          <div className="w-full max-w-[95vw] text-left mb-2 text-xs text-zinc-500">
             Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
           </div>
           <div className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
@@ -792,24 +791,37 @@ export default function Page() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
             <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden">
-              <DisruptPanel />
+              <DisruptPanel onClose={() => setActiveTab("map")} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Metrics — Model Card (measured metrics, the evaluation focus) */}
+      {activeTab === "metrics" && (
+        <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
+          <div className="w-full max-w-[95vw] text-left mb-2 text-xs text-zinc-500">
+            Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
+          </div>
+          <div className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
+            <button
+              onClick={() => setActiveTab("map")}
+              className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden">
+              <ModelCardPanel onClose={() => setActiveTab("map")} />
             </div>
           </div>
         </div>
       )}
 
       {/* Bank Partner — financial-institution B2B console. Opened from the
-          Modules → Connected Websites list; sits above the modules overlay. */}
+          Modules → Stakeholder Surfaces list; sits above the modules overlay. */}
       {bankPartnerOpen && (
         <div className="absolute inset-0 z-[60] pointer-events-auto">
           <BankPartnerPanel onClose={() => setBankPartnerOpen(false)} />
-        </div>
-      )}
-
-      {/* Model Card — measured metrics (evaluation focus), opened from Modules */}
-      {modelCardOpen && (
-        <div className="absolute inset-0 z-[60] pointer-events-auto">
-          <ModelCardPanel onClose={() => setModelCardOpen(false)} />
         </div>
       )}
 
@@ -854,7 +866,7 @@ export default function Page() {
       {/* Full screen blur overlay for Modules — side-by-side layout */}
       {activeTab === "modules" && (
         <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
-          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
+          <div className="w-full max-w-[95vw] text-left mb-2 text-xs text-zinc-500">
             Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
           </div>
           <div ref={modulesScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
@@ -873,7 +885,6 @@ export default function Page() {
                 health={health}
                 onSelectModule={setSelectedModule}
                 onOpenBankPartner={() => setBankPartnerOpen(true)}
-                onOpenModelCard={() => setModelCardOpen(true)}
               />
             </div>
 
@@ -952,7 +963,7 @@ export default function Page() {
       {/* Full screen blur overlay for Fraud Rings — side-by-side layout */}
       {activeTab === "fraud-rings" && (
         <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
-          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
+          <div className="w-full max-w-[95vw] text-left mb-2 text-xs text-zinc-500">
             Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
           </div>
           <div ref={ringsScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">

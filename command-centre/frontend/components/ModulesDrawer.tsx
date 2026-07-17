@@ -22,15 +22,12 @@ export default function ModulesDrawer({
   health,
   onSelectModule,
   onOpenBankPartner,
-  onOpenModelCard,
 }: {
   events: EventsResponse | null;
   health: HealthResponse | null;
   onSelectModule?: (type: "scam" | "counterfeit") => void;
   /** Opens the financial-institution (Bank Partner) B2B console. */
   onOpenBankPartner?: () => void;
-  /** Opens the Model Card (measured metrics) panel. */
-  onOpenModelCard?: () => void;
 }) {
   const scam = events?.scams.at(-1) ?? null;
   const note = events?.counterfeits.at(-1) ?? null;
@@ -100,7 +97,7 @@ export default function ModulesDrawer({
 
       {/* External Links & Features */}
       <div className="gsap-module-item glass !rounded-none p-4 space-y-3">
-        <div className="text-xs font-semibold text-zinc-300 mb-2">Connected Websites</div>
+        <div className="text-xs font-semibold text-zinc-300 mb-2">Stakeholder Surfaces</div>
         <div className="space-y-2">
           <button
             onClick={() => setCitizenOpen(true)}
@@ -139,13 +136,6 @@ export default function ModulesDrawer({
           <li>Gen AI driven intelligence fusion</li>
         </ul>
 
-        <button
-          onClick={onOpenModelCard}
-          className="mt-3 w-full flex items-center justify-between border border-emerald-500/25 bg-emerald-500/5 px-2.5 py-2 text-[11px] text-emerald-200 transition hover:border-emerald-400/50 hover:bg-emerald-500/10"
-        >
-          <span className="font-medium">📊 Model Card — measured metrics</span>
-          <span className="text-[9px] uppercase tracking-widest text-emerald-400/70">P/R · FPR · AUC</span>
-        </button>
       </div>
 
       {/* latest scam card */}

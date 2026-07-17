@@ -47,7 +47,7 @@ export default function ModelCardPanel({ onClose }: { onClose: () => void }) {
   );
 
   return (
-    <div ref={container} className="relative h-full overflow-y-auto bg-zinc-950/95 p-6 scroll-thin">
+    <div ref={container} className="relative h-full overflow-y-auto p-6 scroll-thin">
       <button
         onClick={onClose}
         aria-label="Close Model Card"
