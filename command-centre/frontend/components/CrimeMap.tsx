@@ -78,6 +78,8 @@ export default function CrimeMap({
   const trailAnimRef = useRef<number | null>(null);   // rAF handle for trail dash animation
   const trailMarkersRef = useRef<any[]>([]);          // DOM markers owned by the trail (arrows, labels)
   const entryAnimRef = useRef<number | null>(null);   // rAF handle for entry-route flow animation
+  const entryTimerRef = useRef<any>(null);            // pending setTimeout in that loop — cancelAnimationFrame does NOT cover it
+  const entryAliveRef = useRef(false);                // false once cleanup ran; stops any in-flight callback re-queuing
   const entryMarkersRef = useRef<any[]>([]);          // DOM markers owned by the entry route
   const [ready, setReady] = useState(false);
   const [satellite, setSatellite] = useState(false);
@@ -536,6 +538,14 @@ export default function CrimeMap({
         cancelAnimationFrame(entryAnimRef.current);
         entryAnimRef.current = null;
       }
+      // The rAF handle alone is not enough: the loop below also parks in a
+      // setTimeout, and a pending timer survives cancelAnimationFrame. It would
+      // fire after teardown and queue an untracked frame that paints a dead map.
+      if (entryTimerRef.current !== null) {
+        clearTimeout(entryTimerRef.current);
+        entryTimerRef.current = null;
+      }
+      entryAliveRef.current = false;
       ["entry-glow", "entry-line", "entry-flow"].forEach((id) => {
         if (map.getLayer(id)) map.removeLayer(id);
       });
@@ -600,19 +610,25 @@ export default function CrimeMap({
       [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5],
       [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0], [3.5, 3.5, 0],
     ];
+    entryAliveRef.current = true;
     const animate = () => {
+      // Every re-entry checks the flag: a callback already in flight when
+      // cleanup ran must not paint, and must not queue another.
+      if (!entryAliveRef.current || mapRef.current !== map) return;
       try {
-        if (mapRef.current !== map || !map.getLayer("entry-flow")) return;
+        if (!map.getLayer("entry-flow")) return;
         step = (step + 1) % seq.length;
         map.setPaintProperty("entry-flow", "line-dasharray", seq[step]);
       } catch {
         return;
       }
-      entryAnimRef.current = requestAnimationFrame(() =>
-        setTimeout(() => {
-          entryAnimRef.current = requestAnimationFrame(animate);
-        }, 55),
-      );
+      // Park in a timer we can actually cancel, then take one frame. Both
+      // handles are stored so cleanup can kill whichever stage is pending.
+      entryTimerRef.current = setTimeout(() => {
+        entryTimerRef.current = null;
+        if (!entryAliveRef.current) return;
+        entryAnimRef.current = requestAnimationFrame(animate);
+      }, 55);
     };
     animate();
 

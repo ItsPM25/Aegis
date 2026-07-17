@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type {
   EventsResponse,
   FusionOutput,
@@ -102,6 +102,10 @@ export default function Page() {
   // Highest-plausibility entry route for the searched city, highlighted on the
   // map. Answers "how did notes get here?" — works from a single seizure.
   const [entryRoutes, setEntryRoutes] = useState<EntryRoutesResponse | null>(null);
+  /** Where the search card sits. null = centred; set once dragged, so it can be
+   *  moved off whatever it is covering on the map. */
+  const [cardPos, setCardPos] = useState<{ x: number; y: number } | null>(null);
+  const dragRef = useRef<{ dx: number; dy: number } | null>(null);
   const [cityOrigin, setCityOrigin] = useState<{
     loading: boolean;
     /** True when this city's own seizures could not trace a direction and the
@@ -249,6 +253,32 @@ export default function Page() {
     [events, refreshEvents, refreshHotspots]
   );
 
+  /** Drag the card by its header. Pointer events cover mouse and touch alike,
+   *  and setPointerCapture keeps the drag alive if the cursor outruns the
+   *  element or crosses the map canvas. */
+  const onCardPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest("button")) return; // let the X through
+    const card = e.currentTarget.closest("[data-search-card]") as HTMLElement | null;
+    if (!card) return;
+    const box = card.getBoundingClientRect();
+    dragRef.current = { dx: e.clientX - box.left, dy: e.clientY - box.top };
+    setCardPos({ x: box.left, y: box.top }); // pin where it already is, then move
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }, []);
+
+  const onCardPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    if (!d) return;
+    // Keep a grabbable strip on screen — a card dragged fully off is unreachable.
+    const x = Math.min(Math.max(e.clientX - d.dx, 8), window.innerWidth - 60);
+    const y = Math.min(Math.max(e.clientY - d.dy, 8), window.innerHeight - 40);
+    setCardPos({ x, y });
+  }, []);
+
+  const onCardPointerUp = useCallback(() => {
+    dragRef.current = null;
+  }, []);
+
   /** Search dismissed from the top nav — take everything it drew back off the
    *  map. Without this the routes and the panel outlive the search that
    *  produced them. */
@@ -258,6 +288,7 @@ export default function Page() {
     setTrailSource(null);
     setCityOrigin(null);
     setCityAlerts(null);
+    setCardPos(null);
   }, []);
 
   const handleSearch = async (query: string) => {
@@ -355,13 +386,10 @@ export default function Page() {
         setCityOrigin(null);
       }
 
-      // Only the panel auto-hides — it is a popup and would sit in the way.
-      // The map highlights stay until the search is cleared from the top nav,
-      // so they cannot vanish out from under someone still reading them.
-      setTimeout(() => {
-        setCityAlerts(null);
-        setCityOrigin(null);
-      }, 10000);
+      // Nothing auto-hides. The card carries findings an officer reads at their
+      // own pace — a timer that yanks it away mid-sentence is a bug, not a
+      // feature. It closes on the X, or with the rest of the search.
+      setCardPos(null); // fresh search re-centres the card
       return;
     }
 
@@ -379,7 +407,7 @@ export default function Page() {
         setTrailSource(null);
         setCityOrigin(null);
         setCityAlerts({ district: coords.label, alerts: [] });
-        setTimeout(() => setCityAlerts(null), 10000);
+        setCardPos(null);
       } else {
         pushToast(`Location not found: ${q}`, "error");
       }
@@ -421,10 +449,24 @@ export default function Page() {
         onSearchClear={clearSearch}
       />
 
-      {/* Centered localized alerts panel (from search) */}
+      {/* Localized alerts panel (from search). Centred until dragged, then it
+          sits where it was put. Stays until closed — no timer. */}
       {cityAlerts && (
-        <div className="absolute left-1/2 top-1/2 z-40 w-80 max-w-[90vw] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-zinc-900/90 backdrop-blur-md border border-zinc-800 shadow-2xl overflow-hidden pointer-events-auto animate-slide-up">
-          <div className="bg-zinc-800/50 px-4 py-2 border-b border-zinc-800 flex justify-between items-center">
+        <div
+          data-search-card
+          className={`absolute z-40 w-80 max-w-[90vw] rounded-2xl bg-zinc-900/90 backdrop-blur-md border border-zinc-800 shadow-2xl overflow-hidden pointer-events-auto ${
+            cardPos ? "" : "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-slide-up"
+          }`}
+          style={cardPos ? { left: cardPos.x, top: cardPos.y } : undefined}
+        >
+          <div
+            onPointerDown={onCardPointerDown}
+            onPointerMove={onCardPointerMove}
+            onPointerUp={onCardPointerUp}
+            onPointerCancel={onCardPointerUp}
+            className="bg-zinc-800/50 px-4 py-2 border-b border-zinc-800 flex justify-between items-center cursor-grab active:cursor-grabbing select-none touch-none"
+            title="Drag to move"
+          >
             <h3 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
               {cityAlerts.district} Alerts
