@@ -634,3 +634,43 @@ export async function fetchMetrics(): Promise<MetricsResponse> {
   if (!r.ok) throw new Error(`metrics failed: ${r.status}`);
   return r.json();
 }
+
+// ── Citizen Fraud Shield: multilingual + multi-channel ───────────────────────
+
+export interface CitizenLanguages {
+  languages: Record<string, string>;
+  translation_available: boolean;
+}
+
+export async function fetchCitizenLanguages(): Promise<CitizenLanguages> {
+  const r = await fetch(`${API_BASE}/citizen/languages`);
+  if (!r.ok) throw new Error(`citizen languages failed: ${r.status}`);
+  return r.json();
+}
+
+export interface CitizenVerdict {
+  verdict: "scam" | "suspicious" | "legit";
+  risk_score: number;
+  scam_type?: string | null;
+  markers: string[];
+  explanation?: string | null;
+  detected_language: string;
+  target_language: string;
+  language_name: string;
+  advisory_en: string;
+  advisory: string;
+  translated: boolean;
+  engine: string;
+  /** call mode only */
+  intercept?: boolean;
+  stage?: string;
+}
+
+/** Analyse a citizen message; verdict + advisory returned in `language`
+ *  (or the auto-detected language when omitted). */
+export const citizenAnalyze = (text: string, language?: string) =>
+  post<CitizenVerdict>("/citizen/analyze", { text, language });
+
+/** Real-time call monitoring — pass the transcript accumulated so far. */
+export const citizenCallAnalyze = (transcript: string | string[], language?: string) =>
+  post<CitizenVerdict>("/citizen/call/analyze", { transcript, language });

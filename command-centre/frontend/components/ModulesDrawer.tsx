@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import type { EventsResponse, HealthResponse } from "@/lib/api";
 import { clockTime, pct, titleCase } from "@/lib/format";
+import CitizenShieldPanel from "./CitizenShieldPanel";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -59,8 +60,11 @@ export default function ModulesDrawer({
     ? confidences.reduce((a, b) => a + b, 0) / confidences.length
     : 0;
 
+  const [citizenOpen, setCitizenOpen] = useState(false);
+
   return (
     <div ref={container} className="flex flex-col gap-3 p-4">
+      {citizenOpen && <CitizenShieldPanel onClose={() => setCitizenOpen(false)} />}
       {/* module status */}
       <div className="gsap-module-item glass !rounded-none grid grid-cols-2 gap-2 p-4">
         <div>
@@ -98,13 +102,16 @@ export default function ModulesDrawer({
       <div className="gsap-module-item glass !rounded-none p-4 space-y-3">
         <div className="text-xs font-semibold text-zinc-300 mb-2">Connected Websites</div>
         <div className="space-y-2">
-          <a href="#" target="_blank" className="block p-2 bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
+          <button
+            onClick={() => setCitizenOpen(true)}
+            className="block w-full text-left p-2 bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
+          >
             <div className="flex items-center justify-between text-xs text-zinc-200">
-              <span className="font-medium">Citizen Portal</span>
+              <span className="font-medium">Citizen Portal · Fraud Shield</span>
               <ArrowUpRight className="h-3 w-3" />
             </div>
-            <div className="text-[10px] text-zinc-400 mt-1">Report scams, verify notes.</div>
-          </a>
+            <div className="text-[10px] text-zinc-400 mt-1">Check scams in 12 languages · live-call detection.</div>
+          </button>
           <a href="#" target="_blank" className="block p-2 bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
             <div className="flex items-center justify-between text-xs text-zinc-200">
               <span className="font-medium">Investigator Dashboard</span>
