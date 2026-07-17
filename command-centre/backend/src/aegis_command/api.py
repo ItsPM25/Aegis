@@ -69,6 +69,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Financial-institution B2B surface (API-key gated) — the third named stakeholder.
+from .institution import router as institution_router  # noqa: E402
+
+app.include_router(institution_router)
+
 
 @app.get("/health")
 async def health() -> dict:
