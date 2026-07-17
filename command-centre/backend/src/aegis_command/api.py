@@ -400,6 +400,161 @@ def research() -> dict:
     }
 
 
+@app.get("/metrics")
+def metrics() -> dict:
+    """Model Card — the measured numbers the evaluation focus asks for, read from
+    the persisted training/eval reports (never recomputed in the request path).
+
+    Every value here is whatever the model actually measured; nothing is dressed
+    up. Where a criterion (e.g. per-denomination breakdown) is not in the artifact,
+    it is called out as a caveat rather than invented. `false_alarm` is derived
+    honestly as 1 − precision (share of alerts that are false), the citizen-facing
+    false-positive concern the brief flags."""
+    from .store import REPO_ROOT
+
+    def _json(rel: str):
+        p = REPO_ROOT / rel
+        if not p.exists():
+            return None
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return None
+
+    shield = _json("fraud-shield-nlp/models/train_report.json")
+    vision = _json("counterfeit-vision/models/train_report.json")
+    graph = _json("fraud-graph-ml/models/train_report.json")
+    ring_eval = _json("fraud-graph-ml/models/ring_eval_report.json")
+    elliptic = _json("fraud-graph-ml/models/elliptic_benchmark_report.json")
+
+    def _fa(precision: float | None) -> dict | None:
+        if precision is None:
+            return None
+        return {"label": "False-alarm rate among alerts", "value": round(1 - precision, 4),
+                "basis": "1 − precision"}
+
+    models: list[dict] = []
+
+    if shield:
+        models.append({
+            "id": "scam",
+            "name": "Fraud Shield — Scam / Digital-Arrest NLP",
+            "task": "Flag scam calls/messages at the point of contact (pre-transfer).",
+            "dataset": f"{shield.get('n_train','?')} train / {shield.get('n_test','?')} test messages "
+                       "(synthetic + LLM-generated scripts + UCI SMS-spam).",
+            "headline": [
+                {"label": "ROC-AUC", "value": shield.get("roc_auc")},
+                {"label": "Precision (scam)", "value": shield.get("precision_at_scam")},
+                {"label": "Recall (scam)", "value": shield.get("recall_at_scam")},
+            ],
+            "highlight": {"label": "Digital-arrest recall",
+                          "value": (shield.get("recall_by_family") or {}).get("synth_digital_arrest")},
+            "false_alarm": _fa(shield.get("precision_at_scam")),
+            "breakdown": {"title": "Recall by scam family", "items": shield.get("recall_by_family", {})},
+            "caveats": ["Scripts are largely synthetic/LLM-generated; live-call validation is the next step."],
+        })
+
+    if vision:
+        models.append({
+            "id": "counterfeit",
+            "name": "Counterfeit Vision — Note Authenticity CV",
+            "task": "Classify a note as genuine/fake from a photo (teller / POS / field).",
+            "dataset": f"{vision.get('dataset','real note photos')} · {vision.get('n_train','?')} train · "
+                       f"backbone {vision.get('backbone','cnn')}.",
+            "headline": [
+                {"label": "Val accuracy", "value": vision.get("val_accuracy")},
+                {"label": "ROC-AUC", "value": vision.get("val_roc_auc")},
+                {"label": "Fake recall", "value": vision.get("fake_recall")},
+            ],
+            "highlight": {"label": "Fake precision", "value": vision.get("fake_precision")},
+            "false_alarm": _fa(vision.get("fake_precision")),
+            "breakdown": None,
+            "caveats": [
+                "Trained on REAL photos of real+fake notes (not synthetic).",
+                "Per-denomination / per-print-quality breakdown is not in this artifact — reported as an aggregate.",
+            ],
+        })
+
+    if graph:
+        headline = [
+            {"label": "ROC-AUC", "value": graph.get("roc_auc")},
+            {"label": "Precision", "value": graph.get("precision_at_threshold")},
+            {"label": "Recall", "value": graph.get("recall_at_threshold")},
+        ]
+        highlight = None
+        breakdown = None
+        if ring_eval:
+            highlight = {"label": "Rings recovered",
+                         "value_text": f"{ring_eval.get('rings_recovered')}/{ring_eval.get('n_true_rings')}"}
+            breakdown = {
+                "title": "Ring-level detection",
+                "pairs": [
+                    {"label": "Ring detection rate", "value": ring_eval.get("ring_detection_rate")},
+                    {"label": "Account precision", "value": ring_eval.get("account_precision")},
+                    {"label": "Account recall", "value": ring_eval.get("account_recall")},
+                ],
+            }
+        models.append({
+            "id": "graph_synth",
+            "name": "Fraud Graph — Ring Detection (synthetic UPI/mule graph)",
+            "task": "Score accounts for mule/ring membership; recover coordinated rings.",
+            "dataset": f"{graph.get('n_train','?')} train / {graph.get('n_test','?')} test accounts (labeled synthetic graph).",
+            "headline": headline,
+            "highlight": highlight,
+            "false_alarm": _fa(graph.get("precision_at_threshold")),
+            "breakdown": breakdown,
+            "caveats": ["Synthetic graph — see the Elliptic++ card for real-data validation."],
+        })
+
+    if elliptic:
+        models.append({
+            "id": "graph_elliptic",
+            "name": "Fraud Graph — Real-Data Benchmark (Elliptic++)",
+            "task": "Same pipeline on the only large, real, labeled fraud graph publicly available.",
+            "dataset": f"{elliptic.get('dataset','elliptic++')} · "
+                       f"{elliptic.get('n_wallets','?'):,} wallets · {elliptic.get('n_illicit','?'):,} illicit."
+            if isinstance(elliptic.get("n_wallets"), int) else elliptic.get("dataset", "elliptic++"),
+            "headline": [
+                {"label": "ROC-AUC", "value": elliptic.get("roc_auc")},
+                {"label": "Precision", "value": elliptic.get("precision_at_threshold")},
+                {"label": "Recall", "value": elliptic.get("recall_at_threshold")},
+            ],
+            "highlight": {"label": "Avg precision", "value": elliptic.get("avg_precision")},
+            "false_alarm": _fa(elliptic.get("precision_at_threshold")),
+            "breakdown": None,
+            "caveats": [
+                "Transfers because it scores graph TOPOLOGY (flow, layering, community), not currency-specific "
+                "features — the same reason it applies to UPI/bank rails.",
+            ],
+        })
+
+    lead_time = {
+        "summary": "Where detection sits relative to victimisation — measured latency, honestly scoped.",
+        "points": [
+            {"stage": "Scam", "claim": "Flagged mid-message, before any transfer.",
+             "measured": "pre-transfer by construction — the classifier runs on the live message."},
+            {"stage": "Fraud ring", "claim": "Ring caught within seconds of the laundering pattern forming.",
+             "measured": "the inject-ring console shows the detection latency live (‘caught in N s’)."},
+            {"stage": "Counterfeit", "claim": "Verdict at the counter/POS in a single scan.",
+             "measured": "one forward pass of the CV model."},
+        ],
+        "caveat": (
+            "‘Lead time before mass victimisation’ is a workflow claim, not one stored number — no victimisation "
+            "timeline is simulated. Detection LATENCY (above) is what is actually measured."
+        ),
+    }
+
+    return {
+        "models": models,
+        "lead_time": lead_time,
+        "disclaimer": (
+            "Every figure is read from the model's own persisted training/eval report — not recomputed here and "
+            "not tuned for display. false_alarm = 1 − precision (share of alerts that are false), the citizen-tool "
+            "false-positive concern the brief flags."
+        ),
+    }
+
+
 @app.get("/hotspots")
 def hotspots() -> dict:
     """Cross-domain crime map: DBSCAN hubs over all located signals.

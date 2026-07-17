@@ -28,6 +28,7 @@ import ResearchPanel from "@/components/ResearchPanel";
 import RingViewer from "@/components/RingViewer";
 import DisruptPanel from "@/components/DisruptPanel";
 import BankPartnerPanel from "@/components/BankPartnerPanel";
+import ModelCardPanel from "@/components/ModelCardPanel";
 import ToastContainer, { type Toast } from "@/components/ToastContainer";
 import TopNav from "@/components/TopNav";
 import InfoPanel from "@/components/InfoPanel";
@@ -122,6 +123,7 @@ export default function Page() {
   } | null>(null);
   const [selectedModule, setSelectedModule] = useState<"scam" | "counterfeit" | null>(null);
   const [bankPartnerOpen, setBankPartnerOpen] = useState(false);
+  const [modelCardOpen, setModelCardOpen] = useState(false);
 
   // Supply Trail state
   const [supplyTrailOpen, setSupplyTrailOpen] = useState(false);
@@ -511,13 +513,16 @@ export default function Page() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        // Do not close background tabs if a modal overlay is handling the escape key
+        if (bankPartnerOpen || consoleOpen || supplyTrailOpen) return;
+
         if (activeTab === "modules" && !selectedModule) closeModules();
         else if (activeTab === "fraud-rings" && !viewRing) closeRings();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [activeTab, selectedModule, viewRing]);
+  }, [activeTab, selectedModule, viewRing, bankPartnerOpen, consoleOpen, supplyTrailOpen]);
 
   /** Tab switching is a close path for the alerts drawer — it sits below the
    *  nav, unlike the z-50 overlays whose X button is the only way out. Tween it
@@ -770,6 +775,13 @@ export default function Page() {
         </div>
       )}
 
+      {/* Model Card — measured metrics (evaluation focus), opened from Modules */}
+      {modelCardOpen && (
+        <div className="absolute inset-0 z-[60] pointer-events-auto">
+          <ModelCardPanel onClose={() => setModelCardOpen(false)} />
+        </div>
+      )}
+
       {/* hero title + module pills */}
       {activeTab === "map" && (
         <div className="pointer-events-none absolute left-5 top-20 z-10 hidden lg:block">
@@ -827,6 +839,7 @@ export default function Page() {
                 health={health}
                 onSelectModule={setSelectedModule}
                 onOpenBankPartner={() => setBankPartnerOpen(true)}
+                onOpenModelCard={() => setModelCardOpen(true)}
               />
             </div>
 

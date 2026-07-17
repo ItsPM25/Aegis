@@ -592,3 +592,44 @@ export async function screenAccount(accountId: string): Promise<AccountScreening
   if (!r.ok) throw new Error(`screen-account failed: ${r.status}`);
   return r.json();
 }
+
+// ── Model Card: measured metrics (evaluation focus) ──────────────────────────
+
+export interface MetricItem {
+  label: string;
+  value?: number;
+  value_text?: string;
+}
+
+export interface ModelCard {
+  id: string;
+  name: string;
+  task: string;
+  dataset: string;
+  headline: MetricItem[];
+  highlight?: MetricItem | null;
+  false_alarm?: { label: string; value: number; basis: string } | null;
+  breakdown?: {
+    title: string;
+    items?: Record<string, number>;
+    pairs?: MetricItem[];
+  } | null;
+  caveats: string[];
+}
+
+export interface MetricsResponse {
+  models: ModelCard[];
+  lead_time: {
+    summary: string;
+    points: { stage: string; claim: string; measured: string }[];
+    caveat: string;
+  };
+  disclaimer: string;
+}
+
+/** Measured model metrics, read from each model's persisted train/eval report. */
+export async function fetchMetrics(): Promise<MetricsResponse> {
+  const r = await fetch(`${API_BASE}/metrics`);
+  if (!r.ok) throw new Error(`metrics failed: ${r.status}`);
+  return r.json();
+}
