@@ -339,25 +339,35 @@ def case_file(body: dict) -> dict:
 
 
 @app.get("/supply-trail")
-def supply_trail(mode: str | None = None) -> dict:
+def supply_trail(mode: str | None = None, district: str | None = None) -> dict:
     """Supply Trail — infer counterfeit note provenance along transport corridors.
 
-    Takes all fake-note seizures currently in the store (location_hint required),
+    Takes fake-note seizures currently in the store (location_hint required),
     snaps them to the closest rail/road/ship/air corridor, traces the cluster
     toward the likely injection point, and corroborates with the FIR corpus.
 
     Returns the highest-confidence trail, plus trails for all other modes that
     had at least one seizure snap.
 
-    Query param:
+    Query params:
         mode: optional filter — one of rail | road | ship | air
               (omit to return the best trail regardless of mode)
+        district: optional filter — answer "where are THIS city's notes coming
+              from?" instead of the store-wide question. Case-insensitive.
+
+    A district filter narrows the evidence base, so the inference is usually
+    weaker than the store-wide trail: fewer seizures means a shorter cluster,
+    which means less of the corridor is pinned down. `seizures_used` and the
+    trail's own `confidence` report that honestly. A district whose seizures
+    all sit at one corridor node yields no trail at all — direction is read
+    from the shape of a cluster, and a single point has none.
 
     Response:
         {
           "best_trail": <TrailObject | null>,
           "all_trails": [<TrailObject>, ...],   // sorted by confidence desc
           "seizures_used": N,
+          "district": "<echoed filter or null>",
           "disclaimer": "..."
         }
     """
@@ -382,11 +392,28 @@ def supply_trail(mode: str | None = None) -> dict:
         and c["location_hint"].get("lon")
     ]
 
+    if district:
+        want = district.strip().casefold()
+        seizures = [s for s in seizures if s["district"].casefold() == want]
+
     if not seizures:
+        if district:
+            return {
+                "best_trail": None,
+                "all_trails": [],
+                "seizures_used": 0,
+                "district": district,
+                "disclaimer": (
+                    f"No located fake-note seizures recorded in {district}. "
+                    "Supply Trail can only infer provenance where notes have "
+                    "actually been seized."
+                ),
+            }
         return {
             "best_trail": None,
             "all_trails": [],
             "seizures_used": 0,
+            "district": None,
             "disclaimer": (
                 "No located fake-note seizures in the store yet. "
                 "Analyse a note with a location_hint set to fake/uncertain to generate a trail."
@@ -394,16 +421,32 @@ def supply_trail(mode: str | None = None) -> dict:
         }
 
     best = compute_trail(seizures, mode_filter=mode)
-    all_trails = compute_trails_all_modes(seizures) if mode is None else ([best] if best else [])
+    all_trails = compute_trails_all_modes(seizures) if mode is None else [t for t in (best,) if t]
+
+    disclaimer = (
+        "Supply Trail is an investigative hypothesis — a weighted inference "
+        "from seizure locations, transport geodata, and public intelligence. "
+        "Not forensic proof. FIR corpus is representative sample data pending "
+        "law-enforcement integration."
+    )
+    # A district view rests on fewer seizures than the store-wide trail. Say so
+    # rather than letting a narrow inference read as an equally strong one.
+    if district and best is None:
+        disclaimer = (
+            f"{len(seizures)} seizure(s) in {district} — too few, or too tightly "
+            "clustered, to establish a direction along any corridor. Provenance "
+            "needs a cluster that spans distance. " + disclaimer
+        )
+    elif district:
+        disclaimer = (
+            f"Inferred from {len(seizures)} seizure(s) in {district} alone — a "
+            "narrower evidence base than the store-wide trail. " + disclaimer
+        )
 
     return {
         "best_trail": best,
         "all_trails": all_trails,
         "seizures_used": len(seizures),
-        "disclaimer": (
-            "Supply Trail is an investigative hypothesis — a weighted inference "
-            "from seizure locations, transport geodata, and public intelligence. "
-            "Not forensic proof. FIR corpus is representative sample data pending "
-            "law-enforcement integration."
-        ),
+        "district": district,
+        "disclaimer": disclaimer,
     }

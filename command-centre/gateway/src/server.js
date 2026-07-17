@@ -115,9 +115,15 @@ app.get("/events", (_req, res) => forward(res, "/events"));
 app.get("/hotspots", (_req, res) => forward(res, "/hotspots"));
 app.get("/fusion/latest", (_req, res) => forward(res, "/fusion/latest"));
 app.post("/fuse", (_req, res) => forward(res, "/fuse", { method: "POST" }));
-app.get("/supply-trail", (req, res) =>
-  forward(res, `/supply-trail${req.query.mode ? `?mode=${encodeURIComponent(req.query.mode)}` : ""}`)
-);
+// `district` scopes the trail to one city ("where are Jamtara's notes coming
+// from?"); `mode` filters the corridor type. Both optional, both forwarded.
+app.get("/supply-trail", (req, res) => {
+  const qs = new URLSearchParams();
+  if (req.query.mode) qs.set("mode", req.query.mode);
+  if (req.query.district) qs.set("district", req.query.district);
+  const suffix = qs.toString() ? `?${qs}` : "";
+  forward(res, `/supply-trail${suffix}`);
+});
 // intelligence layer: plate families + scam campaigns + case officer (bare + /api forms)
 app.get("/intel/plate-families", (_req, res) => forward(res, "/intel/plate-families"));
 app.get("/intel/campaigns", (_req, res) => forward(res, "/intel/campaigns"));
