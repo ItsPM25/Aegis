@@ -97,26 +97,94 @@
   .report-payment-btn.done { border-color: var(--legit); color: var(--legit);
     background: rgba(47,191,113,.1); cursor: default; pointer-events: none; }
   .payment-form {
-    display: none; margin-top: 10px; padding: 10px 14px; border-radius: 10px;
-    background: var(--panel-2); border: 1px solid var(--line);
-    animation: slideDown .25s ease;
+    display: none; margin-top: 12px; padding: 18px 22px; border-radius: 12px;
+    background: linear-gradient(145deg, rgba(39, 39, 42, 0.8) 0%, rgba(24, 24, 27, 0.9) 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(12px);
+    white-space: normal;
+    animation: slideDown .3s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .payment-form.open { display: block; }
-  @keyframes slideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-  .payment-form label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 3px; }
-  .payment-form .form-row { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
-  .payment-form input, .payment-form select {
-    background: var(--bg); color: var(--text); border: 1px solid var(--line);
-    border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 13px;
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  .payment-form label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); display: block; margin-bottom: 6px; font-weight: 600; }
+  .payment-form .form-row { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+  
+  .payment-form .input-group {
+    display: flex; flex-direction: column;
   }
-  .payment-form input:focus { outline: none; border-color: var(--accent); }
-  .payment-form input[type=number] { width: 150px; }
+  .payment-form input[type="hidden"] {
+    display: none !important;
+  }
+  
+  /* Custom Number Spinner */
+  .custom-number-wrapper {
+    display: flex; align-items: center;
+    background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; overflow: hidden; transition: all 0.2s ease;
+  }
+  .custom-number-wrapper:hover { background: rgba(0, 0, 0, 0.6); border-color: rgba(255,255,255,0.25); }
+  .custom-number-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2); }
+  .payment-form .custom-number-wrapper input[type=number] {
+    width: 90px; border: none; background: transparent; padding: 9px 5px; text-align: center; box-shadow: none;
+    color: var(--text); font: inherit; font-size: 13px; outline: none;
+  }
+  .payment-form .custom-number-wrapper input[type=number]::-webkit-inner-spin-button,
+  .payment-form .custom-number-wrapper input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  .spin-btn {
+    background: transparent; color: var(--muted); border: none; padding: 0 14px; cursor: pointer;
+    font-size: 18px; line-height: 1; font-weight: 400; align-self: stretch; transition: all 0.2s;
+  }
+  .spin-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+  .spin-btn:active { background: rgba(255,255,255,0.12); }
+
+  /* Custom Select Dropdown */
+  .custom-select-wrapper {
+    position: relative; min-width: 150px; outline: none;
+  }
+  .custom-select-display {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0, 0, 0, 0.4); color: var(--text); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 9px 14px; font-size: 13px; cursor: pointer; transition: all 0.2s ease;
+  }
+  .custom-select-wrapper:hover .custom-select-display { background: rgba(0, 0, 0, 0.6); border-color: rgba(255,255,255,0.25); }
+  .custom-select-wrapper.open .custom-select-display { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2); }
+  .custom-select-display svg { width: 14px; height: 14px; fill: currentColor; opacity: 0.7; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+  .custom-select-wrapper.open .custom-select-display svg { transform: rotate(180deg); }
+  
+  .custom-select-options {
+    position: absolute; top: calc(100% + 6px); left: 0; width: 100%;
+    background: rgba(30, 30, 34, 0.95); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    backdrop-filter: blur(12px); overflow: hidden; z-index: 10;
+    opacity: 0; transform: translateY(-8px) scale(0.98); pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .custom-select-wrapper.open .custom-select-options {
+    opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
+  }
+  .custom-select-options div {
+    padding: 8px 14px; font-size: 13px; color: var(--text); cursor: pointer; transition: background 0.15s;
+  }
+  .custom-select-options div:hover { background: rgba(139, 92, 246, 0.3); }
+  
   .payment-form .submit-payment {
-    padding: 7px 16px; border-radius: 8px; border: none; cursor: pointer;
-    background: var(--scam); color: #fff; font: inherit; font-size: 12.5px; font-weight: 600;
-    transition: all .2s;
+    padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #fff; font: inherit; font-size: 13px; font-weight: 600;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .payment-form .submit-payment:hover { filter: brightness(1.15); }
+  .payment-form .submit-payment:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    filter: brightness(1.1);
+  }
+  .payment-form .submit-payment:active {
+    transform: translateY(0);
+  }
   .payment-trail {
     margin-top: 8px; padding: 8px 12px; border-radius: 8px;
     background: rgba(255,89,100,.08); border: 1px solid rgba(255,89,100,.2);
@@ -302,22 +370,34 @@ async function send() {
         </button>
         <div class="payment-form" id="${formId}">
           <div class="form-row">
-            <div>
+            <div class="input-group">
               <label>Amount paid (₹)</label>
-              <input type="number" id="amt_${formId}" placeholder="e.g. 49999" min="1" step="1">
+              <div class="custom-number-wrapper">
+                <button type="button" class="spin-btn" onclick="spinNumber('${formId}', -1000)">−</button>
+                <input type="number" id="amt_${formId}" placeholder="e.g. 49999" min="1" step="1">
+                <button type="button" class="spin-btn" onclick="spinNumber('${formId}', 1000)">+</button>
+              </div>
             </div>
-            <div>
+            <div class="input-group">
               <label>Method</label>
-              <select id="method_${formId}">
-                <option value="upi">UPI</option>
-                <option value="bank_transfer">Bank Transfer</option>
-                <option value="cash">Cash</option>
-                <option value="giftcard">Gift Card</option>
-                <option value="crypto">Crypto</option>
-                <option value="other">Other</option>
-              </select>
+              <div class="custom-select-wrapper" id="method_wrapper_${formId}" tabindex="0" onblur="closeDropdown('${formId}')">
+                <div class="custom-select-display" onclick="toggleDropdown('${formId}')">
+                  <span id="method_display_${formId}">Bank Transfer</span>
+                  <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                </div>
+                <div class="custom-select-options">
+                  <div onclick="selectMethod('${formId}', 'bank_transfer', 'Bank Transfer')">Bank Transfer</div>
+                  <div onclick="selectMethod('${formId}', 'upi', 'UPI')">UPI</div>
+                  <div onclick="selectMethod('${formId}', 'cash', 'Cash')">Cash</div>
+                  <div onclick="selectMethod('${formId}', 'giftcard', 'Gift Card')">Gift Card</div>
+                  <div onclick="selectMethod('${formId}', 'crypto', 'Crypto')">Crypto</div>
+                  <div onclick="selectMethod('${formId}', 'other', 'Other')">Other</div>
+                </div>
+                <input type="hidden" id="method_${formId}" value="bank_transfer">
+              </div>
             </div>
-            <div>
+            <div class="input-group">
+              <label>&nbsp;</label>
               <button class="submit-payment" onclick="submitPayment('${formId}', '${r.event_id}')">Trace Money →</button>
             </div>
           </div>
@@ -419,6 +499,28 @@ async function submitPayment(formId, eventId) {
       Command centre offline — will relay when available.
     </div>`;
   }
+}
+
+function toggleDropdown(formId) {
+  const wrapper = document.getElementById('method_wrapper_' + formId);
+  wrapper.classList.toggle('open');
+}
+function closeDropdown(formId) {
+  setTimeout(() => {
+    const wrapper = document.getElementById('method_wrapper_' + formId);
+    if(wrapper) wrapper.classList.remove('open');
+  }, 150);
+}
+function selectMethod(formId, val, label) {
+  document.getElementById('method_' + formId).value = val;
+  document.getElementById('method_display_' + formId).innerText = label;
+  closeDropdown(formId);
+}
+function spinNumber(formId, amount) {
+  const input = document.getElementById('amt_' + formId);
+  let val = parseInt(input.value) || 0;
+  val = Math.max(1, val + amount);
+  input.value = val;
 }
 </script>
 </body>
