@@ -803,7 +803,7 @@ export default function Page() {
             </button>
 
             {/* LEFT: Modules list */}
-            <div className="gsap-panel w-[380px] shrink-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 shadow-2xl">
+            <div className="gsap-panel w-[380px] shrink-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 shadow-2xl" style={{ opacity: 0 }}>
               <ModulesDrawer
                 events={events}
                 health={health}
@@ -812,7 +812,7 @@ export default function Page() {
             </div>
 
             {/* RIGHT: InfoPanel or GenAI summary */}
-            <div className="gsap-panel flex-1 min-w-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 shadow-2xl">
+            <div className="gsap-panel flex-1 min-w-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 shadow-2xl" style={{ opacity: 0 }}>
               {selectedModule ? (
                 <InfoPanel
                   moduleType={selectedModule}
@@ -896,7 +896,7 @@ export default function Page() {
             </button>
 
             {/* LEFT: Fraud ring list */}
-            <div className="gsap-panel w-[380px] shrink-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 shadow-2xl">
+            <div className="gsap-panel w-[380px] shrink-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 shadow-2xl" style={{ opacity: 0 }}>
               <FraudRingsDrawer
                 events={events}
                 onInjectRing={handleInjectRing}
@@ -908,7 +908,7 @@ export default function Page() {
             </div>
 
             {/* RIGHT: GenAI summary OR RingViewer */}
-            <div className="gsap-panel flex-1 min-w-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 shadow-2xl">
+            <div className="gsap-panel flex-1 min-w-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 shadow-2xl" style={{ opacity: 0 }}>
               {viewRing && viewerData ? (
                 <div className="p-5">
                   <RingViewer

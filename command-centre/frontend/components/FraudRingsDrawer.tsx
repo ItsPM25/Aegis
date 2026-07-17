@@ -111,14 +111,14 @@ export default function FraudRingsDrawer({
   return (
     <div ref={container} className="flex flex-col gap-3 p-4">
       <div className="glass p-4">
-        <div className="flex items-center justify-between text-xs text-zinc-400 gsap-ring-item">
+        <div className="flex items-center justify-between text-xs text-zinc-400 gsap-ring-item" style={{ opacity: 0 }}>
           <div className="flex items-center gap-1.5">
             <Network className="h-3.5 w-3.5 text-violet-400" /> Fraud Rings
           </div>
           <Activity className="h-3.5 w-3.5" />
         </div>
         {onInjectRing && (
-          <div className="mt-3 border border-violet-500/15 bg-violet-500/5 p-3 gsap-ring-item">
+          <div className="mt-3 border border-violet-500/15 bg-violet-500/5 p-3 gsap-ring-item" style={{ opacity: 0 }}>
             <div className="flex items-center gap-2">
               <select
                 value={district}
@@ -186,6 +186,7 @@ export default function FraudRingsDrawer({
               key={r.ring_id}
               onClick={() => onViewRing?.(r)}
               className="gsap-ring-item block w-full px-1 py-0.5 text-left transition hover:bg-white/5"
+              style={{ opacity: 0 }}
               title="view the money flow"
             >
               <div className="flex items-center justify-between text-[11px]">
@@ -204,7 +205,7 @@ export default function FraudRingsDrawer({
               </div>
             </button>
           ))}
-          {rings.length === 0 && <div className="mt-3 text-[11px] text-zinc-600 gsap-ring-item">no rings yet…</div>}
+          {rings.length === 0 && <div className="mt-3 text-[11px] text-zinc-600 gsap-ring-item" style={{ opacity: 0 }}>no rings yet…</div>}
         </div>
       </div>
     </div>
