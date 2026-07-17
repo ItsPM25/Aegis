@@ -206,8 +206,13 @@ export default function FusionChatBot({
         <div className={`flex h-8 w-8 items-center justify-center rounded-full bg-zinc-900 transition-transform ${busy ? "animate-spin" : "group-hover:rotate-12"}`}>
           <Zap className="h-4 w-4 text-zinc-100" />
         </div>
-        <span className="text-sm tracking-wide">
-          {busy ? "Correlating…" : fusion && !isOpen ? "View Fusion" : "Run Fusion"}
+        <span className="text-sm tracking-wide relative grid items-center">
+          <span className={`col-start-1 row-start-1 transition-all duration-300 ${isOpen ? 'translate-y-3 opacity-0' : 'translate-y-0 opacity-100'}`}>
+            {busy ? "Correlating…" : fusion ? "View Fusion" : "Run Fusion"}
+          </span>
+          <span className={`col-start-1 row-start-1 transition-all duration-300 ${isOpen ? 'translate-y-0 opacity-100' : '-translate-y-3 opacity-0'}`}>
+            Close
+          </span>
         </span>
       </button>
     </div>

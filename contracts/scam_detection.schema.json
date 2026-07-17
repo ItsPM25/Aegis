@@ -63,7 +63,19 @@
           "type": "string",
           "enum": ["upi", "bank_transfer", "cash", "giftcard", "crypto", "other"],
           "description": "How the victim paid, if known."
-        }
+        },
+        "victim_account": { "type": ["string", "null"], "description": "Victim's account number / UPI ID / wallet address (method-dependent)." },
+        "scammer_account": { "type": ["string", "null"], "description": "Scammer's account number / UPI ID / wallet address the money was sent to." },
+        "victim_bank": { "type": ["string", "null"], "description": "Victim's bank name (for bank_transfer)." },
+        "scammer_bank": { "type": ["string", "null"], "description": "Scammer's bank name (for bank_transfer)." },
+        "victim_ifsc": { "type": ["string", "null"], "description": "Victim's IFSC code (for bank_transfer)." },
+        "scammer_ifsc": { "type": ["string", "null"], "description": "Scammer's IFSC code (for bank_transfer)." },
+        "transaction_id": { "type": ["string", "null"], "description": "Transaction/UTR reference number if available." },
+        "giftcard_platform": { "type": ["string", "null"], "description": "Gift card platform (Amazon, Google Play, etc.)." },
+        "giftcard_code": { "type": ["string", "null"], "description": "Gift card code/number shared with scammer." },
+        "crypto_type": { "type": ["string", "null"], "description": "Cryptocurrency type (BTC, ETH, USDT, etc.)." },
+        "cash_location": { "type": ["string", "null"], "description": "Location where cash was handed over." },
+        "notes": { "type": ["string", "null"], "description": "Additional details from the victim." }
       },
       "additionalProperties": false
     },

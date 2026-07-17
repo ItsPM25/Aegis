@@ -278,8 +278,8 @@ export default function AlertsDrawer({
           <div className="gsap-alert-item text-[10px] font-bold uppercase tracking-widest text-zinc-500">
             Scam detections ({scams.length})
           </div>
-          {scams.map((s) => (
-            <div key={s.event_id} className="gsap-alert-item">
+          {scams.map((s, idx) => (
+            <div key={`${s.event_id}-${idx}`} className="gsap-alert-item">
               <Row
                 icon={<Phone className="h-3.5 w-3.5 text-red-400" />}
                 text={`${titleCase(s.scam_type ?? "scam")} flagged — ${s.location_hint?.district ?? "?"}`}
@@ -301,8 +301,8 @@ export default function AlertsDrawer({
           <div className="gsap-alert-item text-[10px] font-bold uppercase tracking-widest text-zinc-500">
             Counterfeit detections ({notes.length})
           </div>
-          {notes.map((c) => (
-            <div key={c.event_id} className="gsap-alert-item">
+          {notes.map((c, idx) => (
+            <div key={`${c.event_id}-${idx}`} className="gsap-alert-item">
               <Row
                 icon={<Banknote className="h-3.5 w-3.5 text-amber-400" />}
                 text={`Fake ₹${c.denomination} seized — ${c.location_hint?.district ?? "?"}`}

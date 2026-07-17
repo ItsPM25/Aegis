@@ -185,6 +185,56 @@
   .payment-form .submit-payment:active {
     transform: translateY(0);
   }
+  .payment-form .submit-payment:disabled {
+    opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5);
+    transform: none; box-shadow: none;
+  }
+
+  /* Method-specific detail fields */
+  .method-details {
+    overflow: hidden; transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    max-height: 0; opacity: 0;
+  }
+  .method-details.visible { max-height: 500px; opacity: 1; }
+  .method-details .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px;
+    margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06);
+    animation: slideDown 0.3s ease;
+  }
+  .method-details .detail-grid.single-col { grid-template-columns: 1fr; }
+  .method-details .detail-field label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); display: block; margin-bottom: 4px; font-weight: 600;
+  }
+  .method-details .detail-field input,
+  .method-details .detail-field textarea {
+    width: 100%; background: rgba(0, 0, 0, 0.4); color: var(--text);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 6px;
+    padding: 8px 12px; font: inherit; font-size: 12.5px; transition: all 0.2s;
+    outline: none; resize: none;
+  }
+  .method-details .detail-field input:hover,
+  .method-details .detail-field textarea:hover {
+    background: rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.2);
+  }
+  .method-details .detail-field input:focus,
+  .method-details .detail-field textarea:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+  }
+  .method-details .detail-field input::placeholder,
+  .method-details .detail-field textarea::placeholder {
+    color: rgba(161, 161, 170, 0.5);
+  }
+  .method-details .section-hint {
+    grid-column: 1 / -1; font-size: 11px; color: rgba(161,161,170,0.7);
+    margin-top: -2px; display: flex; align-items: center; gap: 5px;
+  }
+  .method-details .section-hint svg { width: 12px; height: 12px; fill: currentColor; opacity: 0.6; }
+
+  .form-actions {
+    margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
   .payment-trail {
     margin-top: 8px; padding: 8px 12px; border-radius: 8px;
     background: rgba(255,89,100,.08); border: 1px solid rgba(255,89,100,.2);
@@ -370,37 +420,11 @@ async function send() {
         </button>
         <div class="payment-form" id="${formId}">
           <div class="form-row">
-            <div class="input-group">
-              <label>Amount paid (₹)</label>
-              <div class="custom-number-wrapper">
-                <button type="button" class="spin-btn" onclick="spinNumber('${formId}', -1000)">−</button>
-                <input type="number" id="amt_${formId}" placeholder="e.g. 49999" min="1" step="1">
-                <button type="button" class="spin-btn" onclick="spinNumber('${formId}', 1000)">+</button>
-              </div>
-            </div>
-            <div class="input-group">
-              <label>Method</label>
-              <div class="custom-select-wrapper" id="method_wrapper_${formId}" tabindex="0" onblur="closeDropdown('${formId}')">
-                <div class="custom-select-display" onclick="toggleDropdown('${formId}')">
-                  <span id="method_display_${formId}">Bank Transfer</span>
-                  <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-                </div>
-                <div class="custom-select-options">
-                  <div onclick="selectMethod('${formId}', 'bank_transfer', 'Bank Transfer')">Bank Transfer</div>
-                  <div onclick="selectMethod('${formId}', 'upi', 'UPI')">UPI</div>
-                  <div onclick="selectMethod('${formId}', 'cash', 'Cash')">Cash</div>
-                  <div onclick="selectMethod('${formId}', 'giftcard', 'Gift Card')">Gift Card</div>
-                  <div onclick="selectMethod('${formId}', 'crypto', 'Crypto')">Crypto</div>
-                  <div onclick="selectMethod('${formId}', 'other', 'Other')">Other</div>
-                </div>
-                <input type="hidden" id="method_${formId}" value="bank_transfer">
-              </div>
-            </div>
-            <div class="input-group">
-              <label>&nbsp;</label>
-              <button class="submit-payment" onclick="submitPayment('${formId}', '${r.event_id}')">Trace Money →</button>
-            </div>
+            <div class="input-group"><label>Amount paid (₹)</label><div class="custom-number-wrapper"><button type="button" class="spin-btn" onclick="spinNumber('${formId}', -1000)">−</button><input type="number" id="amt_${formId}" placeholder="e.g. 49999" min="1" step="1"><button type="button" class="spin-btn" onclick="spinNumber('${formId}', 1000)">+</button></div></div>
+            <div class="input-group"><label>Method</label><div class="custom-select-wrapper" id="method_wrapper_${formId}" tabindex="0" onblur="closeDropdown('${formId}')"><div class="custom-select-display" onclick="toggleDropdown('${formId}')"><span id="method_display_${formId}">Select method…</span><svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div><div class="custom-select-options"><div onclick="selectMethod('${formId}', 'bank_transfer', '🏦 Bank Transfer')">🏦 Bank Transfer</div><div onclick="selectMethod('${formId}', 'upi', '📱 UPI')">📱 UPI</div><div onclick="selectMethod('${formId}', 'cash', '💵 Cash')">💵 Cash</div><div onclick="selectMethod('${formId}', 'giftcard', '🎁 Gift Card')">🎁 Gift Card</div><div onclick="selectMethod('${formId}', 'crypto', '₿ Crypto')">₿ Crypto</div><div onclick="selectMethod('${formId}', 'other', '📝 Other')">📝 Other</div></div><input type="hidden" id="method_${formId}" value=""></div></div>
           </div>
+          <div class="method-details" id="details_${formId}"></div>
+          <div class="form-actions"><button class="submit-payment" id="submit_${formId}" onclick="submitPayment('${formId}', '${r.event_id}')" disabled>Select a method to continue</button></div>
         </div>
         <div id="trail_${formId}"></div>
       ` : ''}`;
@@ -435,6 +459,126 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// Method-specific field definitions
+const METHOD_FIELDS = {
+  bank_transfer: {
+    hint: 'Bank account details help trace the money through the banking network',
+    fields: [
+      { id: 'victim_account', label: 'Your Account Number', placeholder: 'e.g. 1234567890', required: true },
+      { id: 'scammer_account', label: "Scammer's Account Number", placeholder: 'Account you sent money to', required: true },
+      { id: 'victim_bank', label: 'Your Bank', placeholder: 'e.g. SBI, HDFC, ICICI' },
+      { id: 'scammer_bank', label: "Scammer's Bank", placeholder: 'e.g. SBI, HDFC, ICICI' },
+      { id: 'victim_ifsc', label: 'Your IFSC', placeholder: 'e.g. SBIN0001234' },
+      { id: 'scammer_ifsc', label: "Scammer's IFSC", placeholder: 'e.g. HDFC0001234' },
+      { id: 'transaction_id', label: 'UTR / Ref Number', placeholder: 'Transaction reference (if available)', colspan: true },
+    ]
+  },
+  upi: {
+    hint: 'UPI IDs let us instantly flag the scammer across all payment apps',
+    fields: [
+      { id: 'victim_account', label: 'Your UPI ID', placeholder: 'e.g. yourname@upi', required: true },
+      { id: 'scammer_account', label: "Scammer's UPI ID", placeholder: 'e.g. scammer@ybl', required: true },
+      { id: 'transaction_id', label: 'UPI Ref / UTR Number', placeholder: 'Transaction reference (if available)', colspan: true },
+    ]
+  },
+  cash: {
+    hint: 'Location details help law enforcement trace the cash handover point',
+    singleCol: true,
+    fields: [
+      { id: 'cash_location', label: 'Handover Location', placeholder: 'Where was the cash handed over? (address / landmark)', type: 'textarea', required: true },
+      { id: 'notes', label: 'Additional Details', placeholder: 'Person description, vehicle details, any other info…', type: 'textarea' },
+    ]
+  },
+  giftcard: {
+    hint: 'Gift card codes can be frozen before the scammer redeems them',
+    fields: [
+      { id: 'giftcard_platform', label: 'Gift Card Platform', placeholder: 'e.g. Amazon, Google Play, iTunes', required: true },
+      { id: 'giftcard_code', label: 'Gift Card Code / Number', placeholder: 'The code you shared with the scammer', required: true },
+      { id: 'notes', label: 'Additional Details', placeholder: 'Number of cards, total value breakdown…', colspan: true },
+    ]
+  },
+  crypto: {
+    hint: 'Wallet addresses and transaction hashes are permanently recorded on the blockchain',
+    fields: [
+      { id: 'crypto_type', label: 'Cryptocurrency', placeholder: 'e.g. BTC, ETH, USDT, SOL', required: true },
+      { id: 'scammer_account', label: "Scammer's Wallet Address", placeholder: '0x… or bc1…', required: true },
+      { id: 'victim_account', label: 'Your Wallet Address', placeholder: 'Your sending wallet' },
+      { id: 'transaction_id', label: 'Transaction Hash', placeholder: 'Tx hash from your wallet / exchange' },
+    ]
+  },
+  other: {
+    hint: 'Any information you can provide helps investigators trace the fraud',
+    singleCol: true,
+    fields: [
+      { id: 'notes', label: 'Describe How You Paid', placeholder: 'Describe the payment method, any account details, reference numbers, or other relevant information…', type: 'textarea', required: true },
+    ]
+  }
+};
+
+function renderMethodFields(formId, method) {
+  const container = document.getElementById('details_' + formId);
+  const submitBtn = document.getElementById('submit_' + formId);
+  const config = METHOD_FIELDS[method];
+  if (!config) {
+    container.innerHTML = '';
+    container.classList.remove('visible');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Select a method to continue';
+    return;
+  }
+
+  let html = `<div class="detail-grid${config.singleCol ? ' single-col' : ''}">`;
+  html += `<div class="section-hint"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>${config.hint}</div>`;
+
+  for (const f of config.fields) {
+    const colSpan = f.colspan ? ' style="grid-column:1/-1"' : '';
+    const req = f.required ? ' <span style="color:var(--scam)">*</span>' : '';
+    if (f.type === 'textarea') {
+      html += `<div class="detail-field"${colSpan}><label>${f.label}${req}</label><textarea id="df_${f.id}_${formId}" placeholder="${f.placeholder}" rows="2"${f.required ? ' required' : ''}></textarea></div>`;
+    } else {
+      html += `<div class="detail-field"${colSpan}><label>${f.label}${req}</label><input type="text" id="df_${f.id}_${formId}" placeholder="${f.placeholder}"${f.required ? ' required' : ''}></div>`;
+    }
+  }
+  html += '</div>';
+  container.innerHTML = html;
+
+  // Animate in
+  requestAnimationFrame(() => container.classList.add('visible'));
+
+  // Enable submit
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Trace Money →';
+}
+
+function collectMethodDetails(formId, method) {
+  const config = METHOD_FIELDS[method];
+  if (!config) return {};
+  const details = {};
+  for (const f of config.fields) {
+    const el = document.getElementById('df_' + f.id + '_' + formId);
+    if (el && el.value.trim()) {
+      details[f.id] = el.value.trim();
+    }
+  }
+  return details;
+}
+
+function validateMethodDetails(formId, method) {
+  const config = METHOD_FIELDS[method];
+  if (!config) return false;
+  for (const f of config.fields) {
+    if (!f.required) continue;
+    const el = document.getElementById('df_' + f.id + '_' + formId);
+    if (!el || !el.value.trim()) {
+      el.style.borderColor = 'var(--scam)';
+      el.focus();
+      setTimeout(() => { el.style.borderColor = ''; }, 2000);
+      return false;
+    }
+  }
+  return true;
+}
+
 async function submitPayment(formId, eventId) {
   const amtInput = document.getElementById('amt_' + formId);
   const methodSel = document.getElementById('method_' + formId);
@@ -444,14 +588,23 @@ async function submitPayment(formId, eventId) {
   if (!amount || amount <= 0) { amtInput.style.borderColor = 'var(--scam)'; return; }
 
   const method = methodSel.value;
+  if (!method) return;
+
+  // Validate required method-specific fields
+  if (!validateMethodDetails(formId, method)) return;
+
   const stored = window['_scam_' + eventId];
   if (!stored) return;
 
-  // Attach reported_payment to the scam event
-  stored.reported_payment = { amount, method };
+  // Collect all method-specific details
+  const details = collectMethodDetails(formId, method);
+
+  // Attach reported_payment with full details to the scam event
+  stored.reported_payment = { amount, method, ...details };
 
   // Update button
-  btn.innerHTML = `✅ Reported ₹${amount.toLocaleString('en-IN')} via ${method}`;
+  const methodLabel = document.getElementById('method_display_' + formId).innerText;
+  btn.innerHTML = `✅ Reported ₹${amount.toLocaleString('en-IN')} via ${methodLabel}`;
   btn.classList.add('done');
   document.getElementById(formId).classList.remove('open');
 
@@ -515,6 +668,7 @@ function selectMethod(formId, val, label) {
   document.getElementById('method_' + formId).value = val;
   document.getElementById('method_display_' + formId).innerText = label;
   closeDropdown(formId);
+  renderMethodFields(formId, val);
 }
 function spinNumber(formId, amount) {
   const input = document.getElementById('amt_' + formId);

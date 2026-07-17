@@ -34,10 +34,19 @@ class EventStore:
     # ---- writes ----
     def add_scam(self, event: dict) -> None:
         with self._lock:
+            # Upsert by event_id so UI resubmissions (e.g. adding payment trail) don't duplicate
+            for i, existing in enumerate(self.scams):
+                if existing.get("event_id") == event.get("event_id"):
+                    self.scams[i] = event
+                    return
             self.scams.append(event)
 
     def add_counterfeit(self, event: dict) -> None:
         with self._lock:
+            for i, existing in enumerate(self.counterfeits):
+                if existing.get("event_id") == event.get("event_id"):
+                    self.counterfeits[i] = event
+                    return
             self.counterfeits.append(event)
 
     def set_fraud_graph(self, payload: dict) -> None:

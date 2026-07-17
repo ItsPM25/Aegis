@@ -513,6 +513,11 @@ export default function Page() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        // Blur whatever is focused so the browser doesn't apply :focus-visible to the tab button
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+
         // Do not close background tabs if a modal overlay is handling the escape key
         if (bankPartnerOpen || consoleOpen || supplyTrailOpen) return;
 
@@ -755,15 +760,41 @@ export default function Page() {
 
       {/* Research Lab — the three graph-ML experiments, made visible */}
       {activeTab === "research" && (
-        <div className="absolute inset-0 z-40 pointer-events-auto">
-          <ResearchPanel onClose={() => setActiveTab("map")} />
+        <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
+          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
+            Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
+          </div>
+          <div className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
+            <button
+              onClick={() => setActiveTab("map")}
+              className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden">
+              <ResearchPanel />
+            </div>
+          </div>
         </div>
       )}
 
       {/* Disrupt & Respond — detections turned into concrete, auditable actions */}
       {activeTab === "disrupt" && (
-        <div className="absolute inset-0 z-40 pointer-events-auto">
-          <DisruptPanel onClose={() => setActiveTab("map")} />
+        <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
+          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
+            Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
+          </div>
+          <div className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
+            <button
+              onClick={() => setActiveTab("map")}
+              className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden">
+              <DisruptPanel />
+            </div>
+          </div>
         </div>
       )}
 
@@ -822,7 +853,10 @@ export default function Page() {
 
       {/* Full screen blur overlay for Modules — side-by-side layout */}
       {activeTab === "modules" && (
-        <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-6 pointer-events-auto">
+        <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
+          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
+            Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
+          </div>
           <div ref={modulesScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
             {/* Close button */}
             <button
@@ -917,7 +951,10 @@ export default function Page() {
 
       {/* Full screen blur overlay for Fraud Rings — side-by-side layout */}
       {activeTab === "fraud-rings" && (
-        <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-6 pointer-events-auto">
+        <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
+          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
+            Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
+          </div>
           <div ref={ringsScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
             {/* Close button */}
             <button
@@ -1045,7 +1082,7 @@ export default function Page() {
         {activeTab === "map" && !supplyTrailOpen && (
           <button
             onClick={handleOpenSupplyTrail}
-            className={`pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide shadow-xl backdrop-blur-sm transition-all duration-300 ${
+            className={`pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 mt-0.5 text-[11px] font-semibold uppercase tracking-wide shadow-xl backdrop-blur-sm transition-all duration-300 ${
               activeTrail
                 ? "border-orange-500/60 bg-orange-500/20 text-orange-300 hover:bg-orange-500/30"
                 : "border-white/10 bg-zinc-900/80 text-zinc-400 hover:border-white/20 hover:text-zinc-200"

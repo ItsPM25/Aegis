@@ -129,7 +129,7 @@ export default function TopNav({
             data-tab={key}
             onClick={() => onTabChange(key)}
             aria-current={activeTab === key ? "page" : undefined}
-            className={`rounded-full px-4 py-1.5 text-sm transition-colors duration-200 ${
+            className={`focus-visible:outline-none rounded-full px-4 py-1.5 text-sm transition-colors duration-200 ${
               activeTab === key
                 ? "font-medium text-zinc-900"
                 : "font-normal text-zinc-400 hover:text-zinc-100"
@@ -176,9 +176,10 @@ export default function TopNav({
               >
                 <Search className="h-3.5 w-3.5" />
                 <span>Search</span>
-                <span className="ml-1 hidden md:flex items-center gap-0.5 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[9px] text-zinc-500 font-mono tracking-widest">
-                  Ctrl K
-                </span>
+                <div className="ml-2 hidden md:flex items-center gap-1">
+                  <kbd className="inline-flex h-4 items-center justify-center rounded border border-zinc-700 bg-zinc-800/50 px-1.5 font-sans text-[9px] font-medium text-zinc-400">Ctrl</kbd>
+                  <kbd className="inline-flex h-4 items-center justify-center rounded border border-zinc-700 bg-zinc-800/50 px-1.5 font-sans text-[9px] font-medium text-zinc-400">K</kbd>
+                </div>
               </button>
               
               {/* Callout Dialogue Box */}
