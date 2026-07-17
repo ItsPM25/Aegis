@@ -43,9 +43,9 @@ function ConfidenceBar({ value }: { value: number }) {
   const color =
     pct >= 60 ? "bg-red-500" : pct >= 35 ? "bg-amber-500" : "bg-zinc-500";
   return (
-    <div className="relative h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+    <div className="relative h-1.5 w-full bg-white/10 overflow-hidden">
       <div
-        className={`absolute left-0 top-0 h-full rounded-full transition-all duration-700 ${color}`}
+        className={`absolute left-0 top-0 h-full transition-all duration-700 ${color}`}
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -85,7 +85,7 @@ export default function SupplyTrailPanel({
       {/* ── Header ── */}
       <div className="gsap-panel flex items-center justify-between border-b border-white/10 px-5 py-4 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500/20">
+          <div className="flex h-9 w-9 items-center justify-center bg-orange-500/20">
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -107,7 +107,7 @@ export default function SupplyTrailPanel({
         </div>
         <button
           onClick={close}
-          className="rounded-full p-1.5 text-zinc-500 transition hover:bg-white/10 hover:text-zinc-200"
+          className="p-1.5 text-zinc-500 transition hover:bg-white/10 hover:text-zinc-200"
           aria-label="Close"
         >
           <svg
@@ -156,7 +156,7 @@ export default function SupplyTrailPanel({
                   <button
                     key={t.trail_id}
                     onClick={() => onSelectTrail(t)}
-                    className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-medium transition border ${
+                    className={`flex items-center gap-1 px-3 py-1 text-[10px] font-medium transition border ${
                       t.trail_id === trail.trail_id
                         ? "border-orange-500/60 bg-orange-500/15 text-orange-300"
                         : "border-white/10 bg-white/5 text-zinc-400 hover:border-white/20 hover:text-zinc-200"
@@ -172,7 +172,7 @@ export default function SupplyTrailPanel({
             )}
 
             {/* Corridor title */}
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <div className="border border-white/10 bg-white/5 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ export default function SupplyTrailPanel({
                   </div>
                 </div>
                 <span
-                  className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                  className={`shrink-0 border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
                     BAND_COLOR[trail.confidence_band]
                   }`}
                 >
@@ -207,7 +207,7 @@ export default function SupplyTrailPanel({
             </div>
 
             {/* Seizure cluster → inferred origin flow */}
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
+            <div className="border border-white/10 bg-white/5 p-4 space-y-3">
               <div className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
                 Provenance flow
               </div>
@@ -218,7 +218,7 @@ export default function SupplyTrailPanel({
                   <button
                     key={i}
                     onClick={() => onFlyTo(s.lat, s.lon, s.district)}
-                    className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-left transition hover:border-red-500/40 hover:bg-red-500/15 group"
+                    className="flex items-center gap-2 border border-red-500/20 bg-red-500/10 px-3 py-2 text-left transition hover:border-red-500/40 hover:bg-red-500/15 group"
                   >
                     <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse shrink-0" />
                     <div className="min-w-0 flex-1">
@@ -251,7 +251,7 @@ export default function SupplyTrailPanel({
                   {[0, 1, 2].map((i) => (
                     <div
                       key={i}
-                      className="h-1.5 w-0.5 rounded-full bg-orange-500/60"
+                      className="h-1.5 w-0.5 bg-orange-500/60"
                       style={{ opacity: 1 - i * 0.25 }}
                     />
                   ))}
@@ -277,9 +277,9 @@ export default function SupplyTrailPanel({
                     trail.inferred_origin.name
                   )
                 }
-                className="w-full flex items-center gap-3 rounded-xl border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-left transition hover:border-orange-500/50 hover:bg-orange-500/15 group"
+                className="w-full flex items-center gap-3 border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-left transition hover:border-orange-500/50 hover:bg-orange-500/15 group"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-500/20 text-base">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-orange-500/20 text-base">
                   ⚑
                 </div>
                 <div className="min-w-0 flex-1">
@@ -307,7 +307,7 @@ export default function SupplyTrailPanel({
 
               {/* Temporal flow — direction & speed proven from seizure timing */}
               {trail.flow && (
-                <div className="rounded-xl border border-red-500/25 bg-red-500/5 px-4 py-3 space-y-2">
+                <div className="border border-red-500/25 bg-red-500/5 px-4 py-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="text-[11px] font-semibold text-red-300">
                       Movement flow

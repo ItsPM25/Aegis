@@ -42,7 +42,7 @@ export default function ResearchPanel({ onClose }: { onClose: () => void }) {
       <button
         onClick={onClose}
         aria-label="Close Research Lab"
-        className="absolute right-4 top-4 z-10 rounded-full border border-white/10 bg-zinc-900/80 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-zinc-100"
+        className="absolute right-4 top-4 z-10 border border-white/10 bg-zinc-900/80 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-zinc-100"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
           <line x1="18" y1="6" x2="6" y2="18" />
@@ -84,7 +84,7 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col rounded-2xl border border-white/10 bg-zinc-900/60 p-5">
+    <div className="flex flex-col border border-white/10 bg-zinc-900/60 p-5">
       <h3 className="text-sm font-semibold text-zinc-100">{title}</h3>
       <p className="mt-0.5 mb-4 text-[11px] leading-relaxed text-zinc-500">{subtitle}</p>
       {children}
@@ -94,7 +94,7 @@ function Card({
 
 function Empty({ what }: { what: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-white/10 p-4 text-center text-[11px] text-zinc-600">
+    <div className="border border-dashed border-white/10 p-4 text-center text-[11px] text-zinc-600">
       {what} not generated yet.
       <br />
       Run the fraud-graph CLI to produce it.
@@ -131,9 +131,9 @@ function GhostRingCard({ ring }: { ring: ResearchResponse["ghost_ring"] }) {
                     {pct(v)}
                   </span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-white/5">
+                <div className="h-2 overflow-hidden bg-white/5">
                   <div
-                    className={`h-full rounded-full ${highlight ? "bg-violet-500" : "bg-zinc-600"}`}
+                    className={`h-full ${highlight ? "bg-violet-500" : "bg-zinc-600"}`}
                     style={{ width: `${(v / max) * 100}%` }}
                   />
                 </div>
@@ -147,7 +147,7 @@ function GhostRingCard({ ring }: { ring: ResearchResponse["ghost_ring"] }) {
             );
           })()}
 
-          <div className="mt-3 rounded-lg bg-white/5 p-2.5 text-[10px]">
+          <div className="mt-3 bg-white/5 p-2.5 text-[10px]">
             <div className="flex justify-between text-zinc-400">
               <span>Recall gap (fused − avg bank)</span>
               <span className={ring.recall_gap > 0 ? "text-emerald-400" : "text-zinc-500"}>
@@ -165,7 +165,7 @@ function GhostRingCard({ ring }: { ring: ResearchResponse["ghost_ring"] }) {
 
           {/* The caveat the whole method turns on — shown, not hidden. */}
           <div
-            className={`mt-2 rounded-lg border p-2.5 text-[10px] leading-relaxed ${
+            className={`mt-2 border p-2.5 text-[10px] leading-relaxed ${
               ring.false_merge_rate > 0.5
                 ? "border-red-500/25 bg-red-500/5 text-red-200/80"
                 : "border-amber-500/20 bg-amber-500/5 text-amber-200/70"
@@ -353,7 +353,7 @@ function SedBars({
         {binned.map((v, i) => (
           <div
             key={i}
-            className="flex-1 rounded-sm"
+            className="flex-1"
             style={{ height: `${Math.max((v / max) * 100, 2)}%`, backgroundColor: color, opacity: 0.85 }}
           />
         ))}
@@ -423,7 +423,7 @@ function AudioButtons({
     <div className="flex gap-2 pt-1">
       <button
         onClick={() => play("clean", clean)}
-        className={`flex-1 rounded-lg border px-2 py-1.5 text-[10px] font-medium transition ${
+        className={`flex-1 border px-2 py-1.5 text-[10px] font-medium transition ${
           playing === "clean"
             ? "border-sky-400/50 bg-sky-500/20 text-sky-200"
             : "border-white/10 bg-white/5 text-zinc-300 hover:border-sky-400/40"
@@ -433,7 +433,7 @@ function AudioButtons({
       </button>
       <button
         onClick={() => play("ring", ring)}
-        className={`flex-1 rounded-lg border px-2 py-1.5 text-[10px] font-medium transition ${
+        className={`flex-1 border px-2 py-1.5 text-[10px] font-medium transition ${
           playing === "ring"
             ? "border-rose-400/50 bg-rose-500/20 text-rose-200"
             : "border-white/10 bg-white/5 text-zinc-300 hover:border-rose-400/40"
