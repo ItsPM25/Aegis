@@ -256,8 +256,10 @@ export default function CrimeMap({
   // fly to a located alert / fusion hotspot.
   // The searched city is what the user asked to see, so it owns the viewport.
   // Routes draw around it at whatever zoom this lands on — the corridor runs
-  // off-screen by design; it is context, not the subject. Nothing else calls
-  // fitBounds on search, so there is no race to lose.
+  // off-screen by design; it is context, not the subject. The trail's own
+  // fitBounds is gated by suppressTrailFit, which the caller keys off the
+  // trail's ORIGIN rather than off a slower fetch, so it cannot fire late and
+  // yank the camera back out mid-flight.
   useEffect(() => {
     if (!mapRef.current || !ready || !focus) return;
     mapRef.current.flyTo({ center: [focus.lon, focus.lat], zoom: 9.4, duration: 2000 });

@@ -118,6 +118,11 @@ export default function Page() {
   const [supplyTrailLoading, setSupplyTrailLoading] = useState(false);
   const [supplyTrailData, setSupplyTrailData] = useState<SupplyTrailResponse | null>(null);
   const [activeTrail, setActiveTrail] = useState<SupplyTrail | null>(null);
+  /** Who asked for the trail. From "search" the corridor is context and must
+   *  not steal the viewport; from "panel" it IS the subject and should frame
+   *  itself. Known the moment the trail is set — unlike entryRoutes, which
+   *  lands ~2.5s later and so cannot gate a decision made immediately. */
+  const [trailSource, setTrailSource] = useState<"search" | "panel" | null>(null);
 
   const pushToast = useCallback((msg: string, type: Toast["type"] = "error") => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -142,6 +147,7 @@ export default function Page() {
       const data = await fetchSupplyTrail();
       setSupplyTrailData(data);
       setActiveTrail(data.best_trail);
+      setTrailSource("panel"); // the trail is the subject here — let it frame itself
     } catch (e) {
       pushToast("Supply Trail fetch failed — is the backend running?", "error");
       setSupplyTrailOpen(false);
@@ -249,6 +255,7 @@ export default function Page() {
   const clearSearch = useCallback(() => {
     setEntryRoutes(null);
     setActiveTrail(null);
+    setTrailSource(null);
     setCityOrigin(null);
     setCityAlerts(null);
   }, []);
@@ -341,6 +348,7 @@ export default function Page() {
             // marching dashes read as "notes move this way", so animating an
             // untraced trail would assert movement the evidence never showed.
             setActiveTrail(traced ? t : null);
+            setTrailSource("search");
           })
           .catch(() => setCityOrigin(null));
       } else {
@@ -368,6 +376,7 @@ export default function Page() {
         // than leaving a stale route drawn over an unrelated place.
         setEntryRoutes(null);
         setActiveTrail(null);
+        setTrailSource(null);
         setCityOrigin(null);
         setCityAlerts({ district: coords.label, alerts: [] });
         setTimeout(() => setCityAlerts(null), 10000);
@@ -393,7 +402,11 @@ export default function Page() {
         // map — the view stays on the searched city, see focus handling.
         trail={activeTrail}
         entryRoute={entryRoutes?.routes?.[0] ?? null}
-        suppressTrailFit={!!entryRoutes}
+        // Keyed off where the trail CAME FROM, not off entryRoutes: that
+        // arrives ~2.5s later (it waits on the narrator), so gating on it left
+        // a window where the trail framed the whole corridor and zoomed away
+        // from the searched city before the flag could ever flip.
+        suppressTrailFit={trailSource === "search"}
       />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-zinc-950/80 to-transparent" />
@@ -851,9 +864,13 @@ export default function Page() {
             onClose={() => {
               setSupplyTrailOpen(false);
               setActiveTrail(null);
+              setTrailSource(null);
             }}
             onFlyTo={(lat, lon) => setFocus({ lat, lon })}
-            onSelectTrail={(t) => setActiveTrail(t)}
+            onSelectTrail={(t) => {
+              setActiveTrail(t);
+              setTrailSource("panel");
+            }}
           />
         </div>
       )}
