@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import type {
   EventsResponse,
   FusionOutput,
@@ -518,6 +518,17 @@ export default function Page() {
     });
 
 
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (activeTab === "modules" && !selectedModule) closeModules();
+        else if (activeTab === "fraud-rings" && !viewRing) closeRings();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [activeTab, selectedModule, viewRing]);
 
   /** Tab switching is a close path for the alerts drawer — it sits below the
    *  nav, unlike the z-50 overlays whose X button is the only way out. Tween it

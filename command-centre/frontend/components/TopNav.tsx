@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import type { HealthResponse } from "@/lib/api";
 import type { TabKey } from "./types";
@@ -36,6 +36,26 @@ export default function TopNav({
   const backendUp = health?.status === "ok";
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [hasSearched, setHasSearched] = useState(true);
+
+  useEffect(() => {
+    if (!localStorage.getItem("aegis_has_searched")) {
+      setHasSearched(false);
+    }
+  }, []);
+
+  // Global Ctrl+K shortcut to open search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const container = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const pillRef = useRef<HTMLSpanElement>(null);
@@ -80,6 +100,8 @@ export default function TopNav({
     e.preventDefault();
     if (searchQuery.trim() && onSearch) {
       onSearch(searchQuery.trim());
+      localStorage.setItem("aegis_has_searched", "true");
+      setHasSearched(true);
     }
   };
 
@@ -146,10 +168,27 @@ export default function TopNav({
               </button>
             </form>
           ) : (
-            <button onClick={() => setSearchOpen(true)} className="flex items-center gap-2 rounded-full px-2 py-1 text-xs text-zinc-500 transition-colors hover:text-zinc-100">
-              <Search className="h-3.5 w-3.5" />
-              <span>Search</span>
-            </button>
+            <div className="relative group flex items-center">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex items-center gap-2 rounded-full px-2 py-1 text-xs text-zinc-500 transition-colors hover:text-zinc-100"
+              >
+                <Search className="h-3.5 w-3.5" />
+                <span>Search</span>
+                <span className="ml-1 hidden md:flex items-center gap-0.5 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[9px] text-zinc-500 font-mono tracking-widest">
+                  Ctrl K
+                </span>
+              </button>
+              
+              {/* Callout Dialogue Box */}
+              {!hasSearched && (
+                <div className="absolute right-full top-1/2 -translate-y-1/2 mr-4 w-44 p-2.5 text-[11px] leading-relaxed text-zinc-300 bg-zinc-800/90 backdrop-blur-md border border-white/10 rounded-lg shadow-xl z-50">
+                  Search any place here to view its details.
+                  {/* Arrow pointing right */}
+                  <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 bg-zinc-800/90 border-t border-r border-white/10 transform rotate-45"></div>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

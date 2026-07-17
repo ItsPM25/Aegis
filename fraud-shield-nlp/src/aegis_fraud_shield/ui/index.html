@@ -6,15 +6,37 @@
 <title>Aegis Fraud Shield — live scam check</title>
 <style>
   :root {
-    --bg: #0b1020; --panel: #131a2e; --panel-2: #1a2340; --text: #e8ecf6;
-    --muted: #93a0bd; --line: #26304f;
-    --scam: #ff5964; --suspicious: #ffb020; --legit: #2fbf71; --accent: #5b8cff;
+    --bg: #09090b;
+    --panel: rgba(24, 24, 27, 0.7);
+    --panel-2: rgba(39, 39, 42, 0.7);
+    --text: #fafafa;
+    --muted: #a1a1aa;
+    --line: rgba(255, 255, 255, 0.08);
+    --scam: #ef4444;
+    --suspicious: #f59e0b;
+    --legit: #10b981;
+    --accent: #8b5cf6;
   }
   * { box-sizing: border-box; margin: 0; }
   body {
     font: 15px/1.5 "Segoe UI", system-ui, sans-serif;
-    background: var(--bg); color: var(--text);
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(1200px 600px at 15% -10%, rgba(139, 92, 246, 0.05), transparent 60%),
+      radial-gradient(900px 500px at 100% 10%, rgba(248, 113, 113, 0.03), transparent 55%);
+    background-attachment: fixed;
+    color: var(--text);
     display: flex; flex-direction: column; height: 100vh;
+  }
+
+  ::selection {
+    background: rgba(167, 139, 250, 0.35);
+    color: #fff;
+  }
+  :focus-visible {
+    outline: 2px solid rgba(167, 139, 250, 0.7);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 
   /* ── SCROLLBAR — hidden by default, subtle on hover ── */

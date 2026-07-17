@@ -12,27 +12,27 @@
    DESIGN SYSTEM
    ══════════════════════════════════════════════════ */
 :root {
-  --bg: #060a13;
-  --surface-1: #0d1221;
-  --surface-2: #131b2e;
-  --surface-3: #1a2440;
-  --text: #eaeff8;
-  --text-secondary: #8899b8;
-  --border: rgba(255,255,255,0.06);
-  --border-hover: rgba(255,255,255,0.12);
+  --bg: #09090b;
+  --surface-1: rgba(24, 24, 27, 0.7);
+  --surface-2: rgba(39, 39, 42, 0.7);
+  --surface-3: rgba(63, 63, 70, 0.7);
+  --text: #fafafa;
+  --text-secondary: #a1a1aa;
+  --border: rgba(255,255,255,0.08);
+  --border-hover: rgba(255,255,255,0.15);
 
-  --red: #ff4d5e;
-  --red-bg: rgba(255,77,94,0.1);
-  --red-border: rgba(255,77,94,0.3);
-  --orange: #ffaa2e;
-  --orange-bg: rgba(255,170,46,0.1);
-  --orange-border: rgba(255,170,46,0.3);
-  --green: #34d97f;
-  --green-bg: rgba(52,217,127,0.1);
-  --green-border: rgba(52,217,127,0.3);
-  --blue: #4d8eff;
-  --blue-bg: rgba(77,142,255,0.08);
-  --blue-border: rgba(77,142,255,0.25);
+  --red: #ef4444;
+  --red-bg: rgba(239, 68, 68, 0.1);
+  --red-border: rgba(239, 68, 68, 0.3);
+  --orange: #f59e0b;
+  --orange-bg: rgba(245, 158, 11, 0.1);
+  --orange-border: rgba(245, 158, 11, 0.3);
+  --green: #10b981;
+  --green-bg: rgba(16, 185, 129, 0.1);
+  --green-border: rgba(16, 185, 129, 0.3);
+  --blue: #8b5cf6; /* violet to match dashboard */
+  --blue-bg: rgba(139, 92, 246, 0.1);
+  --blue-border: rgba(139, 92, 246, 0.3);
 
   --radius: 14px;
   --radius-sm: 8px;
@@ -45,8 +45,23 @@
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 14px; line-height: 1.5;
-  background: var(--bg); color: var(--text);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1200px 600px at 15% -10%, rgba(139, 92, 246, 0.05), transparent 60%),
+    radial-gradient(900px 500px at 100% 10%, rgba(248, 113, 113, 0.03), transparent 55%);
+  background-attachment: fixed;
+  color: var(--text);
   min-height: 100vh;
+}
+
+::selection {
+  background: rgba(167, 139, 250, 0.35);
+  color: #fff;
+}
+:focus-visible {
+  outline: 2px solid rgba(167, 139, 250, 0.7);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* ── SCROLLBAR — hidden by default, subtle on hover ── */
