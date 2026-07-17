@@ -13,6 +13,7 @@ import type {
   SupplyTrailResponse,
 } from "@/lib/api";
 import { fetchEntryRoutes, fetchSupplyTrail, injectDemoRing } from "@/lib/api";
+import { playPanelExit, usePanelEntrance } from "@/lib/gsap";
 import { usePolling } from "@/lib/usePolling";
 import AlertChips from "@/components/AlertChips";
 import AlertsDrawer from "@/components/AlertsDrawer";
@@ -418,6 +419,41 @@ export default function Page() {
 
   const drawerOpen = activeTab !== "map";
 
+  // Card entrances for the two full-screen overlays. Keyed on the sub-view too,
+  // so picking a module or opening a ring reveals the right-hand card instead
+  // of swapping its contents instantly.
+  const modulesScope = useRef<HTMLDivElement>(null);
+  const ringsScope = useRef<HTMLDivElement>(null);
+  const drawerScope = useRef<HTMLDivElement>(null);
+  usePanelEntrance(modulesScope, ".gsap-panel", [activeTab, selectedModule]);
+  usePanelEntrance(ringsScope, ".gsap-panel", [activeTab, viewRing?.ring_id]);
+
+  // Overlays are conditionally rendered, so their cards vanish the moment
+  // activeTab flips. Tween them out first, flip after.
+  const closeModules = () =>
+    playPanelExit(modulesScope, () => {
+      setActiveTab("map");
+      setSelectedModule(null);
+    });
+  const closeRings = () =>
+    playPanelExit(ringsScope, () => {
+      setActiveTab("map");
+      setViewRing(null);
+    });
+
+  /** Tab switching is a close path for the alerts drawer — it sits below the
+   *  nav, unlike the z-50 overlays whose X button is the only way out. Tween it
+   *  away before the tab flips, or leaving it is a hard cut. */
+  const changeTab = (t: typeof activeTab) => {
+    const next = activeTab === t && t !== "map" ? "map" : t;
+    if (next === activeTab) return;
+    if (activeTab === "alerts" && drawerScope.current) {
+      playPanelExit(drawerScope, () => setActiveTab(next));
+      return;
+    }
+    setActiveTab(next);
+  };
+
   return (
     <main className="relative h-dvh w-screen select-none overflow-hidden bg-zinc-950">
       <CrimeMap
@@ -443,7 +479,7 @@ export default function Page() {
         health={health}
         alertCount={alertCount}
         activeTab={activeTab}
-        onTabChange={(t) => setActiveTab((cur) => (cur === t && t !== "map" ? "map" : t))}
+        onTabChange={changeTab}
         onBell={() => setActiveTab("alerts")}
         onSearch={handleSearch}
         onSearchClear={clearSearch}
@@ -661,7 +697,7 @@ export default function Page() {
 
       {/* slide-out drawers for alerts and analytics */}
       {drawerOpen && activeTab !== "fraud-rings" && activeTab !== "modules" && (
-        <Drawer onClose={() => setActiveTab("map")}>
+        <Drawer scopeRef={drawerScope} onClose={() => setActiveTab("map")}>
           {activeTab === "alerts" && (
             <AlertsDrawer
               events={events}
@@ -677,17 +713,17 @@ export default function Page() {
       {/* Full screen blur overlay for Modules — side-by-side layout */}
       {activeTab === "modules" && (
         <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-6 pointer-events-auto">
-          <div className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
+          <div ref={modulesScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
             {/* Close button */}
             <button 
-              onClick={() => { setActiveTab("map"); setSelectedModule(null); }}
+              onClick={closeModules}
               className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 rounded-full hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
 
             {/* LEFT: Modules list */}
-            <div className="w-[380px] shrink-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl">
+            <div className="gsap-panel w-[380px] shrink-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl">
               <ModulesDrawer 
                 events={events} 
                 health={health} 
@@ -696,7 +732,7 @@ export default function Page() {
             </div>
 
             {/* RIGHT: InfoPanel or GenAI summary */}
-            <div className="flex-1 min-w-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl">
+            <div className="gsap-panel flex-1 min-w-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl">
               {selectedModule ? (
                 <InfoPanel
                   moduleType={selectedModule}
@@ -770,17 +806,17 @@ export default function Page() {
       {/* Full screen blur overlay for Fraud Rings — side-by-side layout */}
       {activeTab === "fraud-rings" && (
         <div className="absolute inset-0 z-50 bg-zinc-950/80 backdrop-blur-md flex items-center justify-center p-6 pointer-events-auto">
-          <div className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
+          <div ref={ringsScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
             {/* Close button */}
-            <button 
-              onClick={() => { setActiveTab("map"); setViewRing(null); }}
+            <button
+              onClick={closeRings}
               className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 rounded-full hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
 
             {/* LEFT: Fraud ring list */}
-            <div className="w-[380px] shrink-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl">
+            <div className="gsap-panel w-[380px] shrink-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl">
               <FraudRingsDrawer
                 events={events}
                 onInjectRing={handleInjectRing}
@@ -792,7 +828,7 @@ export default function Page() {
             </div>
 
             {/* RIGHT: GenAI summary OR RingViewer */}
-            <div className="flex-1 min-w-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl">
+            <div className="gsap-panel flex-1 min-w-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 rounded-2xl shadow-2xl">
               {viewRing && viewerData ? (
                 <div className="p-5">
                   <RingViewer

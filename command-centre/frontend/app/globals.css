@@ -97,19 +97,11 @@ body {
 }
 
 /* ---------- animations ---------- */
-@keyframes slide-in {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-.animate-slide-in {
-  animation: slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
+/* `slide-in` (translateX(-100%)) is gone: it dragged the drawer's blur(20px)
+   surface right across the live map, forcing a full backdrop re-blur every
+   frame. Drawers now use usePanelEntrance/usePanelExit (scale+opacity) from
+   lib/gsap.ts. `slide-up` below stays — the modals it serves open over a
+   dimmed, static backdrop rather than the moving map. */
 
 @keyframes slide-up {
   from {

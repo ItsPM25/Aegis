@@ -12,8 +12,9 @@
  *   onSelectTrail — user switched to a different trail (mode)
  */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { SupplyTrail } from "@/lib/api";
+import { playPanelExit, usePanelEntrance } from "@/lib/gsap";
 
 const MODE_ICONS: Record<string, string> = {
   rail: "🚂",
@@ -67,11 +68,16 @@ export default function SupplyTrailPanel({
   onSelectTrail: (t: SupplyTrail) => void;
 }) {
   const [expandedEvidence, setExpandedEvidence] = useState<number | null>(null);
+  const scope = useRef<HTMLDivElement>(null);
+  // Header, then body. Re-runs on trail change so switching mode (rail → road)
+  // reveals the new content instead of swapping it silently.
+  usePanelEntrance(scope, ".gsap-panel", [trail?.trail_id, loading]);
+  const close = () => playPanelExit(scope, onClose);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div ref={scope} className="flex flex-col h-full overflow-hidden">
       {/* ── Header ── */}
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 shrink-0">
+      <div className="gsap-panel flex items-center justify-between border-b border-white/10 px-5 py-4 shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500/20">
             <svg
@@ -94,7 +100,7 @@ export default function SupplyTrailPanel({
           </div>
         </div>
         <button
-          onClick={onClose}
+          onClick={close}
           className="rounded-full p-1.5 text-zinc-500 transition hover:bg-white/10 hover:text-zinc-200"
           aria-label="Close"
         >
@@ -112,7 +118,7 @@ export default function SupplyTrailPanel({
       </div>
 
       {/* ── Body ── */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+      <div className="gsap-panel flex-1 overflow-y-auto px-5 py-4 space-y-4">
         {loading && (
           <div className="flex flex-col items-center gap-3 py-10">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-orange-500 border-t-transparent" />
