@@ -20,10 +20,13 @@ export default function ModulesDrawer({
   events,
   health,
   onSelectModule,
+  onOpenBankPartner,
 }: {
   events: EventsResponse | null;
   health: HealthResponse | null;
   onSelectModule?: (type: "scam" | "counterfeit") => void;
+  /** Opens the financial-institution (Bank Partner) B2B console. */
+  onOpenBankPartner?: () => void;
 }) {
   const scam = events?.scams.at(-1) ?? null;
   const note = events?.counterfeits.at(-1) ?? null;
@@ -106,6 +109,16 @@ export default function ModulesDrawer({
             </div>
             <div className="text-[10px] text-zinc-400 mt-1">Deep-dive graph analytics.</div>
           </a>
+          <button
+            onClick={onOpenBankPartner}
+            className="block w-full text-left p-2 bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
+          >
+            <div className="flex items-center justify-between text-xs text-zinc-200">
+              <span className="font-medium">Bank Partner · AML</span>
+              <ArrowUpRight className="h-3 w-3" />
+            </div>
+            <div className="text-[10px] text-zinc-400 mt-1">B2B account screening + note verify (API-key).</div>
+          </button>
         </div>
         
         <div className="text-xs font-semibold text-zinc-300 mt-4 mb-2">Key Features</div>

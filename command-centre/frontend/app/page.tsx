@@ -27,6 +27,7 @@ import ModulesDrawer from "@/components/ModulesDrawer";
 import ResearchPanel from "@/components/ResearchPanel";
 import RingViewer from "@/components/RingViewer";
 import DisruptPanel from "@/components/DisruptPanel";
+import BankPartnerPanel from "@/components/BankPartnerPanel";
 import ToastContainer, { type Toast } from "@/components/ToastContainer";
 import TopNav from "@/components/TopNav";
 import InfoPanel from "@/components/InfoPanel";
@@ -120,6 +121,7 @@ export default function Page() {
     note: string | null;
   } | null>(null);
   const [selectedModule, setSelectedModule] = useState<"scam" | "counterfeit" | null>(null);
+  const [bankPartnerOpen, setBankPartnerOpen] = useState(false);
 
   // Supply Trail state
   const [supplyTrailOpen, setSupplyTrailOpen] = useState(false);
@@ -760,6 +762,14 @@ export default function Page() {
         </div>
       )}
 
+      {/* Bank Partner — financial-institution B2B console. Opened from the
+          Modules → Connected Websites list; sits above the modules overlay. */}
+      {bankPartnerOpen && (
+        <div className="absolute inset-0 z-[60] pointer-events-auto">
+          <BankPartnerPanel onClose={() => setBankPartnerOpen(false)} />
+        </div>
+      )}
+
       {/* hero title + module pills */}
       {activeTab === "map" && (
         <div className="pointer-events-none absolute left-5 top-20 z-10 hidden lg:block">
@@ -816,6 +826,7 @@ export default function Page() {
                 events={events}
                 health={health}
                 onSelectModule={setSelectedModule}
+                onOpenBankPartner={() => setBankPartnerOpen(true)}
               />
             </div>
 

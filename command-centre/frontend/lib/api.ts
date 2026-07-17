@@ -554,3 +554,41 @@ export async function actOnAction(
   if (!r.ok) throw new Error(`action ${op} failed: ${r.status}`);
   return r.json();
 }
+
+// ── Financial-institution B2B surface (API-key gated) ────────────────────────
+// Public demo key — this is the value the backend ships as its default; it is not
+// a secret, it just demonstrates that the surface is gated rather than open.
+export const INSTITUTION_DEMO_KEY = "aegis-demo-institution-key";
+
+export interface AccountScreening {
+  account_id: string;
+  known: boolean;
+  risk_score: number;
+  risk_band: "low" | "medium" | "high";
+  in_ring: string | null;
+  ring?: {
+    ring_id: string;
+    risk_score?: number;
+    size?: number;
+    label?: string;
+    district?: string;
+  } | null;
+  features?: Record<string, number | null> | null;
+  decision: "block" | "review" | "monitor" | "clear";
+  recommendation: string;
+  engine: string;
+  channel: string;
+  disclaimer: string;
+}
+
+/** AML account screening — the Fraud Graph risk for one account, as a bank's
+ *  compliance system would call it (behind the demo X-API-Key). */
+export async function screenAccount(accountId: string): Promise<AccountScreening> {
+  const r = await fetch(`${API_BASE}/institution/screen-account`, {
+    method: "POST",
+    headers: { "content-type": "application/json", "X-API-Key": INSTITUTION_DEMO_KEY },
+    body: JSON.stringify({ account_id: accountId }),
+  });
+  if (!r.ok) throw new Error(`screen-account failed: ${r.status}`);
+  return r.json();
+}
