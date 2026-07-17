@@ -454,7 +454,10 @@ export default function Page() {
       {cityAlerts && (
         <div
           data-search-card
-          className={`absolute z-40 w-80 max-w-[90vw] rounded-2xl bg-zinc-900/90 backdrop-blur-md border border-zinc-800 shadow-2xl overflow-hidden pointer-events-auto ${
+          // Capped at 70vh and column-flexed: the header stays put while the
+          // body scrolls. Previously only the alerts list scrolled, so the entry
+          // section grew the card past the viewport and ran off screen.
+          className={`absolute z-40 flex max-h-[70vh] w-80 max-w-[90vw] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/90 shadow-2xl backdrop-blur-md pointer-events-auto ${
             cardPos ? "" : "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-slide-up"
           }`}
           style={cardPos ? { left: cardPos.x, top: cardPos.y } : undefined}
@@ -464,7 +467,7 @@ export default function Page() {
             onPointerMove={onCardPointerMove}
             onPointerUp={onCardPointerUp}
             onPointerCancel={onCardPointerUp}
-            className="bg-zinc-800/50 px-4 py-2 border-b border-zinc-800 flex justify-between items-center cursor-grab active:cursor-grabbing select-none touch-none"
+            className="shrink-0 bg-zinc-800/50 px-4 py-2 border-b border-zinc-800 flex justify-between items-center cursor-grab active:cursor-grabbing select-none touch-none"
             title="Drag to move"
           >
             <h3 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
@@ -483,7 +486,10 @@ export default function Page() {
               &times;
             </button>
           </div>
-          <div className="max-h-64 overflow-y-auto p-2">
+          {/* One scroll region for everything under the header, so a long entry
+              section scrolls instead of growing the card off the screen. */}
+          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="p-2">
             {cityAlerts.alerts.length === 0 ? (
               <p className="text-xs text-zinc-500 text-center py-4">No active alerts for this region.</p>
             ) : (
@@ -626,6 +632,7 @@ export default function Page() {
               )}
             </div>
           )}
+          </div>
         </div>
       )}
 

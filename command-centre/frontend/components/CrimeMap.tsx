@@ -161,6 +161,30 @@ export default function CrimeMap({
     })();
     return () => {
       cancelled = true;
+      // React runs effect cleanups in DEFINITION order, and this effect is
+      // first — so map.remove() would destroy the map before any of the marker
+      // effects below get to detach theirs, leaving markers registered on a
+      // dead map's move/render events. That is the "reading 'y' of null" throw.
+      // Tear every marker down here, where the ordering is guaranteed, rather
+      // than relying on cleanups that run too late.
+      [entryAnimRef, trailAnimRef].forEach((r) => {
+        if (r.current !== null) cancelAnimationFrame(r.current);
+        r.current = null;
+      });
+      if (entryTimerRef.current !== null) clearTimeout(entryTimerRef.current);
+      entryTimerRef.current = null;
+      entryAliveRef.current = false;
+      [markersRef, trailMarkersRef, entryMarkersRef].forEach((ref) => {
+        ref.current.forEach((m: any) => {
+          try {
+            m.remove();
+          } catch {
+            /* already detached */
+          }
+        });
+        ref.current = [];
+      });
+      scalablesRef.current = [];
       mapRef.current?.remove();
       mapRef.current = null;
     };
@@ -252,7 +276,23 @@ export default function CrimeMap({
     };
     applyScale();
     map.on("zoom", applyScale);
-    return () => map.off("zoom", applyScale);
+    return () => {
+      map.off("zoom", applyScale);
+      // These markers were only ever removed at the TOP of the next run. On
+      // unmount there is no next run, so every hub, dot and attached popup
+      // stayed bound to a map being destroyed — MapLibre then projects them
+      // against a dead transform and throws "reading 'y'" of null. This effect
+      // rebuilds on every poll, so it was the most frequent source of the leak.
+      markersRef.current.forEach((m) => {
+        try {
+          m.remove();
+        } catch {
+          /* map already gone — nothing to detach from */
+        }
+      });
+      markersRef.current = [];
+      scalablesRef.current = [];
+    };
   }, [points, hubs, ready]);
 
   // fly to a located alert / fusion hotspot.
