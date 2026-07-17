@@ -429,3 +429,56 @@ export async function fetchEntryRoutes(
   if (!r.ok) throw new Error(`entry-routes failed: ${r.status}`);
   return r.json();
 }
+
+// ── Research modules: results served from precomputed artifacts ──────────────
+
+export interface GhostRing {
+  n_banks: number;
+  per_bank_ring_recall: Record<string, number>;
+  fused_ring_recall: number;
+  matching_precision: number;
+  false_merge_rate: number;
+  recall_gap: number;
+  best_min_score?: number;
+}
+
+export interface ArmsRace {
+  generation: number[];
+  escape_rate: number[];
+  detector_recall: number[];
+  retrained_generations: number[];
+}
+
+export interface SpectralCommunity {
+  id: number;
+  size: number;
+  rayleigh: number;
+  anomaly: boolean;
+  eigenvalues: number[];
+  sed: number[];
+}
+
+export interface SpectralData {
+  communities: SpectralCommunity[];
+  shift: {
+    clean_rayleigh: number;
+    ring_rayleigh: number;
+    shift_magnitude: number;
+    clean_high_freq_energy: number;
+    ring_high_freq_energy: number;
+  };
+}
+
+export interface ResearchResponse {
+  ghost_ring: GhostRing | null;
+  arms_race: ArmsRace | null;
+  spectral: SpectralData | null;
+}
+
+/** The three research modules' results. Any block may be null when its artifact
+ *  has not been generated — the panel renders each independently. */
+export async function fetchResearch(): Promise<ResearchResponse> {
+  const r = await fetch(`${API_BASE}/research`);
+  if (!r.ok) throw new Error(`research failed: ${r.status}`);
+  return r.json();
+}

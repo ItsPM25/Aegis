@@ -13,7 +13,7 @@ import type {
   SupplyTrailResponse,
 } from "@/lib/api";
 import { fetchEntryRoutes, fetchSupplyTrail, injectDemoRing } from "@/lib/api";
-import { playPanelExit, usePanelEntrance } from "@/lib/gsap";
+import { gsap, playPanelExit, prefersReducedMotion, useGSAP, usePanelEntrance } from "@/lib/gsap";
 import { usePolling } from "@/lib/usePolling";
 import AlertChips from "@/components/AlertChips";
 import AlertsDrawer from "@/components/AlertsDrawer";
@@ -24,6 +24,7 @@ import FraudConsole from "@/components/FraudConsole";
 import FraudRingsDrawer from "@/components/FraudRingsDrawer";
 import type { TabKey } from "@/components/types";
 import ModulesDrawer from "@/components/ModulesDrawer";
+import ResearchPanel from "@/components/ResearchPanel";
 import RingViewer from "@/components/RingViewer";
 import ToastContainer, { type Toast } from "@/components/ToastContainer";
 import TopNav from "@/components/TopNav";
@@ -107,6 +108,7 @@ export default function Page() {
    *  moved off whatever it is covering on the map. */
   const [cardPos, setCardPos] = useState<{ x: number; y: number } | null>(null);
   const dragRef = useRef<{ dx: number; dy: number } | null>(null);
+  const cardScope = useRef<HTMLDivElement>(null);
   const [cityOrigin, setCityOrigin] = useState<{
     loading: boolean;
     /** True when this city's own seizures could not trace a direction and the
@@ -280,17 +282,91 @@ export default function Page() {
     dragRef.current = null;
   }, []);
 
+  /* ── Search card open/close ──
+     The card centres itself with `-translate-x-1/2 -translate-y-1/2`, so its
+     POSITION lives in the very transform an animation wants to drive. The old
+     `animate-slide-up` keyframes set `transform: translateY(1rem)` outright,
+     which blew that centring away for their duration — the card played its
+     entrance half its size down-and-right, then snapped into place. Any tween
+     that ignores this hits the same wall, so the centring is stated explicitly
+     as xPercent/yPercent and carried through both tweens.
+
+     clearProps afterwards hands positioning back to the CSS classes: the card
+     is draggable, and a leftover inline transform would offset it the moment a
+     drag switches it to left/top. */
+  const CENTRE = { xPercent: -50, yPercent: -50 };
+
+  useGSAP(
+    () => {
+      const el = cardScope.current;
+      if (!el) return;
+      if (prefersReducedMotion()) {
+        gsap.set(el, { clearProps: "all" });
+        return;
+      }
+      gsap.fromTo(
+        el,
+        { ...CENTRE, opacity: 0, scale: 0.96 },
+        { ...CENTRE, opacity: 1, scale: 1, duration: 0.3, ease: "power3.out", force3D: true, clearProps: "all" },
+      );
+    },
+    // District only: dragging re-renders constantly and must not replay this.
+    { dependencies: [cityAlerts?.district] },
+  );
+
+  /** Tween the card out, then run `done`. React drops it the instant cityAlerts
+   *  goes null, so the exit has to gate that rather than follow it. */
+  const dismissCard = useCallback(
+    (done: () => void) => {
+      const el = cardScope.current;
+      if (!el || prefersReducedMotion()) {
+        done();
+        return;
+      }
+      // Dragged: position comes from left/top, so there is no centring to keep.
+      const base = cardPos ? {} : CENTRE;
+      gsap.fromTo(
+        el,
+        { ...base, opacity: 1, scale: 1 },
+        {
+          ...base,
+          opacity: 0,
+          scale: 0.96,
+          duration: 0.2,
+          ease: "power2.in",
+          force3D: true,
+          overwrite: true,
+          onComplete: done,
+        },
+      );
+    },
+    [cardPos],
+  );
+
+  /** The card's own X — dismisses the popup only. The map highlights belong to
+   *  the search, not to this panel, and clear from the top nav. */
+  const closeCard = useCallback(
+    () =>
+      dismissCard(() => {
+        setCityAlerts(null);
+        setCityOrigin(null);
+      }),
+    [dismissCard],
+  );
+
   /** Search dismissed from the top nav — take everything it drew back off the
    *  map. Without this the routes and the panel outlive the search that
-   *  produced them. */
+   *  produced them. The card animates out; the map layers go with it. */
   const clearSearch = useCallback(() => {
-    setEntryRoutes(null);
-    setActiveTrail(null);
-    setTrailSource(null);
-    setCityOrigin(null);
-    setCityAlerts(null);
-    setCardPos(null);
-  }, []);
+    dismissCard(() => {
+      setEntryRoutes(null);
+      setActiveTrail(null);
+      setTrailSource(null);
+      setCityOrigin(null);
+      setCityAlerts(null);
+      setCardPos(null);
+    });
+  }, [dismissCard]);
 
   const handleSearch = async (query: string) => {
     const q = query.trim();
@@ -489,12 +565,15 @@ export default function Page() {
           sits where it was put. Stays until closed — no timer. */}
       {cityAlerts && (
         <div
+          ref={cardScope}
           data-search-card
           // Capped at 70vh and column-flexed: the header stays put while the
           // body scrolls. Previously only the alerts list scrolled, so the entry
           // section grew the card past the viewport and ran off screen.
+          // `animate-slide-up` is gone: its keyframes overrode the centring
+          // transform. GSAP drives both tweens now, centring included.
           className={`absolute z-40 flex max-h-[70vh] w-80 max-w-[90vw] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/90 shadow-2xl backdrop-blur-md pointer-events-auto ${
-            cardPos ? "" : "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-slide-up"
+            cardPos ? "" : "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
           }`}
           style={cardPos ? { left: cardPos.x, top: cardPos.y } : undefined}
         >
@@ -513,10 +592,7 @@ export default function Page() {
             <button
               // Dismisses the popup only. The map highlights belong to the
               // search, not to this panel, and clear from the top nav.
-              onClick={() => {
-                setCityAlerts(null);
-                setCityOrigin(null);
-              }}
+              onClick={closeCard}
               className="text-zinc-400 hover:text-zinc-100"
             >
               &times;
@@ -669,6 +745,13 @@ export default function Page() {
             </div>
           )}
           </div>
+        </div>
+      )}
+
+      {/* Research Lab — the three graph-ML experiments, made visible */}
+      {activeTab === "research" && (
+        <div className="absolute inset-0 z-40 pointer-events-auto">
+          <ResearchPanel />
         </div>
       )}
 

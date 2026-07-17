@@ -240,6 +240,65 @@ def fusion_latest() -> dict:
     return store.last_fusion
 
 
+@app.get("/research")
+def research() -> dict:
+    """The three research modules' results, read from generated artifacts.
+
+    These are expensive to compute (GraphSAGE, an evolutionary loop, per-
+    community eigendecomposition), so they are precomputed by the fraud-graph
+    CLI and served as static JSON — never run in the request path. Each block
+    is null when its artifact has not been generated, so the UI degrades
+    per-module instead of failing whole.
+
+    Nothing here is dressed up. The numbers are whatever the modules measured,
+    including the honest caveats (Ghost Ring's false_merge_rate, spectral's
+    weak per-community flag). Presenting them truthfully is the point.
+    """
+    from .store import REPO_ROOT
+
+    out = REPO_ROOT / "fraud-graph-ml" / "output"
+
+    def _json(name: str):
+        p = out / name
+        if not p.exists():
+            return None
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return None
+
+    # Arms race is a CSV time series — parse to columnar arrays for charting.
+    arms = None
+    csv_path = out / "arms_race_history.csv"
+    if csv_path.exists():
+        try:
+            lines = csv_path.read_text(encoding="utf-8").strip().splitlines()
+            header = lines[0].split(",")
+            rows = [dict(zip(header, ln.split(","))) for ln in lines[1:]]
+
+            def _col(key: str) -> list[float]:
+                return [float(r[key]) for r in rows if r.get(key) not in (None, "")]
+
+            arms = {
+                "generation": [int(float(r["generation"])) for r in rows],
+                "escape_rate": _col("best_escape_rate"),
+                "detector_recall": _col("detector_recall"),
+                "retrained_generations": [
+                    int(float(r["generation"]))
+                    for r in rows
+                    if str(r.get("retrained", "")).lower() in ("true", "1", "1.0")
+                ],
+            }
+        except (OSError, ValueError, KeyError):
+            arms = None
+
+    return {
+        "ghost_ring": _json("ghost_ring.json"),
+        "arms_race": arms,
+        "spectral": _json("spectral_data.json"),
+    }
+
+
 @app.get("/hotspots")
 def hotspots() -> dict:
     """Cross-domain crime map: DBSCAN hubs over all located signals.

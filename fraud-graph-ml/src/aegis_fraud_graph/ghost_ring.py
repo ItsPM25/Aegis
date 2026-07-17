@@ -761,11 +761,18 @@ def _compute_ring_recall(
 def run_ghost_ring(
     source: str = "synthetic",
     n_banks: int = 4,
+    min_score: float = 0.3,
 ) -> GhostRingReport:
     """End-to-end Ghost Ring pipeline.
 
     1. Partition → 2. Local GraphSAGE per bank → 3. Boundary extraction →
     4. Central matching → 5. Fuse + detect → 6. Compare per-bank vs fused.
+
+    `min_score` is the matcher's accept threshold and the precision/recall knob
+    the whole result rests on. Low values match aggressively (high recall, but
+    the false-merge rate climbs and the fused graph fills with invented rings);
+    high values match only confident pairs (fewer rings recovered, but real
+    ones). Judge recall_gap and false_merge_rate together — either alone lies.
     """
     _require_advanced()
     from .data import load
@@ -790,7 +797,7 @@ def run_ghost_ring(
         all_boundary_infos.append(infos)
 
     # Step 4: Match
-    matcher = CentralMatcher()
+    matcher = CentralMatcher(min_score=min_score)
     matched = matcher.match(all_boundary_infos)
 
     # Step 5: Fuse and detect

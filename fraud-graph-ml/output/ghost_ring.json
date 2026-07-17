@@ -1,0 +1,17 @@
+{
+  "best_min_score": 0.3,
+  "n_banks": 4,
+  "per_bank_ring_recall": {
+    "0": 0.4444,
+    "1": 0.7407,
+    "2": 0.6818,
+    "3": 0.52
+  },
+  "fused_ring_recall": 0.6386,
+  "fused_ring_precision": 0.012,
+  "n_ground_truth_cross_edges": 3732,
+  "n_matched_edges": 1330,
+  "matching_precision": 0.012,
+  "false_merge_rate": 0.988,
+  "recall_gap": 0.0418
+}

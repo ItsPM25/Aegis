@@ -1,1 +1,1 @@
-export type TabKey = "map" | "modules" | "fraud-rings" | "alerts" | "analytics";
+export type TabKey = "map" | "modules" | "fraud-rings" | "alerts" | "analytics" | "research";

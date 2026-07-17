@@ -111,6 +111,7 @@ app.post("/api/demo/reset", (_req, res) =>
 // prefix, matching the backend's own route names. Alias them here so both the
 // legacy /api/* convention and the bare paths work through the gateway.
 app.get("/health", (_req, res) => forward(res, "/health"));
+app.get("/research", (_req, res) => forward(res, "/research"));
 app.get("/events", (_req, res) => forward(res, "/events"));
 app.get("/hotspots", (_req, res) => forward(res, "/hotspots"));
 app.get("/fusion/latest", (_req, res) => forward(res, "/fusion/latest"));
