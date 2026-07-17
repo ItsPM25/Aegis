@@ -440,24 +440,6 @@ body {
   border-bottom-color: rgb(24 24 27 / 0.92) !important;
 }
 
-/* Compact attribution: force it COLLAPSED to just the ⓘ. MapLibre opens the
-   <details> by default AND re-opens it after load, so JS is unreliable — instead
-   we override its `compact-show` rule outright: hide the credits text always,
-   and reveal it only while the user hovers the ⓘ. Dark chrome to match. */
-.maplibregl-ctrl-attrib.maplibregl-compact {
-  background-color: rgb(24 24 27 / 0.75) !important;
-  backdrop-filter: blur(10px);
-}
-.maplibregl-ctrl-attrib.maplibregl-compact .maplibregl-ctrl-attrib-inner {
-  display: none !important;
-}
-.maplibregl-ctrl-attrib.maplibregl-compact:hover .maplibregl-ctrl-attrib-inner {
-  display: block !important;
-}
-/* dark-theme the ⓘ button and the revealed credit links */
-.maplibregl-ctrl-attrib-button {
-  filter: invert(1) brightness(1.2);
-}
-.maplibregl-ctrl-attrib a {
-  color: rgb(161 161 170) !important;
-}
+/* The ⓘ attribution expander is gone — MapLibre's AttributionControl is no
+   longer added, so the rules that fought to keep it collapsed went with it.
+   The tile credit is now static text rendered by CrimeMap (bottom-left). */

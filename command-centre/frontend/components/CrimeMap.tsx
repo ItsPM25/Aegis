@@ -150,7 +150,11 @@ export default function CrimeMap({
       // with the Satellite toggle + compass. It stays collapsed to just the ⓘ
       // via CSS in globals.css (the credits show on hover); doing it in JS was
       // unreliable because MapLibre re-opens the <details> after load.
-      map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
+      // No AttributionControl: the ⓘ expander fought the zoom buttons for the
+      // corner and kept re-opening itself after load. The credit is still
+      // REQUIRED — OSM is ODbL, and CARTO and Esri both make attribution a
+      // licence condition — so it is rendered as static text below instead.
+      // Removing the widget is a layout choice; dropping the credit would not be.
       libRef.current = maplibregl;
       mapRef.current = map;
 
@@ -766,6 +770,46 @@ export default function CrimeMap({
         <Layers className="h-3.5 w-3.5" />
         {satellite ? "Dark" : "Satellite"}
       </button>
+
+      {/* Tile credit. Replaces MapLibre's ⓘ expander, which competed with the
+          zoom buttons for the corner. Static, but it must still name whichever
+          provider is actually on screen — crediting CARTO while showing Esri
+          tiles would be worse than no credit. Links are required by ODbL. */}
+      <div className="pointer-events-none absolute bottom-1 left-2 z-10 select-none text-[9px] leading-none text-zinc-600">
+        <a
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noreferrer noopener"
+          className="pointer-events-auto hover:text-zinc-400"
+        >
+          © OpenStreetMap
+        </a>
+        {satellite ? (
+          <>
+            {" · Imagery © "}
+            <a
+              href="https://www.esri.com"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="pointer-events-auto hover:text-zinc-400"
+            >
+              Esri
+            </a>
+          </>
+        ) : (
+          <>
+            {" · © "}
+            <a
+              href="https://carto.com/attributions"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="pointer-events-auto hover:text-zinc-400"
+            >
+              CARTO
+            </a>
+          </>
+        )}
+      </div>
     </div>
   );
 }
