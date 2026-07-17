@@ -12,6 +12,7 @@ import type {
 import { fetchCampaigns, fetchPlateFamilies } from "@/lib/api";
 import { clockTime, inr, titleCase } from "@/lib/format";
 import { AlertTriangle, Banknote, MapPin, Network, Phone, ArrowUpRight } from "./Icons";
+import CaseFileModal from "./CaseFileModal";
 
 const TIER_BADGE: Record<string, string> = {
   high: "bg-red-500/15 text-red-300 border-red-500/40",
@@ -58,6 +59,7 @@ export default function AlertsDrawer({
   // Intelligence layer: fetched once when the drawer opens (cheap endpoints).
   const [families, setFamilies] = useState<PlateFamiliesResponse | null>(null);
   const [campaigns, setCampaigns] = useState<CampaignsResponse | null>(null);
+  const [caseDistrict, setCaseDistrict] = useState<string | null>(null);
   useEffect(() => {
     fetchPlateFamilies().then(setFamilies).catch(() => {});
     fetchCampaigns().then(setCampaigns).catch(() => {});
@@ -247,11 +249,28 @@ export default function AlertsDrawer({
             <MapPin className="h-3.5 w-3.5" />
             {h.tier === "coordinated" ? "Coordinated hub" : "Multi-signal hub"} — {h.district ?? "unknown"}
           </div>
-          <div className="mt-1 text-[10px] text-zinc-400">
-            {h.n_points} signals · {h.domains.map(titleCase).join(" + ")}
+          <div className="mt-1 flex items-center justify-between text-[10px] text-zinc-400">
+            <span>{h.n_points} signals · {h.domains.map(titleCase).join(" + ")}</span>
+            {h.district && (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCaseDistrict(h.district);
+                }}
+                className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-300 transition hover:bg-amber-500/20"
+              >
+                📋 case file
+              </span>
+            )}
           </div>
         </button>
       ))}
+
+      {caseDistrict && (
+        <CaseFileModal district={caseDistrict} onClose={() => setCaseDistrict(null)} />
+      )}
 
       {/* ALL scam detections */}
       {scams.length > 0 && (

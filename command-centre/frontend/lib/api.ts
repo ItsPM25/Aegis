@@ -329,6 +329,28 @@ export async function fetchCampaigns(): Promise<CampaignsResponse> {
   return r.json();
 }
 
+// ── AI Case Officer ──────────────────────────────────────────────────────────
+
+export interface CaseFile {
+  summary: string;
+  timeline: string[];
+  hypothesis: string;
+  recommended_actions: string[];
+}
+
+export interface CaseFileResponse {
+  district: string;
+  case_file: CaseFile;
+  dossier: Record<string, unknown> & {
+    counts: { scams: number; fake_notes: number; rings: number; ring_accounts: number };
+  };
+  engine: string;
+  disclaimer: string;
+}
+
+export const fetchCaseFile = (district: string) =>
+  post<CaseFileResponse>("/case-file", { district });
+
 export interface SupplyTrailResponse {
   best_trail: SupplyTrail | null;
   all_trails: SupplyTrail[];

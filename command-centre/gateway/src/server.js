@@ -118,11 +118,17 @@ app.post("/fuse", (_req, res) => forward(res, "/fuse", { method: "POST" }));
 app.get("/supply-trail", (req, res) =>
   forward(res, `/supply-trail${req.query.mode ? `?mode=${encodeURIComponent(req.query.mode)}` : ""}`)
 );
-// intelligence layer: plate families + scam campaigns (bare + /api forms)
+// intelligence layer: plate families + scam campaigns + case officer (bare + /api forms)
 app.get("/intel/plate-families", (_req, res) => forward(res, "/intel/plate-families"));
 app.get("/intel/campaigns", (_req, res) => forward(res, "/intel/campaigns"));
 app.get("/api/intel/plate-families", (_req, res) => forward(res, "/intel/plate-families"));
 app.get("/api/intel/campaigns", (_req, res) => forward(res, "/intel/campaigns"));
+app.post("/case-file", (req, res) =>
+  forward(res, "/case-file", { method: "POST", body: req.body ?? {} })
+);
+app.post("/api/case-file", (req, res) =>
+  forward(res, "/case-file", { method: "POST", body: req.body ?? {} })
+);
 app.post("/analyze/scam", (req, res) =>
   forward(res, "/analyze/scam", { method: "POST", body: req.body ?? {} })
 );

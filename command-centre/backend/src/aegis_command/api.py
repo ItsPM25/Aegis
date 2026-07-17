@@ -296,6 +296,48 @@ def intel_campaigns() -> dict:
     }
 
 
+@app.post("/case-file")
+def case_file(body: dict) -> dict:
+    """AI Case Officer — one click turns a district's signals into a brief.
+    Deterministic dossier (every module's evidence, auditable) + an LLM-written
+    brief with a template fallback so it works with zero API keys."""
+    from aegis_supply_trail import compute_trail
+
+    from .case_officer import build_dossier, write_case_file_safe
+
+    district = (body or {}).get("district", "").strip()
+    if not district:
+        raise HTTPException(422, "body must include a 'district'")
+
+    scams, counterfeits, fraud_graph = store.snapshot()
+    seizures = [
+        {
+            "event_id": c.get("event_id", "unknown"),
+            "lat": c["location_hint"]["lat"],
+            "lon": c["location_hint"]["lon"],
+            "district": c["location_hint"].get("district", "unknown"),
+            "denomination": c.get("denomination", "unknown"),
+            "timestamp": c.get("timestamp", ""),
+        }
+        for c in counterfeits
+        if c.get("verdict") in ("fake", "uncertain")
+        and (c.get("location_hint") or {}).get("lat")
+    ]
+    trail = compute_trail(seizures) if seizures else None
+    dossier = build_dossier(district, scams, counterfeits, fraud_graph, trail)
+    brief, engine = write_case_file_safe(dossier)
+    return {
+        "district": district,
+        "case_file": brief,
+        "dossier": dossier,
+        "engine": engine,
+        "disclaimer": (
+            "The brief is generated from the machine-established dossier below — "
+            "verify every item against source records before acting."
+        ),
+    }
+
+
 @app.get("/supply-trail")
 def supply_trail(mode: str | None = None) -> dict:
     """Supply Trail — infer counterfeit note provenance along transport corridors.
