@@ -751,7 +751,7 @@ export default function Page() {
       {/* Research Lab — the three graph-ML experiments, made visible */}
       {activeTab === "research" && (
         <div className="absolute inset-0 z-40 pointer-events-auto">
-          <ResearchPanel />
+          <ResearchPanel onClose={() => setActiveTab("map")} />
         </div>
       )}
 
