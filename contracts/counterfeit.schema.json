@@ -77,6 +77,43 @@
       },
       "required": ["decision", "checks"],
       "additionalProperties": false
+    },
+    "serial": {
+      "type": ["object", "null"],
+      "description": "Serial-number layer (manual/UI-entered serial). nonsense = impossible RBI format; suspicious = classic prop pattern (fancy genuine numbers exist); duplicate = same serial sighted before in the registry — a counterfeit printing run or a rescan. Any non-valid status blocks a genuine certification (caps to uncertain), never convicts.",
+      "properties": {
+        "value": { "type": "string" },
+        "status": { "type": "string", "enum": ["valid", "suspicious", "nonsense", "duplicate"] },
+        "detail": { "type": "string" },
+        "prior_sightings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_id": { "type": "string" },
+              "timestamp": { "type": "string" },
+              "district": { "type": ["string", "null"] }
+            },
+            "required": ["event_id", "timestamp"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["value", "status", "detail"],
+      "additionalProperties": false
+    },
+    "vision_review": {
+      "type": ["object", "null"],
+      "description": "Vision-LLM second look (portrait / SPECIMEN overprint / header text). Additive: absent without an API key; a failing question blocks a genuine certification, never produces a fake verdict.",
+      "properties": {
+        "portrait_is_gandhi": { "type": ["boolean", "null"] },
+        "specimen_overprint": { "type": ["boolean", "null"] },
+        "header_correct": { "type": ["boolean", "null"] },
+        "observations": { "type": "array", "items": { "type": "string" } },
+        "engine": { "type": "string" }
+      },
+      "required": ["engine"],
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

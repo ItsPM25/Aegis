@@ -20,7 +20,7 @@ import io
 from pathlib import Path
 from threading import Lock
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -70,6 +70,7 @@ def get_model() -> CounterfeitModel:
 class AnalyzeB64Request(BaseModel):
     image_b64: str = Field(max_length=MAX_UPLOAD_BYTES * 4 // 3 + 128)
     location_hint: dict | None = None
+    serial_number: str | None = Field(default=None, max_length=20)
 
 
 def _open_image(raw: bytes) -> Image.Image:
@@ -81,8 +82,10 @@ def _open_image(raw: bytes) -> Image.Image:
         raise HTTPException(status_code=400, detail=f"Not a readable image: {exc}") from exc
 
 
-def _analyze_pil(img: Image.Image, location_hint: dict | None = None) -> dict:
-    return analyze_image(img, get_model(), location_hint=location_hint, save_capture=True)
+def _analyze_pil(img: Image.Image, location_hint: dict | None = None,
+                 serial_number: str | None = None) -> dict:
+    return analyze_image(img, get_model(), location_hint=location_hint,
+                         save_capture=True, serial_number=serial_number)
 
 
 @app.get("/health")
@@ -101,8 +104,9 @@ def health() -> dict:
 
 
 @app.post("/analyze")
-async def analyze_upload(file: UploadFile = File(...)) -> dict:
-    return _analyze_pil(_open_image(await file.read()))
+async def analyze_upload(file: UploadFile = File(...),
+                         serial_number: str | None = Form(default=None)) -> dict:
+    return _analyze_pil(_open_image(await file.read()), serial_number=serial_number)
 
 
 @app.post("/analyze_b64")
@@ -111,7 +115,7 @@ def analyze_b64(req: AnalyzeB64Request) -> dict:
         raw = base64.b64decode(req.image_b64.split(",", 1)[-1])  # tolerate data: URLs
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=400, detail=f"Bad base64 image: {exc}") from exc
-    return _analyze_pil(_open_image(raw), req.location_hint)
+    return _analyze_pil(_open_image(raw), req.location_hint, req.serial_number)
 
 
 @app.get("/")

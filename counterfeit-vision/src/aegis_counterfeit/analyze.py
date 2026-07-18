@@ -30,6 +30,8 @@ from .config import CAPTURES_DIR, CONTRACT_SCHEMA, SCHEMA_VERSION, TrainConfig
 from .features import infer_denomination, locate_note, run_all_checks
 from .model import CounterfeitModel
 from .prescreen import TriageResult, narrate_triage_safe, prescreen, triage_block
+from .serials import cap_verdict_for_serial, inspect_serial
+from .vision_agent import cap_verdict_for_vision, vision_review_safe
 
 
 def _to_bgr(img: Image.Image) -> np.ndarray:
@@ -41,8 +43,36 @@ def analyze_image(
     model: CounterfeitModel,
     location_hint: dict | None = None,
     save_capture: bool = False,
+    serial_number: str | None = None,
 ) -> dict:
     """Analyse one note photo; returns a contract-valid payload dict."""
+    payload = _analyze_core(img, model, location_hint, save_capture)
+
+    # Serial layer: nonsense format flags, valid serials go through the
+    # sighting registry (duplicate serial = counterfeit printing run). Can
+    # only cap a genuine certification, never acquit or convict.
+    if serial_number:
+        payload["serial"] = inspect_serial(
+            serial_number, payload["event_id"],
+            (location_hint or {}).get("district"),
+        )
+        cap_verdict_for_serial(payload)
+
+    # Vision-LLM second look (portrait/SPECIMEN/header). Additive: absent
+    # without a key; failing questions cap genuine -> uncertain, nothing more.
+    review = vision_review_safe(img)
+    if review is not None:
+        payload["vision_review"] = review
+        cap_verdict_for_vision(payload)
+    return payload
+
+
+def _analyze_core(
+    img: Image.Image,
+    model: CounterfeitModel,
+    location_hint: dict | None = None,
+    save_capture: bool = False,
+) -> dict:
     # The CNN (trained on real photos with varied framing/background) scores the
     # ORIGINAL image — it is robust to framing and, critically, the perspective
     # warp mis-fires on out-of-distribution inputs (e.g. novelty/joke notes),
