@@ -51,7 +51,14 @@ uvicorn aegis_counterfeit.api:app --app-dir src --port 8002
 python -m pytest -q                        # tests (offline, tiny backbone)
 ```
 
-## How it works (two layers fused)
+## How it works (three layers fused)
+0. **Pre-flight triage** ([prescreen.py](src/aegis_counterfeit/prescreen.py)) — deterministic
+   OpenCV checks run *before* the CNN: quality gate (blur / resolution / exposure →
+   `uncertain` + rescan advice) and obvious-fake tells (photocopy saturation collapse,
+   flat print, impossible geometry, unknown colour). Two tells — or one conclusive one —
+   convict as `fake` without ever consulting the model; an agentic narrator
+   (Claude → Groq → Gemini → template) writes the "why" over the measurements into the
+   payload's `triage` block. A pass claims nothing: the CNN is never second-guessed.
 1. **CNN verdict** ([model.py](src/aegis_counterfeit/model.py)) — EfficientNet-B0, ImageNet
    weights, head-only fine-tuning. Mid-probability scans return **`uncertain`** (manual check)
    instead of a coin-flip — and a note is *never* certified genuine while any security check

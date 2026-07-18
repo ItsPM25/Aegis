@@ -29,6 +29,7 @@ from PIL import Image
 from .config import CAPTURES_DIR, CONTRACT_SCHEMA, SCHEMA_VERSION, TrainConfig
 from .features import infer_denomination, locate_note, run_all_checks
 from .model import CounterfeitModel
+from .prescreen import TriageResult, narrate_triage_safe, prescreen, triage_block
 
 
 def _to_bgr(img: Image.Image) -> np.ndarray:
@@ -48,7 +49,16 @@ def analyze_image(
     # distorting them into looking genuine. The warped, perspective-corrected
     # note is used ONLY for the OpenCV feature-checks, which need canonical
     # geometry but are advisory (they never flip the CNN verdict).
-    warped = locate_note(_to_bgr(img))
+    bgr = _to_bgr(img)
+    warped = locate_note(bgr)
+
+    # Pre-flight triage: obvious fakes and unscannable photos exit here — the
+    # CNN is only consulted when the answer isn't already certain. `model` is
+    # untouched on these paths.
+    triage = prescreen(bgr, warped)
+    if triage.decision != "pass":
+        return _fast_path_payload(img, triage, warped, location_hint, save_capture)
+
     checks = run_all_checks(warped)
     failed = [c.feature for c in checks if not c.passed]
     # Grad-CAM gives us p_fake AND a heatmap of the regions that drove the
@@ -97,6 +107,59 @@ def analyze_image(
         "image_ref": image_ref,
         "heatmap_ref": heatmap_ref,
         "location_hint": location_hint,
+        # Full pipeline ran: record that triage saw nothing obvious.
+        "triage": triage_block(triage),
+    }
+
+
+def _fast_path_payload(
+    img: Image.Image,
+    triage: TriageResult,
+    warped: "np.ndarray",
+    location_hint: dict | None,
+    save_capture: bool,
+) -> dict:
+    """Payload for scans that never reach the CNN: an unscannable photo
+    (verdict `uncertain` — rescan advice) or an obvious fake (verdict `fake`
+    from hard measurements). No Grad-CAM exists on these paths — no model ran."""
+    if triage.decision == "unscannable":
+        verdict, denomination = "uncertain", "unknown"
+        missing = []
+        # Confidence that a manual check / rescan is warranted, not in a
+        # fake-vs-genuine call — the photo carries too little signal for one.
+        confidence = 0.2
+        narrative, engine = None, None  # quality advice needs no LLM
+    else:  # obvious_fake
+        verdict = "fake"
+        denomination = infer_denomination(warped)
+        # Feature checks are cheap OpenCV — still run them so missing_features
+        # carries the richest available evidence alongside the triage tells.
+        failed_checks = [c.feature for c in run_all_checks(warped) if not c.passed]
+        missing = failed_checks + [f for f in triage.mapped_features() if f not in failed_checks]
+        confidence = min(0.98, 0.90 + 0.02 * (len(triage.failed) - 1 + len(failed_checks)))
+        narrative, engine = narrate_triage_safe(triage)
+
+    event_id = f"note_{uuid.uuid4().hex[:12]}"
+    image_ref: str | None = None
+    if save_capture:
+        CAPTURES_DIR.mkdir(parents=True, exist_ok=True)
+        capture_path = CAPTURES_DIR / f"{event_id}.jpg"
+        img.convert("RGB").save(capture_path, quality=88)
+        _prune_captures()
+        image_ref = f"{SERVICE_BASE_URL}/captures/{capture_path.name}"
+
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "event_id": event_id,
+        "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "denomination": denomination,
+        "verdict": verdict,
+        "confidence": round(confidence, 4),
+        "missing_features": missing,
+        "image_ref": image_ref,
+        "heatmap_ref": None,
+        "location_hint": location_hint,
+        "triage": triage_block(triage, narrative, engine),
     }
 
 

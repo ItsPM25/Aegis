@@ -52,6 +52,31 @@
         "lat": { "type": "number" },
         "lon": { "type": "number" }
       }
+    },
+    "triage": {
+      "type": ["object", "null"],
+      "description": "Pre-CNN deterministic triage. decision 'obvious_fake' or 'unscannable' means the CNN was never consulted — the verdict came from these measurements alone. Additive evidence like fraud-shield's `verification`; never contradicts the pipeline.",
+      "properties": {
+        "decision": { "type": "string", "enum": ["pass", "obvious_fake", "unscannable"] },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "passed": { "type": "boolean" },
+              "measurement": { "type": "number" },
+              "evidence": { "type": "string" }
+            },
+            "required": ["name", "passed", "evidence"],
+            "additionalProperties": false
+          }
+        },
+        "narrative": { "type": ["string", "null"], "description": "LLM-written 'why' over the failed checks (Claude -> Groq -> Gemini -> template chain). Null when triage passed." },
+        "engine": { "type": ["string", "null"], "description": "Which narrator produced `narrative`." }
+      },
+      "required": ["decision", "checks"],
+      "additionalProperties": false
     }
   },
   "additionalProperties": false
