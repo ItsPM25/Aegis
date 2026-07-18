@@ -43,6 +43,13 @@ function probeTile(url: string, timeout = 3500): Promise<boolean> {
 // Map's default centre: Jamtara town. 23.795 fell ~19 km south, on Maithon reservoir.
 const JAMTARA: [number, number] = [86.804, 23.963];
 
+// Zoomed-out frame of all India — the owl-logo "reset to overview" target. fitBounds
+// adapts to the viewport aspect, so it frames correctly at any window size.
+const INDIA_BOUNDS: [[number, number], [number, number]] = [
+  [68.1, 6.5],
+  [97.4, 35.7],
+];
+
 /* Markers scale with zoom so each keeps a fixed ground footprint.
    Mercator pixels-per-meter double per zoom level, hence 2^(zoom - ref). */
 const ZOOM_REF = 10.3; // initial zoom — markers render at their base size here (k = 1)
@@ -56,6 +63,7 @@ export default function CrimeMap({
   trail,
   entryRoute,
   suppressTrailFit,
+  recenterSignal,
 }: {
   points: MapPoint[];
   hubs: Hub[];
@@ -67,6 +75,8 @@ export default function CrimeMap({
   /** Draw the trail without framing it. Set on search, where the searched city
    *  owns the viewport and the corridor is only context. */
   suppressTrailFit?: boolean;
+  /** Bumped by the owl-logo reset to fly the camera out to the India overview. */
+  recenterSignal?: number;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -336,6 +346,18 @@ export default function CrimeMap({
     if (!mapRef.current || !ready || !focus) return;
     mapRef.current.flyTo({ center: [focus.lon, focus.lat], zoom: 11.5, duration: 2000 });
   }, [focus, ready]);
+
+  // Owl-logo "reset": fly the camera out to frame all of India. Skips the initial
+  // mount (signal starts at 0) so it only fires on an actual click.
+  useEffect(() => {
+    if (!mapRef.current || !ready || !recenterSignal) return;
+    mapRef.current.fitBounds(INDIA_BOUNDS, {
+      padding: 48,
+      duration: 1800,
+      bearing: 0,
+      pitch: 0,
+    });
+  }, [recenterSignal, ready]);
 
   // ── Supply Trail rendering ──────────────────────────────────────────────
   useEffect(() => {
