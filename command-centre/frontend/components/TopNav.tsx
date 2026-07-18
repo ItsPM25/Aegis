@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, Fragment } from "react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
 import type { HealthResponse } from "@/lib/api";
 import type { TabKey } from "./types";
 import { Bell, Search, Wifi, X, ChevronLeft, ChevronRight } from "./Icons";
@@ -26,6 +26,7 @@ export default function TopNav({
   onSearch,
   onSearchClear,
   isRightPanelOpen,
+  onLogoClick,
 }: {
   health: HealthResponse | null;
   alertCount: number;
@@ -36,6 +37,8 @@ export default function TopNav({
   /** Search dismissed — clear anything it drew on the map. */
   onSearchClear?: () => void;
   isRightPanelOpen?: boolean;
+  /** Hard-reset the map to the India overview (owl-logo click). */
+  onLogoClick?: () => void;
 }) {
   const backendUp = health?.status === "ok";
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,6 +71,7 @@ export default function TopNav({
   const container = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const pillRef = useRef<HTMLSpanElement>(null);
+  const logoRef = useRef<HTMLImageElement>(null);
 
   useGSAP(() => {
     // fromTo (not from) + clearProps: the tween ALWAYS lands on the visible
@@ -146,14 +150,28 @@ export default function TopNav({
     }
   };
 
+  // Spin the owl once for tactile feedback, then fire the map hard-reset.
+  const handleLogoClick = () => {
+    if (logoRef.current && !prefersReducedMotion()) {
+      gsap.to(logoRef.current, { rotate: "+=360", duration: 0.6, ease: "power2.out" });
+    }
+    onLogoClick?.();
+  };
+
   return (
     <>
       <header ref={container} className="pointer-events-auto absolute inset-x-0 top-0 z-50 flex items-center gap-5 px-5 py-3">
-      {/* Aegis owl logo */}
-      <div className="glass flex h-12 w-12 items-center justify-center !rounded-xl transition-transform duration-500 hover:rotate-12 hover:scale-110 shadow-[0_0_22px_rgba(139,92,246,0.55)]">
+      {/* Aegis owl logo — click to hard-reset the map to the India overview */}
+      <button
+        type="button"
+        onClick={handleLogoClick}
+        aria-label="Reset map to India view"
+        title="Reset to India view"
+        className="glass flex h-12 w-12 cursor-pointer items-center justify-center !rounded-xl transition-transform duration-500 hover:rotate-12 hover:scale-110 shadow-[0_0_22px_rgba(139,92,246,0.55)] focus-visible:outline-none"
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-mark.png" alt="Aegis" className="h-11 w-11 object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]" />
-      </div>
+        <img ref={logoRef} src="/logo-mark.png" alt="Aegis" className="h-11 w-11 object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]" />
+      </button>
 
       <nav
         ref={navRef as React.RefObject<HTMLElement>}
