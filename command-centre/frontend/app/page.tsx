@@ -11,8 +11,9 @@ import type {
   EntryRoutesResponse,
   SupplyTrail,
   SupplyTrailResponse,
+  DashboardSummariesResponse,
 } from "@/lib/api";
-import { fetchEntryRoutes, fetchSupplyTrail, injectDemoRing } from "@/lib/api";
+import { fetchEntryRoutes, fetchSupplyTrail, injectDemoRing, fetchDashboardSummaries } from "@/lib/api";
 import { gsap, playPanelExit, prefersReducedMotion, useGSAP, usePanelEntrance } from "@/lib/gsap";
 import { usePolling } from "@/lib/usePolling";
 import AlertChips from "@/components/AlertChips";
@@ -148,6 +149,18 @@ export default function Page() {
   const [ringAlerts, setRingAlerts] = useState<RingAlert[]>([]);
   const [viewRing, setViewRing] = useState<Ring | null>(null);
   const [consoleOpen, setConsoleOpen] = useState(false);
+
+  const [aiSummaries, setAiSummaries] = useState<DashboardSummariesResponse | null>(null);
+
+  // Fetch AI summaries whenever underlying threat counts meaningfully change
+  useEffect(() => {
+    if (!events && !hotspots) return;
+    setAiSummaries(null); // Clear old summaries to show the skeleton while loading new insights
+    fetchDashboardSummaries()
+      .then((res) => setAiSummaries(res))
+      .catch((err) => console.error("Failed to fetch dashboard summaries:", err));
+  }, [events?.scams?.length, events?.counterfeits?.length, events?.fraud_graph?.rings?.length]);
+
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [cityAlerts, setCityAlerts] = useState<{district: string; alerts: any[]} | null>(null);
   // Provenance for the searched city: where its fake notes most likely entered.
@@ -540,8 +553,15 @@ export default function Page() {
   const modulesScope = useRef<HTMLDivElement>(null);
   const ringsScope = useRef<HTMLDivElement>(null);
   const drawerScope = useRef<HTMLDivElement>(null);
+  const researchScope = useRef<HTMLDivElement>(null);
+  const disruptScope = useRef<HTMLDivElement>(null);
+  const metricsScope = useRef<HTMLDivElement>(null);
+
   usePanelEntrance(modulesScope, ".gsap-panel", [activeTab, selectedModule]);
   usePanelEntrance(ringsScope, ".gsap-panel", [activeTab, viewRing?.ring_id]);
+  usePanelEntrance(researchScope, ".gsap-panel", [activeTab]);
+  usePanelEntrance(disruptScope, ".gsap-panel", [activeTab]);
+  usePanelEntrance(metricsScope, ".gsap-panel", [activeTab]);
 
   // Overlays are conditionally rendered, so their cards vanish the moment
   // activeTab flips. Tween them out first, flip after.
@@ -555,6 +575,9 @@ export default function Page() {
       setActiveTab("map");
       setViewRing(null);
     });
+  const closeResearch = () => playPanelExit(researchScope, () => setActiveTab("map"));
+  const closeDisrupt = () => playPanelExit(disruptScope, () => setActiveTab("map"));
+  const closeMetrics = () => playPanelExit(metricsScope, () => setActiveTab("map"));
 
 
 
@@ -578,6 +601,21 @@ export default function Page() {
         if (activeTab === "fraud-rings") {
           if (viewRing) setViewRing(null);
           else closeRings();
+          return;
+        }
+
+        if (activeTab === "research") {
+          closeResearch();
+          return;
+        }
+        
+        if (activeTab === "disrupt") {
+          closeDisrupt();
+          return;
+        }
+        
+        if (activeTab === "metrics") {
+          closeMetrics();
           return;
         }
 
@@ -830,15 +868,15 @@ export default function Page() {
           <div className="w-full max-w-[95vw] text-left mb-2 text-xs text-zinc-500">
             Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
           </div>
-          <div className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
+          <div ref={researchScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
             <button
-              onClick={() => setActiveTab("map")}
+              onClick={closeResearch}
               className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
-            <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden">
-              <ResearchPanel onClose={() => setActiveTab("map")} />
+            <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden" style={{ opacity: 0 }}>
+              <ResearchPanel onClose={closeResearch} />
             </div>
           </div>
         </div>
@@ -850,15 +888,15 @@ export default function Page() {
           <div className="w-full max-w-[95vw] text-left mb-2 text-xs text-zinc-500">
             Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
           </div>
-          <div className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
+          <div ref={disruptScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
             <button
-              onClick={() => setActiveTab("map")}
+              onClick={closeDisrupt}
               className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
-            <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden">
-              <DisruptPanel onClose={() => setActiveTab("map")} />
+            <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden" style={{ opacity: 0 }}>
+              <DisruptPanel onClose={closeDisrupt} />
             </div>
           </div>
         </div>
@@ -870,15 +908,15 @@ export default function Page() {
           <div className="w-full max-w-[95vw] text-left mb-2 text-xs text-zinc-500">
             Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
           </div>
-          <div className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
+          <div ref={metricsScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
             <button
-              onClick={() => setActiveTab("map")}
+              onClick={closeMetrics}
               className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
-            <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden">
-              <ModelCardPanel onClose={() => setActiveTab("map")} />
+            <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden" style={{ opacity: 0 }}>
+              <ModelCardPanel onClose={closeMetrics} />
             </div>
           </div>
         </div>
@@ -899,9 +937,19 @@ export default function Page() {
             Public Safety Intelligence
           </h1>
           <div className="mt-2 flex gap-2 text-[10px] uppercase tracking-widest text-zinc-500">
-            <span className="glass pointer-events-auto px-2.5 py-1">Scam · Fraud Shield</span>
-            <span className="glass pointer-events-auto px-2.5 py-1">Counterfeit · Vision</span>
-            <span className="glass pointer-events-auto px-2.5 py-1">Rings · Graph ML</span>
+            {!events || !hotspots ? (
+              <>
+                <div className="glass px-2.5 py-1 w-28 h-[22px] animate-pulse !bg-zinc-800/50"></div>
+                <div className="glass px-2.5 py-1 w-28 h-[22px] animate-pulse !bg-zinc-800/50"></div>
+                <div className="glass px-2.5 py-1 w-28 h-[22px] animate-pulse !bg-zinc-800/50"></div>
+              </>
+            ) : (
+              <>
+                <span className="glass pointer-events-auto px-2.5 py-1">Scam · Fraud Shield</span>
+                <span className="glass pointer-events-auto px-2.5 py-1">Counterfeit · Vision</span>
+                <span className="glass pointer-events-auto px-2.5 py-1">Rings · Graph ML</span>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -998,23 +1046,28 @@ export default function Page() {
                     </div>
                   </div>
 
-                  <div className="bg-white/5 border border-white/10 p-5 flex-1">
-                    <div className="text-xs font-medium text-zinc-300 mb-3">AI Intelligence Overview</div>
-                    <div className="text-[12px] leading-relaxed text-zinc-400 space-y-3">
-                      <p>
-                        The Aegis detection suite is actively monitoring threats across <strong className="text-zinc-200">two primary domains</strong>: 
-                        voice-based scam detection via the Fraud Shield NLP engine, and currency authenticity verification via the Counterfeit Vision neural network.
-                      </p>
-                      <p>
-                        Recent analysis shows <strong className="text-red-300">{events?.scams.length ?? 0} scam calls</strong> processed 
-                        and <strong className="text-amber-300">{events?.counterfeits.length ?? 0} currency scans</strong> completed. 
-                        The models continuously learn from new patterns to improve detection accuracy.
-                      </p>
-                      <p>
-                        <strong className="text-zinc-200">Recommendation:</strong> Click on either the Scam Call or Note Scan card on the left 
-                        to view detailed reports, individual verdicts, and a consolidated AI summary of the latest detections.
-                      </p>
+                  <div className="bg-white/5 border border-white/10 p-5 flex-1 relative overflow-hidden">
+                    <div className="text-xs font-medium text-zinc-300 mb-3 flex justify-between items-center">
+                      AI Intelligence Overview
+                      {aiSummaries && <span className="text-[9px] uppercase tracking-wider text-emerald-400 border border-emerald-400/30 bg-emerald-400/10 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(52,211,153,0.3)]">{aiSummaries.engine.split("/")[0]}</span>}
                     </div>
+                    {aiSummaries ? (
+                      <div className="text-[12px] leading-relaxed text-zinc-400 space-y-3">
+                        <p>{aiSummaries.modules_overview}</p>
+                        <p>
+                          <strong className="text-zinc-200">Recommendation:</strong> Click on either the Scam Call or Note Scan card on the left 
+                          to view detailed reports, individual verdicts, and a consolidated AI summary of the latest detections.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3 mt-4 animate-pulse">
+                        <div className="h-2 w-full bg-white/10 rounded"></div>
+                        <div className="h-2 w-5/6 bg-white/10 rounded"></div>
+                        <div className="h-2 w-4/6 bg-white/10 rounded"></div>
+                        <div className="h-2 w-full bg-white/10 rounded mt-4"></div>
+                        <div className="h-2 w-3/4 bg-white/10 rounded"></div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="text-[10px] text-zinc-600 text-center">
@@ -1104,26 +1157,28 @@ export default function Page() {
                     </div>
                   </div>
 
-                  <div className="bg-white/5 border border-white/10 p-5 flex-1">
-                    <div className="text-xs font-medium text-zinc-300 mb-3">Consolidated AI Summary</div>
-                    <div className="text-[12px] leading-relaxed text-zinc-400 space-y-3">
-                      <p>
-                        The Graph ML engine is actively monitoring <strong className="text-zinc-200">{events?.fraud_graph?.rings?.length ?? 0} fraud rings</strong> across 
-                        multiple districts. The detection model uses spectral clustering combined with temporal velocity analysis to identify suspicious circular money flows.
-                      </p>
-                      {(events?.fraud_graph?.rings?.length ?? 0) > 0 && (
-                        <p>
-                          The most prevalent topology detected is <strong className="text-violet-300">
-                          {events?.fraud_graph?.rings?.[0]?.label ?? "organized ring"}</strong> patterns, 
-                          where funds are rapidly cycled through mule accounts to obscure the origin. 
-                          High-risk accounts exhibit near-100% throughput ratios and burst transaction patterns.
-                        </p>
-                      )}
-                      <p>
-                        <strong className="text-zinc-200">Recommendation:</strong> Click any ring on the left panel to visualize its money flow topology, 
-                        run the simulation, and inspect per-account evidence. Use the "Inject ring" feature to stress-test detection on synthetic fraud scenarios.
-                      </p>
+                  <div className="bg-white/5 border border-white/10 p-5 flex-1 relative overflow-hidden">
+                    <div className="text-xs font-medium text-zinc-300 mb-3 flex justify-between items-center">
+                      Consolidated AI Summary
+                      {aiSummaries && <span className="text-[9px] uppercase tracking-wider text-emerald-400 border border-emerald-400/30 bg-emerald-400/10 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(52,211,153,0.3)]">{aiSummaries.engine.split("/")[0]}</span>}
                     </div>
+                    {aiSummaries ? (
+                      <div className="text-[12px] leading-relaxed text-zinc-400 space-y-3">
+                        <p>{aiSummaries.rings_summary}</p>
+                        <p>
+                          <strong className="text-zinc-200">Recommendation:</strong> Click any ring on the left panel to visualize its money flow topology, 
+                          run the simulation, and inspect per-account evidence. Use the "Inject ring" feature to stress-test detection on synthetic fraud scenarios.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3 mt-4 animate-pulse">
+                        <div className="h-2 w-full bg-white/10 rounded"></div>
+                        <div className="h-2 w-5/6 bg-white/10 rounded"></div>
+                        <div className="h-2 w-4/6 bg-white/10 rounded"></div>
+                        <div className="h-2 w-full bg-white/10 rounded mt-4"></div>
+                        <div className="h-2 w-3/4 bg-white/10 rounded"></div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="text-[10px] text-zinc-600 text-center">
@@ -1158,27 +1213,35 @@ export default function Page() {
         {/* Hidden while its own panel is open: the row sits above that panel's
             z-index, and "open Supply Trail" is meaningless when it already is. */}
         {activeTab === "map" && !supplyTrailOpen && (
-          <button
-            onClick={handleOpenSupplyTrail}
-            className={`pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 mt-0.5 text-[11px] font-semibold uppercase tracking-wide shadow-xl backdrop-blur-sm transition-all duration-300 ${
-              activeTrail
-                ? "border-orange-500/60 bg-orange-500/20 text-orange-300 hover:bg-orange-500/30"
-                : "border-white/10 bg-zinc-900/80 text-zinc-400 hover:border-white/20 hover:text-zinc-200"
-            }`}
-            title="Open Supply Trail — counterfeit note provenance"
-          >
-            {activeTrail && (
-              <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse" />
-            )}
-            🚂 Supply Trail
-          </button>
+          !events || !hotspots ? (
+            <div className="pointer-events-auto rounded-full border border-zinc-800 bg-zinc-900/80 mt-0.5 w-[140px] h-[36px] animate-pulse" />
+          ) : (
+            <button
+              onClick={handleOpenSupplyTrail}
+              className={`pointer-events-auto flex items-center gap-2 rounded-full border px-4 py-2.5 mt-0.5 text-[11px] font-semibold uppercase tracking-wide shadow-xl backdrop-blur-sm transition-all duration-300 ${
+                activeTrail
+                  ? "border-orange-500/60 bg-orange-500/20 text-orange-300 hover:bg-orange-500/30"
+                  : "border-white/10 bg-zinc-900/80 text-zinc-400 hover:border-white/20 hover:text-zinc-200"
+              }`}
+              title="Open Supply Trail — counterfeit note provenance"
+            >
+              {activeTrail && (
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse" />
+              )}
+              🚂 Supply Trail
+            </button>
+          )
         )}
-        <FusionChatBot
-          fusion={lastFusion}
-          events={events}
-          onFused={handleFused}
-          onError={(msg) => pushToast(msg, "error")}
-        />
+        {!events || !hotspots ? (
+          <div className="pointer-events-auto rounded-full bg-zinc-800/80 shadow-lg w-[42px] h-[42px] animate-pulse border border-zinc-700/50" />
+        ) : (
+          <FusionChatBot
+            fusion={lastFusion}
+            events={events}
+            onFused={handleFused}
+            onError={(msg) => pushToast(msg, "error")}
+          />
+        )}
       </div>
 
       {consoleOpen && (

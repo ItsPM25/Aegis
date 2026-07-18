@@ -324,6 +324,19 @@ async def demo_reset() -> dict:
         raise HTTPException(502, f"fraud-graph service unreachable: {exc}") from exc
 
 
+@app.get("/dashboard-summaries")
+def dashboard_summaries() -> dict:
+    from .store import store
+    from .dashboard_summaries import generate_summaries
+    
+    data = {
+        "scams": len(store.scams),
+        "counterfeits": len(store.counterfeits),
+        "rings": len(store.fraud_graph.get("rings", []))
+    }
+    return generate_summaries(data)
+
+
 @app.get("/events")
 def events() -> dict:
     """Everything the dashboard needs to render cards, graph, and map."""

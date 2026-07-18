@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useRef } from "react";
-import { gsap, useGSAP, prefersReducedMotion } from "@/lib/gsap";
+import { useMemo, useRef, useEffect } from "react";
+import { gsap, prefersReducedMotion } from "@/lib/gsap";
 import type { EventsResponse, HotspotsResponse } from "@/lib/api";
 import { clockTime, titleCase } from "@/lib/format";
 import { Banknote, MapPin, Network, Phone } from "./Icons";
@@ -128,51 +128,62 @@ export default function AlertChips({
 
   const hasAny = notices.length > 0;
   const container = useRef<HTMLDivElement>(null);
-  // Ids already animated & settled — a 5s poll that re-delivers the same alerts
-  // must not re-animate existing chips. Seeded lazily on first run below so the
-  // React-StrictMode double-mount (dev) can't pre-mark chips as "seen" and
-  // suppress the very first animation.
-  const seen = useRef<Set<string> | null>(null);
+  const animatedRef = useRef<Set<string>>(new Set());
 
-  const chipIds = notices.map((n) => n.id);
-  const idKey = chipIds.join("|");
-
-  useGSAP(() => {
-    const firstRun = seen.current === null;
-    if (seen.current === null) seen.current = new Set();
-
-    // On first run animate ALL chips; afterwards only ids we haven't shown yet.
+  useEffect(() => {
+    if (!container.current) return;
+    
+    // Only grab chips that haven't been animated yet
     const targets = Array.from(
-      container.current?.querySelectorAll<HTMLElement>(".gsap-chip[data-chip-id]") ?? [],
-    ).filter((el) => {
-      const id = el.dataset.chipId!;
-      return firstRun || !seen.current!.has(id);
-    });
+      container.current.querySelectorAll<HTMLElement>(".gsap-chip:not([data-animated])")
+    );
 
     if (targets.length > 0) {
+      // Mark immediately so strict-mode double renders or subsequent updates ignore them
+      targets.forEach((t) => {
+        t.dataset.animated = "true";
+        if (t.dataset.chipId) animatedRef.current.add(t.dataset.chipId);
+      });
+
+      let tween: gsap.core.Tween | null = null;
       if (prefersReducedMotion()) {
         gsap.set(targets, { opacity: 1, scale: 1, xPercent: 0 });
       } else {
-        // A clear "notification slides in from the right" entrance. We use
-        // xPercent (transform-based, relative to each chip's own width) +
-        // scale + fade — all GPU-compositor transforms, so even though the
-        // chips are `.glass` (backdrop-filter: blur(20px)) over the live map,
-        // the blur is sampled ONCE and only the finished layer is moved: no
-        // per-frame re-blur, so it stays smooth. A springy back.out gives the
-        // chip a small overshoot so the arrival is unmistakable.
-        gsap.fromTo(targets,
+        tween = gsap.fromTo(
+          targets,
           { opacity: 0, xPercent: 40, scale: 0.9 },
           {
-            opacity: 1, xPercent: 0, scale: 1, duration: 0.6, stagger: 0.1,
-            ease: "back.out(1.7)", transformOrigin: "right center",
-            force3D: true, willChange: "transform,opacity",
+            opacity: 1,
+            xPercent: 0,
+            scale: 1,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: "back.out(1.7)",
+            transformOrigin: "right center",
+            force3D: true,
+            willChange: "transform,opacity",
             clearProps: "all",
-          },
+          }
         );
       }
     }
-    chipIds.forEach((id) => seen.current!.add(id));
-  }, { scope: container, dependencies: [idKey] });
+  }, [notices]);
+
+  if (!events || !hotspots) {
+    return (
+      <div className="pointer-events-none absolute right-4 top-16 z-20 flex w-[19rem] max-w-[calc(100vw-2rem)] flex-col gap-2 overflow-hidden animate-pulse">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="glass w-full border-l-2 !border-l-zinc-700/50 p-3 flex flex-col justify-center h-[68px]">
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="h-3.5 w-3.5 rounded bg-zinc-700/50"></div>
+              <div className="h-3 w-1/2 rounded bg-zinc-700/50"></div>
+            </div>
+            <div className="h-2.5 w-3/4 rounded bg-zinc-800/50"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (!hasAny) return null;
 
@@ -187,6 +198,7 @@ export default function AlertChips({
           <button
             key={n.id}
             data-chip-id={n.id}
+            data-animated={animatedRef.current.has(n.id) ? "true" : undefined}
             onClick={n.locate ? () => onLocate(n.locate!) : onOpenAll}
             className={`gsap-chip glass w-full border-l-2 p-3 text-left transition-[filter] hover:brightness-125 ${
               critical ? "!border-l-red-500/70" : "!border-l-amber-500/70"

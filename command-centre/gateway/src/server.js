@@ -124,6 +124,7 @@ app.get("/research", (_req, res) => forward(res, "/research"));
 app.get("/events", (_req, res) => forward(res, "/events"));
 app.get("/hotspots", (_req, res) => forward(res, "/hotspots"));
 app.get("/fusion/latest", (_req, res) => forward(res, "/fusion/latest"));
+app.get("/dashboard-summaries", (_req, res) => forward(res, "/dashboard-summaries"));
 app.post("/fuse", (_req, res) => forward(res, "/fuse", { method: "POST" }));
 // Entry channels INTO a district — works from a single seizure, unlike the
 // cluster-shape trail below. `district` is required.

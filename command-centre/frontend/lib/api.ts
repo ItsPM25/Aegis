@@ -674,3 +674,15 @@ export const citizenAnalyze = (text: string, language?: string) =>
 /** Real-time call monitoring — pass the transcript accumulated so far. */
 export const citizenCallAnalyze = (transcript: string | string[], language?: string) =>
   post<CitizenVerdict>("/citizen/call/analyze", { transcript, language });
+
+export interface DashboardSummariesResponse {
+  modules_overview: string;
+  rings_summary: string;
+  engine: string;
+}
+
+export async function fetchDashboardSummaries(): Promise<DashboardSummariesResponse> {
+  const r = await fetch(`${API_BASE}/dashboard-summaries`);
+  if (!r.ok) throw new Error(`dashboard summaries failed: ${r.status}`);
+  return r.json();
+}
