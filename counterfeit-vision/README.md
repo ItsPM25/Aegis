@@ -59,6 +59,12 @@ python -m pytest -q                        # tests (offline, tiny backbone)
    convict as `fake` without ever consulting the model; an agentic narrator
    (Claude → Groq → Gemini → template) writes the "why" over the measurements into the
    payload's `triage` block. A pass claims nothing: the CNN is never second-guessed.
+   **Serial layer** ([serials.py](src/aegis_counterfeit/serials.py)) — optional typed-in
+   serial: RBI-format validation (nonsense/prop patterns flagged) and a sighting registry —
+   the same serial on two scans means a printing run. **Vision-LLM second look**
+   ([vision_agent.py](src/aegis_counterfeit/vision_agent.py), key-gated) — portrait-is-Gandhi,
+   SPECIMEN overprint, header text. All of these only ever *block* a genuine certification
+   (cap to `uncertain`) — the CNN and feature checks alone can convict.
 1. **CNN verdict** ([model.py](src/aegis_counterfeit/model.py)) — EfficientNet-B0, ImageNet
    weights, head-only fine-tuning. Mid-probability scans return **`uncertain`** (manual check)
    instead of a coin-flip — and a note is *never* certified genuine while any security check
