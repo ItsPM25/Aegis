@@ -17,6 +17,7 @@ import { fetchEntryRoutes, fetchSupplyTrail, injectDemoRing, fetchDashboardSumma
 import { gsap, playPanelExit, prefersReducedMotion, useGSAP, usePanelEntrance } from "@/lib/gsap";
 import { usePolling } from "@/lib/usePolling";
 import AlertChips from "@/components/AlertChips";
+import RecenterFX from "@/components/RecenterFX";
 
 import { AlertsSkeleton, DisruptSkeleton, MetricsSkeleton, ResearchSkeleton } from "@/components/Skeletons";
 
@@ -145,6 +146,8 @@ export default function Page() {
   const [activeTab, setActiveTab] = useState<TabKey>("map");
   const [fusion, setFusion] = useState<FusionOutput | null>(null);
   const [focus, setFocus] = useState<{ lat: number; lon: number } | null>(null);
+  // Bumped by the owl-logo reset — drives both the map fly-to-India and the sonar FX.
+  const [recenterSignal, setRecenterSignal] = useState(0);
   const [injecting, setInjecting] = useState(false);
   const [ringAlerts, setRingAlerts] = useState<RingAlert[]>([]);
   const [viewRing, setViewRing] = useState<Ring | null>(null);
@@ -442,6 +445,21 @@ export default function Page() {
     });
   }, [dismissCard]);
 
+  // Owl-logo hard reset: clear every search/overlay/panel, return to the Live Map,
+  // and fly the camera out to the India overview with the cyber sonar sweep.
+  const handleRecenter = useCallback(() => {
+    setActiveTab("map");
+    clearSearch();
+    setFocus(null);
+    setSupplyTrailOpen(false);
+    setActiveTrail(null);
+    setViewRing(null);
+    setSelectedModule(null);
+    setBankPartnerOpen(false);
+    setConsoleOpen(false);
+    setRecenterSignal((n) => n + 1);
+  }, [clearSearch]);
+
   const handleSearch = async (query: string) => {
     const q = query.trim();
     if (!q) return;
@@ -684,7 +702,11 @@ export default function Page() {
         // a window where the trail framed the whole corridor and zoomed away
         // from the searched city before the flag could ever flip.
         suppressTrailFit={trailSource === "search"}
+        recenterSignal={recenterSignal}
       />
+
+      {/* Cyber radar sonar sweep — plays over the map on each owl-logo reset */}
+      <RecenterFX signal={recenterSignal} />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-zinc-950/80 to-transparent" />
 
@@ -696,6 +718,7 @@ export default function Page() {
         onBell={() => setActiveTab("alerts")}
         onSearch={handleSearch}
         onSearchClear={clearSearch}
+        onLogoClick={handleRecenter}
         isRightPanelOpen={(supplyTrailOpen && activeTab === "map") || activeTab === "alerts"}
       />
 
