@@ -173,6 +173,12 @@ body {
 }
 .btn-primary:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
 input[type=file] { display: none; }
+.serial-input {
+  background: rgba(0,0,0,.35); color: inherit; border: 1px solid rgba(255,255,255,.15);
+  border-radius: 8px; padding: 8px 12px; font: inherit; font-size: 13px; width: 210px;
+  font-family: ui-monospace, monospace;
+}
+.serial-input:focus { outline: none; border-color: rgba(255,255,255,.4); }
 select.btn {
   -webkit-appearance: none; appearance: none;
   padding-right: 24px;
@@ -383,6 +389,8 @@ select.btn {
           <button class="btn" id="startCam">🎥 Enable Camera</button>
           <button class="btn btn-primary" id="scan" disabled>📷 Scan Note</button>
           <label class="btn" style="cursor:pointer">📁 Upload Image<input type="file" id="file" accept="image/*"></label>
+          <input type="text" id="serial" class="serial-input" placeholder="Serial no. (optional) 4CB 738291" maxlength="12" title="Type the note's serial — checked for format + duplicates in the registry">
+
           <input type="hidden" id="gpsLat">
           <input type="hidden" id="gpsLon">
           <input type="hidden" id="gpsDistrict">
@@ -519,6 +527,22 @@ function render(r, relayed, uploadDataUrl) {
   } else if (r.verdict === "genuine") {
     chips += `<span class="detail-chip pass-chip">✓ all features present</span>`;
   }
+  /* serial layer — hover shows the full detail (priors, why flagged) */
+  if (r.serial) {
+    const ok = r.serial.status === "valid";
+    chips += `<span class="detail-chip ${ok ? "pass-chip" : "fail"}" title="${esc(r.serial.detail)}">${ok ? "✓" : "⚠"} serial ${esc(r.serial.status)}</span>`;
+  }
+  /* pre-CNN triage fast paths */
+  if (r.triage && r.triage.decision !== "pass") {
+    const t = r.triage.narrative || r.triage.decision.replace(/_/g, " ");
+    chips += `<span class="detail-chip fail" title="${esc(t)}">⚡ pre-check: ${esc(r.triage.decision.replace(/_/g, " "))}</span>`;
+  }
+  /* vision-LLM second look (only present when a key is configured) */
+  if (r.vision_review) {
+    if (r.vision_review.portrait_is_gandhi === false) chips += `<span class="detail-chip fail">✗ portrait not Gandhi</span>`;
+    if (r.vision_review.specimen_overprint === true) chips += `<span class="detail-chip fail">⚠ SPECIMEN overprint</span>`;
+    if (r.vision_review.header_correct === false) chips += `<span class="detail-chip fail">✗ header text wrong</span>`;
+  }
   detailsRow.innerHTML = `<div class="details-row">${chips}</div>`;
 
   /* ── 3. Grad-CAM viewer ── */
@@ -652,7 +676,8 @@ async function analyzeDataUrl(dataUrl) {
     const resp = await fetch("/analyze_b64", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image_b64: dataUrl, location_hint }),
+      body: JSON.stringify({ image_b64: dataUrl, location_hint,
+                             serial_number: (document.getElementById("serial").value || "").trim() || null }),
     });
     if (!resp.ok) throw new Error((await resp.json()).detail || resp.statusText);
     const r = await resp.json();

@@ -165,6 +165,28 @@ export default function AlertsDrawer({
         </div>
       ))}
 
+      {/* intelligence: serial reuse — duplicate serial in the registry means a
+          printing run stamping one real serial onto many notes. Demo sample
+          card until the counterfeit service's registry hits are ingested. */}
+      <div className="gsap-alert-item border border-rose-500/30 bg-rose-950/30 p-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-semibold text-rose-300">
+            Serial reuse · ₹500 <span className="font-mono">4CB 738291</span>
+          </span>
+          <span className={`border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${TIER_BADGE.high}`}>
+            high
+          </span>
+        </div>
+        <p className="mt-1 text-[10px] leading-relaxed text-zinc-300">
+          Same serial scanned on <strong>2 different notes</strong>: Jamtara (note_9f2c41) and
+          Alwar (note_c81d02), 214 km apart. Genuine serials are unique per note — a repeat
+          means one plate printed both.
+        </p>
+        <p className="mt-1 text-[9px] text-zinc-600">
+          Demo sample — live hits surface here from the serial registry.
+        </p>
+      </div>
+
       {/* intelligence: plate families — shared printing defects = common source */}
       {(families?.families ?? []).map((f) => (
         <div key={f.family_id} className="gsap-alert-item border border-teal-500/30 bg-teal-950/30 p-3">
