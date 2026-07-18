@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, Fragment } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import type { HealthResponse } from "@/lib/api";
 import type { TabKey } from "./types";
-import { Bell, Search, Shield, Wifi, X, ChevronLeft, ChevronRight } from "./Icons";
+import { Bell, Search, Wifi, X, ChevronLeft, ChevronRight } from "./Icons";
 import Clock from "./Clock";
 
 const TABS: { key: TabKey; label: string }[] = [
@@ -149,9 +149,10 @@ export default function TopNav({
   return (
     <>
       <header ref={container} className="pointer-events-auto absolute inset-x-0 top-0 z-40 flex items-center gap-5 px-5 py-3">
-      {/* Animated Shield Logo */}
+      {/* Aegis owl logo */}
       <div className="glass flex h-10 w-10 items-center justify-center !rounded-xl transition-transform duration-500 hover:rotate-12 hover:scale-110 shadow-[0_0_15px_rgba(139,92,246,0.3)]">
-        <Shield className="h-5 w-5 text-zinc-100 animate-pulse" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-mark.png" alt="Aegis" className="h-8 w-8 object-contain" />
       </div>
 
       <nav
