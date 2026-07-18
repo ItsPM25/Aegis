@@ -148,7 +148,7 @@ export default function TopNav({
 
   return (
     <>
-      <header ref={container} className="pointer-events-auto absolute inset-x-0 top-0 z-40 flex items-center gap-5 px-5 py-3">
+      <header ref={container} className="pointer-events-auto absolute inset-x-0 top-0 z-50 flex items-center gap-5 px-5 py-3">
       {/* Aegis owl logo */}
       <div className="glass flex h-12 w-12 items-center justify-center !rounded-xl transition-transform duration-500 hover:rotate-12 hover:scale-110 shadow-[0_0_22px_rgba(139,92,246,0.55)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
