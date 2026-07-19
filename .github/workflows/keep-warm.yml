@@ -16,10 +16,13 @@ name: Keep Render services warm
 
 on:
   schedule:
-    # Every 10 minutes — comfortably inside the ~15 minute idle window. GitHub
-    # runs scheduled jobs on a best-effort basis and can delay them under load,
-    # so do not tighten this to match 15 exactly.
-    - cron: "*/10 * * * *"
+    # Every 5 minutes. This is GitHub's FLOOR for scheduled workflows — a
+    # shorter interval such as */2 is accepted by the parser and then silently
+    # coerced, so it would look like a 2-minute ping while actually running no
+    # more often than this. 5 is also three times inside Render's ~15 minute
+    # idle window, and GitHub delays scheduled jobs under load, so the real
+    # protection comes from the margin rather than from the frequency.
+    - cron: "*/5 * * * *"
   # Lets you wake everything by hand right before a demo, from the Actions tab.
   workflow_dispatch:
 
