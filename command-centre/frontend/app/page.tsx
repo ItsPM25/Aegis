@@ -585,7 +585,15 @@ export default function Page() {
     }
   };
 
-  const drawerOpen = activeTab !== "map";
+  /** ONLY the alerts tab uses the slide-out drawer. This must not be
+   *  `activeTab !== "map"`: every other non-map tab (disrupt/metrics/research)
+   *  renders its own z-40 full-screen overlay, so a truthy `drawerOpen` mounted
+   *  a second, EMPTY drawer behind them — and, worse, kept it mounted across
+   *  tab switches. `changeTab` tweens the drawer to opacity:0 on the way out of
+   *  alerts; with the node never unmounting, that inline opacity survived, and
+   *  the entrance tween (empty deps) never re-ran on the way back — so
+   *  returning to Alerts & Analytics showed an invisible drawer. */
+  const drawerOpen = activeTab === "alerts";
 
   // Card entrances for the two full-screen overlays. Keyed on the sub-view too,
   // so picking a module or opening a ring reveals the right-hand card instead
@@ -1015,17 +1023,15 @@ export default function Page() {
       )}
 
       {/* slide-out drawers for alerts and analytics */}
-      {drawerOpen && activeTab !== "fraud-rings" && activeTab !== "modules" && (
+      {drawerOpen && (
         <Drawer scopeRef={drawerScope} onClose={() => setActiveTab("map")}>
-          {activeTab === "alerts" && (
-            <AlertsDrawer
-              events={events}
-              hotspots={hotspots}
-              fusion={lastFusion}
-              ringAlerts={ringAlerts}
-              onLocate={locate}
-            />
-          )}
+          <AlertsDrawer
+            events={events}
+            hotspots={hotspots}
+            fusion={lastFusion}
+            ringAlerts={ringAlerts}
+            onLocate={locate}
+          />
         </Drawer>
       )}
 

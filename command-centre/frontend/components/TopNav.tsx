@@ -309,13 +309,18 @@ export default function TopNav({
           </div>
 
           {/* Callout Dialogue Box */}
-              {/* First-run hint: only where there is genuinely spare width —
-                  on smaller laptops it overlapped the tab row. */}
+              {/* First-run hint, anchored BELOW the search box. It used to sit
+                  `right-full` (to the left), which floated it straight over the
+                  tab row; the `2xl:block` gate bought space back for a while,
+                  but the rail has since grown to seven tabs and it collided
+                  again — and the hint was invisible under 1536px meanwhile.
+                  Dropping down clears the rail at every width instead of
+                  betting on a breakpoint. */}
               {!hasSearched && (
-                <div className="absolute right-full top-1/2 hidden -translate-y-1/2 mr-4 w-44 p-2.5 text-[11px] leading-relaxed text-zinc-300 bg-zinc-800/90 backdrop-blur-md border border-white/10 rounded-lg shadow-xl z-50 2xl:block">
+                <div className="absolute right-0 top-full mt-3 w-44 p-2.5 text-[11px] leading-relaxed text-zinc-300 bg-zinc-800/90 backdrop-blur-md border border-white/10 rounded-lg shadow-xl z-50">
                   Search any place here to view its details.
-                  {/* Arrow pointing right */}
-                  <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 bg-zinc-800/90 border-t border-r border-white/10 transform rotate-45"></div>
+                  {/* Arrow pointing up at the search box */}
+                  <div className="absolute -top-1.5 right-6 w-3 h-3 bg-zinc-800/90 border-t border-l border-white/10 transform rotate-45"></div>
                 </div>
               )}
             </div>

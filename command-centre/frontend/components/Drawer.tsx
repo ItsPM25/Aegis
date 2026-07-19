@@ -23,13 +23,24 @@ export default function Drawer({
   usePanelEntrance(scope, ".gsap-panel");
   // Closing has to defer the unmount, or React removes the drawer before the
   // tween can run and the exit is a hard cut.
-  const close = () => playPanelExit(scope, onClose);
+  // Re-entrancy guard: a second Escape (or Esc + backdrop click) during the
+  // exit tween would start a competing tween and fire onClose twice.
+  const closing = useRef(false);
+  const close = () => {
+    if (closing.current) return;
+    closing.current = true;
+    playPanelExit(scope, onClose);
+  };
+  // Ref'd so the listener registers once — `onClose` is an inline arrow from
+  // the parent, so a [onClose] dep re-subscribed on every parent render.
+  const closeRef = useRef(close);
+  closeRef.current = close;
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeRef.current(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, []);
 
   return (
     <div ref={scope}>
