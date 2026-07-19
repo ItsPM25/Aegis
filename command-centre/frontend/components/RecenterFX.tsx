@@ -95,9 +95,9 @@ export default function RecenterFX({ signal }: { signal: number }) {
       {/* the owl blooms out of the radar centre and fades */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/logo-mark.png"
+        src="/recenter-owl.png"
         alt=""
-        className="recenter-owl absolute left-1/2 top-1/2 h-[22vmin] w-[22vmin] object-contain opacity-0"
+        className="recenter-owl absolute left-1/2 top-1/2 h-[26vmin] w-[26vmin] object-contain opacity-0"
         style={{ filter: "drop-shadow(0 0 26px rgba(167,139,250,0.75))" }}
       />
     </div>
