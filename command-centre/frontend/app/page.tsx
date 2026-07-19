@@ -910,16 +910,16 @@ export default function Page() {
       {/* Research Lab — the three graph-ML experiments, made visible */}
       {activeTab === "research" && (
         <div className="absolute inset-0 z-40 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
-          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
-            Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
-          </div>
           <div ref={researchScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
-            <button
-              onClick={closeResearch}
-              className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <div className="absolute -top-2 -right-2 z-10 flex items-center gap-2">
+              <span className="text-xs text-zinc-500 whitespace-nowrap">Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit</span>
+              <button
+                onClick={closeResearch}
+                className="text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition bg-zinc-900/80 border border-white/10"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
             <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden" style={{ opacity: 0 }}>
               <ResearchPanel onClose={closeResearch} />
             </div>
@@ -930,16 +930,16 @@ export default function Page() {
       {/* Disrupt & Respond — detections turned into concrete, auditable actions */}
       {activeTab === "disrupt" && (
         <div className="absolute inset-0 z-40 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
-          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
-            Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
-          </div>
           <div ref={disruptScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
-            <button
-              onClick={closeDisrupt}
-              className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <div className="absolute -top-2 -right-2 z-10 flex items-center gap-2">
+              <span className="text-xs text-zinc-500 whitespace-nowrap">Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit</span>
+              <button
+                onClick={closeDisrupt}
+                className="text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition bg-zinc-900/80 border border-white/10"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
             <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden" style={{ opacity: 0 }}>
               <DisruptPanel onClose={closeDisrupt} />
             </div>
@@ -950,16 +950,16 @@ export default function Page() {
       {/* Metrics — Model Card (measured metrics, the evaluation focus) */}
       {activeTab === "metrics" && (
         <div className="absolute inset-0 z-40 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
-          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
-            Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
-          </div>
           <div ref={metricsScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
-            <button
-              onClick={closeMetrics}
-              className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <div className="absolute -top-2 -right-2 z-10 flex items-center gap-2">
+              <span className="text-xs text-zinc-500 whitespace-nowrap">Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit</span>
+              <button
+                onClick={closeMetrics}
+                className="text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition bg-zinc-900/80 border border-white/10"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
             <div className="gsap-panel w-full bg-zinc-900/90 border border-white/10 shadow-2xl flex flex-col overflow-hidden" style={{ opacity: 0 }}>
               <ModelCardPanel onClose={closeMetrics} />
             </div>
@@ -1026,17 +1026,17 @@ export default function Page() {
       {/* Full screen blur overlay for Modules — side-by-side layout */}
       {activeTab === "modules" && (
         <div className="absolute inset-0 z-40 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
-          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
-            Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
-          </div>
           <div ref={modulesScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
             {/* Close button */}
-            <button
-              onClick={closeModules}
-              className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <div className="absolute -top-2 -right-2 z-10 flex items-center gap-2">
+              <span className="text-xs text-zinc-500 whitespace-nowrap">Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit</span>
+              <button
+                onClick={closeModules}
+                className="text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition bg-zinc-900/80 border border-white/10"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
 
             {/* LEFT: Modules list */}
             <div className="gsap-panel w-[380px] shrink-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 shadow-2xl" style={{ opacity: 0 }}>
@@ -1128,17 +1128,17 @@ export default function Page() {
       {/* Full screen blur overlay for Fraud Rings — side-by-side layout */}
       {activeTab === "fraud-rings" && (
         <div className="absolute inset-0 z-40 bg-zinc-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 pointer-events-auto">
-          <div className="w-full max-w-[95vw] text-right mb-2 text-xs text-zinc-500">
-            Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
-          </div>
           <div ref={ringsScope} className="w-full max-w-[95vw] max-h-[90vh] flex gap-4 relative">
             {/* Close button */}
-            <button
-              onClick={closeRings}
-              className="absolute -top-2 -right-2 text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition z-10 bg-zinc-900/80 border border-white/10"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <div className="absolute -top-2 -right-2 z-10 flex items-center gap-2">
+              <span className="text-xs text-zinc-500 whitespace-nowrap">Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit</span>
+              <button
+                onClick={closeRings}
+                className="text-zinc-400 hover:text-zinc-100 p-2 hover:bg-white/10 transition bg-zinc-900/80 border border-white/10"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
 
             {/* LEFT: Fraud ring list */}
             <div className="gsap-panel w-[380px] shrink-0 max-h-[90vh] overflow-y-auto bg-zinc-900/90 border border-white/10 shadow-2xl" style={{ opacity: 0 }}>
