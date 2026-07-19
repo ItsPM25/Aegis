@@ -200,28 +200,27 @@ export default function TopNav({
         {/* single pill that slides between tabs, positioned via GSAP above */}
         <span
           ref={pillRef}
-          className="pointer-events-none absolute left-0 top-1 bottom-1 z-0 rounded-full bg-white shadow-lg"
-          style={{ width: 0 }}
+          className="pointer-events-none absolute left-0 top-1 bottom-1 z-10 rounded-full bg-white shadow-lg"
+          style={{ width: 0, backgroundColor: "#ffffff" }}
         />
         {TABS.map(({ key, label }) => {
           const isActive = activeTab === key;
           return (
-            <Fragment key={key}>
+            <div key={key} data-tab={key} className="relative z-20 flex items-center">
               {isActive && (
                 <button
                   onClick={handlePrevTab}
-                  className="relative z-10 rounded-full p-1 text-white hover:bg-zinc-800/50 hover:text-white transition-colors focus-visible:outline-none"
+                  className="rounded-full p-1 text-zinc-900 hover:bg-zinc-200 transition-colors focus-visible:outline-none"
                   title="Previous tab"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <ChevronLeft className="h-4 w-4" />
                 </button>
               )}
               
               <button
-                data-tab={key}
                 onClick={() => onTabChange(key)}
                 aria-current={isActive ? "page" : undefined}
-                className={`relative z-10 focus-visible:outline-none whitespace-nowrap rounded-full px-[clamp(0.55rem,1.05vw,1rem)] py-1.5 text-[clamp(0.72rem,0.92vw,0.875rem)] transition-colors duration-200 ${
+                className={`focus-visible:outline-none whitespace-nowrap rounded-full px-[clamp(0.55rem,1.05vw,1rem)] py-1.5 text-[clamp(0.72rem,0.92vw,0.875rem)] transition-colors duration-200 ${
                   isActive
                     ? "font-medium text-zinc-900"
                     : "font-normal text-zinc-400 hover:text-zinc-100"
@@ -233,13 +232,13 @@ export default function TopNav({
               {isActive && (
                 <button
                   onClick={handleNextTab}
-                  className="relative z-10 rounded-full p-1 text-white hover:bg-zinc-800/50 hover:text-white transition-colors focus-visible:outline-none"
+                  className="rounded-full p-1 text-zinc-900 hover:bg-zinc-200 transition-colors focus-visible:outline-none"
                   title="Next tab"
                 >
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-4 w-4" />
                 </button>
               )}
-            </Fragment>
+            </div>
           );
         })}
       </nav>

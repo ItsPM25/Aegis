@@ -288,14 +288,14 @@ export default function SupplyTrailPanel({
                   {[0, 1, 2].map((i) => (
                     <div
                       key={i}
-                      className="h-1.5 w-0.5 bg-orange-500/60"
-                      style={{ opacity: 1 - i * 0.25 }}
+                      className="h-1.5 w-0.5 bg-orange-500/60 animate-pulse"
+                      style={{ opacity: 1 - i * 0.25, animationDelay: `${i * 150}ms` }}
                     />
                   ))}
                   <svg
                     viewBox="0 0 10 6"
                     fill="currentColor"
-                    className="h-2 w-2 text-orange-500"
+                    className="h-2 w-2 text-orange-500 animate-bounce mt-1"
                   >
                     <path d="M5 6 0 0h10z" />
                   </svg>
