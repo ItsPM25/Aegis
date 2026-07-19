@@ -634,12 +634,28 @@ export default function Page() {
         alerts: [...relatedScams, ...relatedFakes, ...relatedRings],
       });
 
+      /** The district name AS THE EVENT DATA SPELLS IT.
+       *
+       *  The backend routes/trail endpoints match district by exact casefold
+       *  equality, but DEMO_DISTRICT_COORDS keys are display labels and the two
+       *  are not always the same string: searching Chennai resolves to the key
+       *  "Chennai Central" while the seizure is filed under "Chennai", so the
+       *  request 404'd and the city silently showed no entry channel and no
+       *  trail — despite a ship corridor running straight through it.
+       *
+       *  `inDistrict` above already matched loosely, so the events we hold are
+       *  the right ones; take the name off the evidence rather than off the
+       *  label. Fixes every present and future key/data mismatch, not Chennai. */
+      const seizureDistrict =
+        relatedFakes.find((c) => c.location_hint?.district)?.location_hint?.district ??
+        districtKey;
+
       // Where did THIS city's notes physically enter from? Unlike the corridor
       // trail below, this works from a single seizure, so it is the question
       // that actually gets answered for most districts. Highlights the channel
       // on the map from the source press to here.
       if (relatedFakes.length > 0) {
-        fetchEntryRoutes(districtKey)
+        fetchEntryRoutes(seizureDistrict)
           .then((r) => setEntryRoutes(r))
           .catch(() => setEntryRoutes(null)); // 404 = no seizures here; stay silent
       } else {
@@ -654,7 +670,7 @@ export default function Page() {
         // fall back to the regional trail — which IS traced, from the full
         // seizure cluster — and label it as regional. Never loosen the engine
         // to manufacture a city-specific line that the evidence cannot support.
-        fetchSupplyTrail(undefined, districtKey)
+        fetchSupplyTrail(undefined, seizureDistrict)
           .then(async (res) => {
             const districtTrail = res.best_trail;
             const dO = districtTrail?.inferred_origin;
@@ -870,7 +886,6 @@ export default function Page() {
         onSearch={handleSearch}
         onSearchClear={clearSearch}
         onLogoClick={handleRecenter}
-        isLeftPanelOpen={drawerOpen}
         // Both tabs the Supply Trail panel can sit over, so the arrow shifts on
         // Alerts & Analytics exactly as it does on the Live Map.
         isRightPanelOpen={supplyTrailOpen && (activeTab === "map" || activeTab === "alerts")}
