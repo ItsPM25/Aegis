@@ -214,15 +214,23 @@ function ArmsRaceCard({ arms }: { arms: ResearchResponse["arms_race"] }) {
           <LineChart
             gens={arms.generation}
             series={[
-              { label: "Criminal escape rate", values: arms.escape_rate, color: "#ef4444" },
+              { label: "Best escape rate", values: arms.escape_rate, color: "#ef4444" },
+              ...(arms.mean_escape_rate
+                ? [{ label: "Mean escape (population)", values: arms.mean_escape_rate, color: "#f59e0b" }]
+                : []),
               { label: "Detector recall", values: arms.detector_recall, color: "#22c55e" },
             ]}
             retrained={arms.retrained_generations}
           />
-          <div className="mt-3 flex gap-4 text-[10px]">
+          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[10px]">
             <span className="flex items-center gap-1.5 text-zinc-400">
-              <span className="h-2 w-2 rounded-full bg-red-500" /> escape rate
+              <span className="h-2 w-2 rounded-full bg-red-500" /> best escape
             </span>
+            {arms.mean_escape_rate && (
+              <span className="flex items-center gap-1.5 text-zinc-400">
+                <span className="h-2 w-2 rounded-full bg-amber-500" /> mean escape
+              </span>
+            )}
             <span className="flex items-center gap-1.5 text-zinc-400">
               <span className="h-2 w-2 rounded-full bg-green-500" /> detector recall
             </span>
@@ -234,7 +242,9 @@ function ArmsRaceCard({ arms }: { arms: ResearchResponse["arms_race"] }) {
           {/* Verdict computed from the series — the caption must never claim
               a see-saw the chart does not show. */}
           {(() => {
-            const escape = arms.escape_rate;
+            // Judge calibration on the honest series: population mean when
+            // available (best-of-50 saturates by construction).
+            const escape = arms.mean_escape_rate ?? arms.escape_rate;
             const recall = arms.detector_recall;
             const finalRecall = recall[recall.length - 1] ?? 0;
             const saturated =

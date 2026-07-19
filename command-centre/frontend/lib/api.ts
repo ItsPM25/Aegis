@@ -444,7 +444,10 @@ export interface GhostRing {
 
 export interface ArmsRace {
   generation: number[];
+  /** Best-of-population escape — pegs near 1.0 by construction (max of ~50). */
   escape_rate: number[];
+  /** Population-mean escape — the honest curve that can show a see-saw. */
+  mean_escape_rate?: number[] | null;
   detector_recall: number[];
   retrained_generations: number[];
 }

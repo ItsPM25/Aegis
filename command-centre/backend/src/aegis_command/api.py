@@ -507,6 +507,9 @@ def research() -> dict:
             arms = {
                 "generation": [int(float(r["generation"])) for r in rows],
                 "escape_rate": _col("best_escape_rate"),
+                # Population mean — best-of-50 pegs at 1.0 almost by
+                # construction, the mean is the curve that can show learning.
+                "mean_escape_rate": _col("mean_escape_rate") or None,
                 "detector_recall": _col("detector_recall"),
                 "retrained_generations": [
                     int(float(r["generation"]))
