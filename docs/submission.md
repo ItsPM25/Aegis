@@ -163,7 +163,7 @@ Plus the interactive kill-shot: judges **name a gang**, we inject that never-see
 
 **No product on the market correlates scam detection + counterfeit currency + fraud-ring intelligence.** Single-domain products exist in each silo (§4); the convergence layer does not. Ours is also *architecturally novel* in how it uses Gen AI:
 
-> **The engine decides; the AI explains.** Links between events require concrete, checkable evidence — same district, ≤30 km geo-radius, ≤96 h time window, shared phone number, or an exact money-trail match (amount ±1% AND 0–96 h window AND district). The LLM **narrates** established links into an intelligence brief; it **cannot create, remove, or reweigh a link**. Every fusion output carries `audit_trail.inputs_hash` — re-run the fusion with the same inputs and you get the same hash. That is what makes the package *admissible*, not just impressive.
+> **The engine decides; the AI explains.** Links between events require concrete, checkable evidence — same district, ≤30 km geo-radius, ≤96 h time window, shared phone number, or an exact money-trail match (amount ±1% AND payment 0–96 h after the call; district is reported as a *bonus* signal when it lines up, never used as a gate — mule rings deliberately operate far from their victims, that is the point of layering). The LLM **narrates** established links into an intelligence brief; it **cannot create, remove, or reweigh a link**. Every fusion output carries `audit_trail.inputs_hash` — re-run the fusion with the same inputs and you get the same hash. That is what makes the package *admissible*, not just impressive.
 
 This is the challenge's "Agentic AI for multi-source intelligence fusion" — implemented so that hallucination is structurally impossible in the evidence path.
 
@@ -175,7 +175,7 @@ Scams evolve, so Aegis **red-teams itself**: an LLM plays the adversary and writ
 
 ### 3.3 Scam playbooks — an encoded reasoning chain a court can replay (new)
 
-Markers say *which* tricks appear in a message. Our **playbook layer** recognises that the tricks form a **script**: a digital arrest establishes authority, then fabricates a case, then isolates the victim, then coerces payment — *in that order*, because each stage sets up the next. Playbooks are encoded as small finite ontologies (not learned, not generated — no labelled reasoning chains exist to train on, and a generated chain can hallucinate, which is fatal for legal admissibility). A match is deterministic: **every stage cites the exact text span that satisfied it, so the output *is* a reasoning chain a court can replay.** Chain completeness and canonical-order become classifier features — "4 markers forming a coherent script" scores differently from "4 unrelated markers" — and the citizen-facing explanation renders the chain stage by stage.
+Markers say *which* tricks appear in a message. Our **playbook layer** recognises that the tricks form a **script**: a digital arrest establishes authority, then fabricates a case, then isolates the victim, then coerces payment — *in that order*, because each stage sets up the next. Three playbooks are encoded (`digital_arrest`, `kyc_fraud`, `advance_fee`) as small finite ontologies (not learned, not generated — no labelled reasoning chains exist to train on, and a generated chain can hallucinate, which is fatal for legal admissibility). A match is deterministic: **every stage cites the exact text span that satisfied it, so the output *is* a reasoning chain a court can replay.** Chain completeness and canonical-order become classifier features — "4 markers forming a coherent script" scores differently from "4 unrelated markers" — and the citizen-facing explanation renders the chain stage by stage.
 
 ### 3.4 Agentic verification — the AI checks the scammer's own claims (new)
 
@@ -199,7 +199,7 @@ Real counterfeiting is industrial: a press copies **one genuine serial number on
 
 ### 3.7 Supply Trail — multi-modal counterfeit provenance inference (new)
 
-Given fake-note seizure locations, the Supply Trail engine **snaps seizures to transport corridors** (rail / road / ship / air), clusters them along each corridor, walks outward from the densest cluster to infer the **candidate injection zone and origin**, and **corroborates against a FIR corpus** built from public news and police press releases. A **multi-modal transport network** (cities/junctions/ports/airports as merged physical nodes; intra-corridor, transfer, and last-mile edges; weights = distance × mode-plausibility) then yields the **k most plausible routes** via Dijkstra + Yen's algorithm, deduplicated by mode-sequence so alternatives are genuinely different (all-rail vs rail+ship vs air) and annotated with the FIR-corroborated cities they pass through. Everything is deterministic and reproducible; output carries a confidence band and a **mandatory disclaimer** — a weighted hypothesis engine, exactly how real financial-crime intelligence "follows the corridor", framed as an investigative lead and never a verdict.
+Given fake-note seizure locations, the Supply Trail engine **snaps seizures to real, documented transport corridors** (rail / road / ship / air — e.g. the Howrah–Delhi Grand Chord through the Jamtara–Dhanbad–Asansol belt, historically the highest counterfeit-transit corridor in East India per RBI intelligence), clusters them along each corridor, walks outward from the densest cluster to infer the **candidate injection zone and origin**, and **corroborates against a FIR corpus** built from public news and police press releases. A **multi-modal transport network** (cities/junctions/ports/airports as merged physical nodes; intra-corridor, transfer, and last-mile edges; weights = distance × mode-plausibility) then yields the **k most plausible routes** via Dijkstra + Yen's algorithm, deduplicated by mode-sequence so alternatives are genuinely different (all-rail vs rail+ship vs air) and annotated with the FIR-corroborated cities they pass through. Everything is deterministic and reproducible; output carries a confidence band and a **mandatory disclaimer** — a weighted hypothesis engine, exactly how real financial-crime intelligence "follows the corridor", framed as an investigative lead and never a verdict.
 
 ### 3.8 Cap-only AI safety invariant (a design contribution)
 
@@ -215,11 +215,11 @@ The live-call monitor re-scores the **cumulative transcript** after every uttera
 
 ### 3.10 The money trail: joining a victim's report to a freezable account
 
-A scam event carrying the victim's `reported_payment` is matched — amount (±1%) + payment window (0–96 h after the call) + district — against **actual transaction edges flowing into detected ring collector accounts**. Output: *"₹49,999 traced into account acc_02033 of ring_06 (Alwar)"* with a `shared_account` correlation basis. Not a heat map — **an account number to freeze**.
+A scam event carrying the victim's `reported_payment` is matched — amount (±1%) + payment window (0–96 h after the call) — against **actual transaction edges flowing into detected ring collector accounts**, with district reported as bonus corroboration when it lines up (never required: mule rings deliberately sit far from their victims). Output: *"₹49,999 traced into account acc_02033 of ring_06 (Alwar)"* with a `shared_account` correlation basis. Not a heat map — **an account number to freeze**.
 
 ### 3.11 Cross-domain coordinated-hub detection on the map
 
-DBSCAN clusters all event types together on haversine distance; a hotspot where **independent detection systems converge** (scam + counterfeit + ring in one geo-cluster) is flagged as a **coordinated crime hub** — the red pulsing circle on the command-centre map. Single-domain hotspot maps exist; cross-domain convergence detection does not.
+DBSCAN clusters all event types together on haversine distance (25 km neighbourhood), with **honest hub tiers**: all three crime domains converging in one cluster = **coordinated crime hub** (the red pulsing circle — the strongest, most specific signal possible); exactly two domains = a *multi-signal* cluster, reported but never overclaimed as "coordinated" — accuracy over drama, encoded in the tier logic itself. Single-domain hotspot maps exist; cross-domain convergence detection with tiered honesty does not.
 
 ### 3.12 Contract-first architecture (an engineering innovation that showed up in the product)
 
@@ -363,7 +363,8 @@ Two citizen-facing sites and a police command centre, over one contract-validate
 Dashboard ──POST /fuse──▶ Backend ──▶ Deterministic correlator
                                         · evidence links: shared_district / geo ≤30 km /
                                           time ≤96 h / shared_phone
-                                        · money trail: amount ±1% ∧ 0–96 h ∧ district → ring account
+                                        · money trail: amount ±1% ∧ 0–96 h → ring account
+                                          (district = bonus corroboration, never a gate)
                                         · threat level = # distinct domains linked (3 = CRITICAL)
                                             │  FACTS ONLY
                                             ▼
@@ -443,7 +444,8 @@ A **layered funnel, cheap-and-certain before expensive-and-probabilistic**:
 - **AI Case Officer**: one click on a district → `build_dossier()` gathers **deterministic evidence** (scam events, rings, seizures, plate families, campaigns, supply trail, temporal flow — every item real module output) → an LLM writes the brief (summary, timeline, a *hedged* hypothesis, recommended actions, **each citing dossier evidence ids**; references outside the dossier are forbidden) → template writer guarantees a brief with zero keys.
 - **Intelligence layers**: plate families and scam campaigns (§3.6) — stdlib-only, deterministic, tiered.
 - **Geospatial**: DBSCAN over all event types (dependency-free at demo scale; sklearn haversine is the documented scale-up); `cross_domain=true` hubs are the coordinated-crime signal.
-- **Response engine**: deterministic rules turn findings into recipient-addressed actions — freeze account (bank), block number (telco), MHA/I4C alert, victim intercept, officer review — with priority, **SLA against the fraud clock**, `trigger.refs` evidence chains, and an append-only audit log. Dispatch is **simulated and labelled as such**; the engine never asserts guilt.
+- **Response engine**: deterministic rules turn findings into recipient-addressed actions — freeze account (bank), block number (telco), MHA/I4C alert, victim intercept, officer review — with priority, **SLA against the fraud clock** (critical 30 min · high 2 h · medium 24 h — a UPI transfer clears in seconds, so a freeze must beat cash-out), `trigger.refs` evidence chains, and an append-only audit log. Dispatch is **simulated and labelled as such**; the engine never asserts guilt, and every action carries that disclaimer in its payload.
+- **Bank Partner console**: the B2B surface made visible — a live console for `screen-account` (risk bands ≥0.7 high → BLOCK + file STR, ≥0.4 medium → EDD, else monitor/clear) and terse pass/fail `verify-note` responses shaped for a POS terminal, with the surface's documentation on the same panel.
 - **Durable briefing cache**: the last real model-written dashboard briefing is kept in MongoDB so a provider outage degrades to "the previous analysis", not template prose; every Mongo path fails open. The event store is an honest bounded deque with a deliberately tiny interface (swap for PostgreSQL without touching anything else).
 - 15 backend + 9 fusion + 8 geospatial + 29 supply-trail tests.
 
@@ -496,7 +498,7 @@ The brief names *"auditability of intelligence packages for legal admissibility"
 | Response action | `trigger.refs` evidence chain, priority/SLA, **append-only audit log** of every state change; an action never asserts guilt |
 | Model claims | The Model Card serves measured metrics **from persisted reports with a printed disclaimer**; postures labelled honestly (Predictive / Point-of-contact / Fast-classification) |
 
-Safety and privacy engineering: precision-first thresholds; cap-only invariants; marker safety net; legit verdicts excluded from correlation; **differential privacy on federated embeddings**; hashed account tokens; API keys in gitignored `.env` files only; Twilio webhook HMAC signature validation; SSRF-hardened verification tools; API-key gating on B2B endpoints; ingest schema validation at the backend door; environment-scoped CORS; no citizen PII stored beyond the event payloads a deployment would own.
+Safety and privacy engineering: precision-first thresholds; cap-only invariants; marker safety net; legit verdicts excluded from correlation; **differential privacy on federated embeddings**; hashed account tokens; API keys in gitignored `.env` files only; Twilio webhook HMAC signature validation; SSRF-hardened verification tools; API-key gating on B2B endpoints (with X-API-Key pass-through at the gateway); ingest schema validation at the backend door; origin-allowlisted CORS and request-size caps at the gateway, environment-scoped CORS everywhere else; no citizen PII stored beyond the bounded event store (500 events per domain) a deployment would own.
 
 ---
 
