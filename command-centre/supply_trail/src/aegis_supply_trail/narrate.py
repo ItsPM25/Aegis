@@ -287,7 +287,11 @@ def narrate_routes_safe(facts: dict) -> tuple[RouteNarrative, str]:
         try:
             n = cls()
             return n.narrate(facts), n.name
-        except Exception:
+        except Exception as exc:
+            # See the note in aegis_fusion.narrator.narrate_safe: a silent
+            # fallthrough makes a rate-limited provider indistinguishable from
+            # an absent one. The chain still never breaks the request.
+            print(f"[route-narrator] {cls.__name__} failed: {type(exc).__name__}: {exc}", flush=True)
             continue
     t = TemplateRouteNarrator()
     return t.narrate(facts), t.name

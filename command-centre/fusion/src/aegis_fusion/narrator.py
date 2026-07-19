@@ -280,7 +280,12 @@ def get_narrator() -> TemplateNarrator | ClaudeNarrator | GroqNarrator | GeminiN
         if os.environ.get(env_key):
             try:
                 return cls()
-            except Exception:
+            except Exception as exc:
+                print(
+                    f"[narrator] {cls.__name__} construction failed: "
+                    f"{type(exc).__name__}: {exc}",
+                    flush=True,
+                )
                 continue
     return TemplateNarrator()
 
@@ -301,7 +306,13 @@ def narrate_safe(facts: dict) -> tuple[Narrative, str]:
         try:
             narrator = cls()
             return narrator.narrate(facts), narrator.name
-        except Exception:
+        except Exception as exc:
+            # Log, then continue. Swallowing this silently made a provider that
+            # was rate-limited or misconfigured look identical to one that was
+            # simply absent: the fusion card reported "template-fallback" with
+            # nothing anywhere saying why. The chain still cannot break the
+            # demo — this only makes the reason recoverable from the logs.
+            print(f"[narrator] {cls.__name__} failed: {type(exc).__name__}: {exc}", flush=True)
             continue
     # unreachable — TemplateNarrator cannot fail — but keep a hard floor anyway
     t = TemplateNarrator()

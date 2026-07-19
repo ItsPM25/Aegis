@@ -271,6 +271,9 @@ def write_case_file_safe(dossier: dict) -> tuple[dict, str]:
     for name, fn in chain:
         try:
             return fn(dossier), name
-        except Exception:
+        except Exception as exc:
+            # Same reasoning as the fusion narrator: log why a provider dropped
+            # out instead of silently degrading to the template.
+            print(f"[case-officer] {name} failed: {type(exc).__name__}: {exc}", flush=True)
             continue
     return _template_case_file(dossier), "template-fallback"
