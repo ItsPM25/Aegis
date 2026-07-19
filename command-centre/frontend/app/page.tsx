@@ -1343,6 +1343,7 @@ export default function Page() {
                     subtitle={`${viewRing.district ?? "unknown district"} · ${viewRing.size} accounts · risk ${Math.round(viewRing.risk_score * 100)}%${viewRing.total_amount != null ? ` · ₹${Math.round(viewRing.total_amount / 100000)}L` : ""}`}
                     badge="SIMULATED CITY"
                     label={viewRing.label}
+                    ringId={viewRing.ring_id}
                     nodes={viewerData.nodes}
                     edges={viewerData.edges}
                     trail={viewerData.trail}
