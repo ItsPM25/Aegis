@@ -15,6 +15,8 @@ the evidence comes from the engine").
 from __future__ import annotations
 
 import os
+import re
+import time
 
 from pydantic import BaseModel, Field
 
@@ -290,6 +292,52 @@ def get_narrator() -> TemplateNarrator | ClaudeNarrator | GroqNarrator | GeminiN
     return TemplateNarrator()
 
 
+# A rate-limited provider is worth waiting for; a broken one is not. Bounded so
+# a user who clicked "Run Fusion" never waits on a hang.
+_MAX_RETRY_WAIT_S = 12.0
+
+
+def _duration_seconds(raw: str) -> float | None:
+    """Parse the duration formats these APIs use: '5.345s', '1m26.4s', '3'."""
+    raw = raw.strip()
+    if not raw:
+        return None
+    try:
+        return float(raw)  # plain seconds, e.g. Retry-After: 3
+    except ValueError:
+        pass
+    match = re.fullmatch(r"(?:(\d+(?:\.\d+)?)m)?(?:(\d+(?:\.\d+)?)s)?", raw)
+    if not match or not any(match.groups()):
+        return None
+    minutes, seconds = match.groups()
+    return float(minutes or 0) * 60 + float(seconds or 0)
+
+
+def _rate_limit_wait(exc: Exception) -> float | None:
+    """Seconds to wait before retrying this provider, or None if not worth it.
+
+    Groq's free tier caps tokens-per-minute, but the budget REFILLS
+    CONTINUOUSLY — x-ratelimit-reset-tokens is typically ~5s, not 60. So two
+    panels generating at once exhaust it briefly and the next attempt succeeds.
+    Falling straight to the template threw away a briefing that was seconds
+    from being available.
+
+    Returns None for anything that is not a 429, or when the provider asks for
+    longer than we are willing to make the user wait.
+    """
+    response = getattr(exc, "response", None)
+    if response is None or getattr(response, "status_code", None) != 429:
+        return None
+    for header in ("retry-after", "x-ratelimit-reset-tokens", "x-ratelimit-reset-requests"):
+        raw = response.headers.get(header) if hasattr(response, "headers") else None
+        if not raw:
+            continue
+        seconds = _duration_seconds(str(raw))
+        if seconds is not None and seconds <= _MAX_RETRY_WAIT_S:
+            return min(seconds, _MAX_RETRY_WAIT_S) + 0.5  # cushion past the boundary
+    return None
+
+
 def narrate_safe(facts: dict) -> tuple[Narrative, str]:
     """Run the best narrator; on ANY failure fall through the chain down to the
     template. Returns (narrative, narrator_name) — the demo can never die."""
@@ -303,17 +351,31 @@ def narrate_safe(facts: dict) -> tuple[Narrative, str]:
         chain.append(GeminiNarrator)
     chain.append(TemplateNarrator)
     for cls in chain:
-        try:
-            narrator = cls()
-            return narrator.narrate(facts), narrator.name
-        except Exception as exc:
-            # Log, then continue. Swallowing this silently made a provider that
-            # was rate-limited or misconfigured look identical to one that was
-            # simply absent: the fusion card reported "template-fallback" with
-            # nothing anywhere saying why. The chain still cannot break the
-            # demo — this only makes the reason recoverable from the logs.
-            print(f"[narrator] {cls.__name__} failed: {type(exc).__name__}: {exc}", flush=True)
-            continue
+        retried = False
+        while True:
+            try:
+                narrator = cls()
+                return narrator.narrate(facts), narrator.name
+            except Exception as exc:
+                wait = None if retried else _rate_limit_wait(exc)
+                if wait is not None:
+                    print(
+                        f"[narrator] {cls.__name__} rate-limited; retrying in {wait:.1f}s",
+                        flush=True,
+                    )
+                    time.sleep(wait)
+                    retried = True
+                    continue  # same provider, one more attempt
+                # Log, then fall through. Swallowing this silently made a
+                # provider that was rate-limited or misconfigured look identical
+                # to one that was simply absent: the fusion card reported
+                # "template-fallback" with nothing anywhere saying why. The
+                # chain still cannot break the demo.
+                print(
+                    f"[narrator] {cls.__name__} failed: {type(exc).__name__}: {exc}",
+                    flush=True,
+                )
+                break  # next provider in the chain
     # unreachable — TemplateNarrator cannot fail — but keep a hard floor anyway
     t = TemplateNarrator()
     return t.narrate(facts), t.name
