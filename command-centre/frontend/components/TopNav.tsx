@@ -155,6 +155,9 @@ export default function TopNav({
     if (logoRef.current && !prefersReducedMotion()) {
       gsap.to(logoRef.current, { rotate: "+=360", duration: 0.6, ease: "power2.out" });
     }
+    // A hard reset also restores the "search any place" hint callout.
+    localStorage.removeItem("aegis_has_searched");
+    setHasSearched(false);
     onLogoClick?.();
   };
 
