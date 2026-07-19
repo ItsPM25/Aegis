@@ -273,9 +273,9 @@ export default function TopNav({
                 }}
                 onBlur={(e) => {
                   if (!e.currentTarget.form?.contains(e.relatedTarget as Node)) {
-                    setSearchOpen(false);
-                    setSearchQuery("");
-                    onSearchClear?.();
+                    if (!searchQuery.trim()) {
+                      setSearchOpen(false);
+                    }
                   }
                 }}
                 placeholder="Search city..."
