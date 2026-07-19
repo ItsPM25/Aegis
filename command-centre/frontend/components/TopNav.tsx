@@ -187,7 +187,7 @@ export default function TopNav({
         onClick={handleLogoClick}
         aria-label="Reset map to India view"
         title="Reset to India view"
-        className="pointer-events-auto glass flex h-[clamp(2.5rem,3.4vw,3rem)] w-[clamp(2.5rem,3.4vw,3rem)] shrink-0 cursor-pointer items-center justify-center !rounded-xl transition-transform duration-500 hover:rotate-12 hover:scale-110 shadow-[0_0_22px_rgba(139,92,246,0.55)] focus-visible:outline-none"
+        className="pointer-events-auto glass flex h-[clamp(2.5rem,3.4vw,3rem)] w-[clamp(2.5rem,3.4vw,3rem)] shrink-0 cursor-pointer items-center justify-center !rounded-xl shadow-[0_0_22px_rgba(139,92,246,0.55)] focus-visible:outline-none"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img ref={logoRef} src="/logo-owl-shield.png" alt="Aegis" className="h-full w-full rounded-[10px] object-cover" />
