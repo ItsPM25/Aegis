@@ -7,18 +7,36 @@
 <link rel="icon" type="image/png" href="/favicon.png">
 <style>
   :root {
-    --bg: #0b1020; --panel: #131a2e; --panel-2: #1a2340; --text: #e8ecf6;
-    --muted: #93a0bd; --line: #26304f; --accent: #5b8cff;
-    /* WhatsApp dark palette */
+    --bg: #09090b;
+    --panel: rgba(24, 24, 27, 0.7);
+    --panel-2: rgba(39, 39, 42, 0.7);
+    --text: #fafafa;
+    --muted: #a1a1aa;
+    --line: rgba(255, 255, 255, 0.08);
+    --accent: #8b5cf6; --legit: #10b981;
+    /* WhatsApp dark palette (the phone frame must look like real WhatsApp) */
     --wa-bg: #0b141a; --wa-header: #202c33; --wa-in: #202c33; --wa-out: #005c4b;
     --wa-text: #e9edef; --wa-muted: #8696a0; --wa-green: #00a884; --wa-tick: #53bdeb;
   }
   * { box-sizing: border-box; margin: 0; }
   body {
     font: 15px/1.5 "Segoe UI", system-ui, sans-serif;
-    background: var(--bg); color: var(--text);
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(1200px 600px at 15% -10%, rgba(139, 92, 246, 0.05), transparent 60%),
+      radial-gradient(900px 500px at 100% 10%, rgba(248, 113, 113, 0.03), transparent 55%);
+    background-attachment: fixed;
+    color: var(--text);
     display: flex; flex-direction: column; height: 100vh;
   }
+  ::selection { background: rgba(167, 139, 250, 0.35); color: #fff; }
+  :focus-visible { outline: 2px solid rgba(167, 139, 250, 0.7); outline-offset: 2px; border-radius: 4px; }
+  * { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+  *:hover { scrollbar-color: rgba(255,255,255,0.12) transparent; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; }
+  *:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
   header {
     display: flex; align-items: center; gap: 12px;
     padding: 14px 20px; background: var(--panel); border-bottom: 1px solid var(--line);
@@ -35,7 +53,7 @@
     margin-left: auto; font-size: 12px; padding: 4px 10px; border-radius: 999px;
     background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); white-space: nowrap;
   }
-  #status.ok { color: var(--legit, #2fbf71); border-color: #2fbf71; }
+  #status.ok { color: var(--legit); border-color: var(--legit); }
 
   #stage { flex: 1; display: flex; align-items: stretch; justify-content: center; padding: 18px; min-height: 0; }
   #phone { width: 100%; max-width: 460px; display: flex; flex-direction: column; border-radius: 18px;
