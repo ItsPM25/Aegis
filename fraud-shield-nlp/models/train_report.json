@@ -1,0 +1,20 @@
+{
+  "roc_auc": 0.998,
+  "avg_precision": 0.9911,
+  "scam_threshold": 0.5343,
+  "suspicious_threshold": 0.2759,
+  "precision_at_scam": 0.9421,
+  "recall_at_scam": 0.9521,
+  "n_train": 3433,
+  "n_test": 1104,
+  "recall_by_family": {
+    "llm_investment": 0.5,
+    "llm_job_offer": 1.0,
+    "llm_kyc_freeze": 1.0,
+    "synth_digital_arrest": 1.0,
+    "synth_loan": 1.0,
+    "synth_lottery": 1.0,
+    "synth_phishing": 1.0,
+    "uci_sms_spam": 0.9448
+  }
+}

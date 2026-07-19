@@ -1,0 +1,32 @@
+{
+  "roc_auc": 0.9997,
+  "avg_precision": 0.9961,
+  "precision_at_threshold": 0.9,
+  "recall_at_threshold": 0.973,
+  "chosen_threshold": 0.7782,
+  "n_train": 1611,
+  "n_test": 538,
+  "feature_importances": {
+    "avg_amount": 0.3032,
+    "tx_count": 0.2373,
+    "round_amount_ratio": 0.1034,
+    "total_in": 0.1013,
+    "net_flow": 0.0824,
+    "throughput_ratio": 0.053,
+    "total_out": 0.0424,
+    "degree_centrality": 0.0364,
+    "unique_senders": 0.0097,
+    "median_hold_minutes": 0.0072,
+    "clustering_coeff": 0.0052,
+    "out_degree": 0.0049,
+    "in_degree": 0.0028,
+    "max_amount": 0.0027,
+    "mule_score": 0.0027,
+    "unique_receivers": 0.0021,
+    "core_number": 0.002,
+    "pagerank": 0.0015,
+    "burst_ratio": 0.0,
+    "fan_in_ratio": 0.0,
+    "fan_out_ratio": 0.0
+  }
+}

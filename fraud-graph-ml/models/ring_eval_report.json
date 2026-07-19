@@ -1,0 +1,94 @@
+{
+  "n_true_rings": 12,
+  "n_detected_rings": 12,
+  "rings_recovered": 12,
+  "ring_detection_rate": 1.0,
+  "account_precision": 1.0,
+  "account_recall": 0.9398,
+  "per_ring": [
+    {
+      "true_ring": "ring_01",
+      "size": 8,
+      "matched_detected_ring": "ring_03",
+      "member_overlap": 1.0,
+      "recovered": true
+    },
+    {
+      "true_ring": "ring_02",
+      "size": 8,
+      "matched_detected_ring": "ring_10",
+      "member_overlap": 0.5,
+      "recovered": true
+    },
+    {
+      "true_ring": "ring_03",
+      "size": 9,
+      "matched_detected_ring": "ring_01",
+      "member_overlap": 1.0,
+      "recovered": true
+    },
+    {
+      "true_ring": "ring_04",
+      "size": 8,
+      "matched_detected_ring": "ring_04",
+      "member_overlap": 1.0,
+      "recovered": true
+    },
+    {
+      "true_ring": "ring_05",
+      "size": 8,
+      "matched_detected_ring": "ring_06",
+      "member_overlap": 0.875,
+      "recovered": true
+    },
+    {
+      "true_ring": "ring_06",
+      "size": 8,
+      "matched_detected_ring": "ring_05",
+      "member_overlap": 1.0,
+      "recovered": true
+    },
+    {
+      "true_ring": "ring_07",
+      "size": 4,
+      "matched_detected_ring": "ring_11",
+      "member_overlap": 1.0,
+      "recovered": true
+    },
+    {
+      "true_ring": "ring_08",
+      "size": 7,
+      "matched_detected_ring": "ring_07",
+      "member_overlap": 1.0,
+      "recovered": true
+    },
+    {
+      "true_ring": "ring_09",
+      "size": 9,
+      "matched_detected_ring": "ring_02",
+      "member_overlap": 1.0,
+      "recovered": true
+    },
+    {
+      "true_ring": "ring_10",
+      "size": 4,
+      "matched_detected_ring": "ring_12",
+      "member_overlap": 1.0,
+      "recovered": true
+    },
+    {
+      "true_ring": "ring_11",
+      "size": 5,
+      "matched_detected_ring": "ring_08",
+      "member_overlap": 1.0,
+      "recovered": true
+    },
+    {
+      "true_ring": "ring_12",
+      "size": 5,
+      "matched_detected_ring": "ring_09",
+      "member_overlap": 1.0,
+      "recovered": true
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "backbone": "efficientnet_b0",
+  "dataset": "preetrank real-vs-fake (REAL photos of real + fake notes)",
+  "val_accuracy": 0.9694,
+  "val_roc_auc": 0.9943,
+  "fake_precision": 0.9763,
+  "fake_recall": 0.9635,
+  "n_train": 3508
+}
