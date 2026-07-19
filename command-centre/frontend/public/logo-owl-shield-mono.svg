@@ -1,12 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 144" fill="none" role="img" aria-label="Aegis owl shield">
-  <!-- Monochrome variant: inherits color when inlined (currentColor), renders
-       near-white from an <img> tag. Same geometry as logo-owl-shield.svg. -->
-  <g stroke="#fafafa" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M24 34 L34 14 L50 26 Q64 20 78 26 L94 14 L104 34 L104 74 Q104 104 64 132 Q24 104 24 74 Z"/>
-    <circle cx="46" cy="62" r="13" stroke-width="6.5"/>
-    <circle cx="82" cy="62" r="13" stroke-width="6.5"/>
-    <path d="M56 84 L64 96 L72 84" stroke-width="6.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 560" role="img" aria-label="Aegis owl shield">
+  <!-- Transparent-background variant of logo-owl-shield.svg: same geometry,
+       white line work only — for placements that supply their own dark bg. -->
+  <g fill="none" stroke="#fafafa" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M256 44 L398 118 L398 302 Q398 400 256 516 Q114 400 114 302 L114 118 Z" stroke-width="12"/>
+    <path d="M256 78 L370 138 L370 298 Q370 378 256 478 Q142 378 142 298 L142 138 Z" stroke-width="8"/>
+    <circle cx="199" cy="228" r="40" stroke-width="14"/>
+    <circle cx="313" cy="228" r="40" stroke-width="14"/>
   </g>
-  <circle cx="46" cy="62" r="4" fill="#fafafa"/>
-  <circle cx="82" cy="62" r="4" fill="#fafafa"/>
+  <g fill="#fafafa">
+    <path d="M146 96 Q200 118 246 162 Q254 170 243 173 Q192 168 166 136 Q152 114 146 96 Z"/>
+    <path d="M366 96 Q312 118 266 162 Q258 170 269 173 Q320 168 346 136 Q360 114 366 96 Z"/>
+    <circle cx="199" cy="228" r="15"/>
+    <circle cx="313" cy="228" r="15"/>
+    <path d="M256 258 L238 278 L256 306 L274 278 Z"/>
+    <path d="M160 292 C155 342 163 384 180 418 L198 405 C184 372 178 334 182 298 Z"/>
+    <path d="M198 294 C194 338 200 374 215 405 L231 393 C219 364 214 330 217 300 Z"/>
+    <path d="M233 298 C231 332 235 358 245 382 L257 374 C249 352 246 324 247 302 Z"/>
+    <path d="M352 292 C357 342 349 384 332 418 L314 405 C328 372 334 334 330 298 Z"/>
+    <path d="M314 294 C318 338 312 374 297 405 L281 393 C293 364 298 330 295 300 Z"/>
+    <path d="M279 298 C281 332 277 358 267 382 L255 374 C263 352 266 324 265 302 Z"/>
+    <path d="M256 306 L222 328 L228 374 Q256 402 284 374 L290 328 Z"/>
+    <path d="M249 410 L263 410 L259 484 L253 484 Z"/>
+    <path d="M227 404 L241 409 L227 468 L215 460 Z"/>
+    <path d="M285 404 L271 409 L285 468 L297 460 Z"/>
+    <path d="M206 394 L218 401 L196 448 L186 438 Z"/>
+    <path d="M306 394 L294 401 L316 448 L326 438 Z"/>
+  </g>
 </svg>
