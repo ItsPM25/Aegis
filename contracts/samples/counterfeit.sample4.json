@@ -1,0 +1,22 @@
+{
+  "event_id": "seizure-ship-demo-01",
+  "type": "counterfeit",
+  "timestamp": "2026-07-15T08:30:00Z",
+  "status": "investigating",
+  "verdict": "fake",
+  "denomination": 500,
+  "confidence": 0.95,
+  "location_hint": {
+    "lat": 13.0827,
+    "lon": 80.2707,
+    "district": "Chennai",
+    "address": "Chennai Port, Customs Checkpoint 3"
+  },
+  "evidence": [
+    {
+      "type": "uv_scan",
+      "description": "Missing security thread fluorescence"
+    }
+  ],
+  "linked_entities": []
+}

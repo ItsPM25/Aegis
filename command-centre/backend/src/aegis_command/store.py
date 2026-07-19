@@ -124,7 +124,7 @@ class EventStore:
         # Seed the three Jharkhand counterfeit detections so Supply Trail has
         # a cluster to work with from the moment the demo starts.
         self.add_counterfeit(json.loads((SAMPLES / "counterfeit.sample.json").read_text(encoding="utf-8")))
-        for extra in ("counterfeit.sample2.json", "counterfeit.sample3.json"):
+        for extra in ("counterfeit.sample2.json", "counterfeit.sample3.json", "counterfeit.sample4.json"):
             path = SAMPLES / extra
             if path.exists():
                 self.add_counterfeit(json.loads(path.read_text(encoding="utf-8")))

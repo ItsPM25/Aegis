@@ -200,7 +200,7 @@ export default function TopNav({
         {/* single pill that slides between tabs, positioned via GSAP above */}
         <span
           ref={pillRef}
-          className="pointer-events-none absolute left-0 top-1 bottom-1 -z-10 rounded-full bg-white shadow-lg"
+          className="pointer-events-none absolute left-0 top-1 bottom-1 z-0 rounded-full bg-white shadow-lg"
           style={{ width: 0 }}
         />
         {TABS.map(({ key, label }) => {
@@ -210,7 +210,7 @@ export default function TopNav({
               {isActive && (
                 <button
                   onClick={handlePrevTab}
-                  className="rounded-full p-1 text-white hover:bg-zinc-800/50 hover:text-white transition-colors focus-visible:outline-none"
+                  className="relative z-10 rounded-full p-1 text-white hover:bg-zinc-800/50 hover:text-white transition-colors focus-visible:outline-none"
                   title="Previous tab"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
@@ -221,7 +221,7 @@ export default function TopNav({
                 data-tab={key}
                 onClick={() => onTabChange(key)}
                 aria-current={isActive ? "page" : undefined}
-                className={`focus-visible:outline-none whitespace-nowrap rounded-full px-[clamp(0.55rem,1.05vw,1rem)] py-1.5 text-[clamp(0.72rem,0.92vw,0.875rem)] transition-colors duration-200 ${
+                className={`relative z-10 focus-visible:outline-none whitespace-nowrap rounded-full px-[clamp(0.55rem,1.05vw,1rem)] py-1.5 text-[clamp(0.72rem,0.92vw,0.875rem)] transition-colors duration-200 ${
                   isActive
                     ? "font-medium text-zinc-900"
                     : "font-normal text-zinc-400 hover:text-zinc-100"
@@ -233,7 +233,7 @@ export default function TopNav({
               {isActive && (
                 <button
                   onClick={handleNextTab}
-                  className="rounded-full p-1 text-white hover:bg-zinc-800/50 hover:text-white transition-colors focus-visible:outline-none"
+                  className="relative z-10 rounded-full p-1 text-white hover:bg-zinc-800/50 hover:text-white transition-colors focus-visible:outline-none"
                   title="Next tab"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
