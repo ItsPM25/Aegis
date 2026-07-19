@@ -13,8 +13,11 @@ export default function ToastContainer({
 }) {
   if (toasts.length === 0) return null;
 
+  // z-[110] keeps toasts above every panel — notably the Supply Trail panel
+  // (z-[60]), which is anchored bottom-right too and would otherwise bury an
+  // error toast, and the nav's tab chevrons (z-[100]).
   return (
-    <div className="pointer-events-none absolute bottom-28 right-4 z-50 flex flex-col gap-2">
+    <div className="pointer-events-none absolute bottom-28 right-4 z-[110] flex flex-col gap-2">
       {toasts.map((t) => (
         <div
           key={t.id}

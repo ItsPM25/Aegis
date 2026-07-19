@@ -200,7 +200,7 @@ export default function TopNav({
         {/* single pill that slides between tabs, positioned via GSAP above */}
         <span
           ref={pillRef}
-          className="pointer-events-none absolute left-0 top-1 bottom-1 -z-10 rounded-full bg-zinc-100 shadow"
+          className="pointer-events-none absolute left-0 top-1 bottom-1 -z-10 rounded-full bg-white shadow-lg"
           style={{ width: 0 }}
         />
         {TABS.map(({ key, label }) => {
@@ -317,10 +317,10 @@ export default function TopNav({
                   Dropping down clears the rail at every width instead of
                   betting on a breakpoint. */}
               {!hasSearched && (
-                <div className="absolute right-0 top-full mt-3 w-44 p-2.5 text-[11px] leading-relaxed text-zinc-300 bg-zinc-800/90 backdrop-blur-md border border-white/10 rounded-lg shadow-xl z-50">
+                <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 w-44 p-2.5 text-[11px] leading-relaxed text-zinc-300 bg-zinc-800/90 backdrop-blur-md border border-white/10 rounded-lg shadow-xl z-50 hidden 2xl:block">
                   Search any place here to view its details.
-                  {/* Arrow pointing up at the search box */}
-                  <div className="absolute -top-1.5 right-6 w-3 h-3 bg-zinc-800/90 border-t border-l border-white/10 transform rotate-45"></div>
+                  {/* Arrow pointing right at the search box */}
+                  <div className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 bg-zinc-800/90 border-t border-r border-white/10 transform rotate-45"></div>
                 </div>
               )}
             </div>
@@ -366,7 +366,9 @@ export default function TopNav({
       <button
         onClick={handleNextTab}
         className={`pointer-events-auto fixed top-1/2 z-[100] -translate-y-1/2 p-1 text-zinc-400 transition-all duration-300 ease-in-out hover:scale-125 hover:text-zinc-100 focus-visible:outline-none ${
-          isRightPanelOpen ? "right-0" : "right-2"
+          // Clear the panel's full width — at `right-0` the chevron still sat on
+          // top of its content. Mirrors the panel's own `w-[400px] max-w-[90vw]`.
+          isRightPanelOpen ? "right-[calc(min(400px,90vw)+0.5rem)]" : "right-2"
         }`}
         title="Next tab"
       >

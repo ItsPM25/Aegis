@@ -105,9 +105,11 @@ export default function SupplyTrailPanel({
             </p>
           </div>
         </div>
+        {/* Same close affordance as the full-screen tabs (Research, Disrupt,
+            Metrics) so the gesture is identical everywhere. */}
         <button
           onClick={close}
-          className="group relative p-1.5 text-zinc-500 transition hover:bg-white/10 hover:text-zinc-200"
+          className="group relative shrink-0 border border-white/10 bg-zinc-900/80 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-zinc-100"
           aria-label="Close"
         >
           <svg
@@ -115,7 +117,9 @@ export default function SupplyTrailPanel({
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
-            className="h-4 w-4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
           >
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
@@ -250,7 +254,10 @@ export default function SupplyTrailPanel({
                     onClick={() => onFlyTo(s.lat, s.lon, s.district)}
                     className="flex items-center gap-2 border border-red-500/20 bg-red-500/10 px-3 py-2 text-left transition hover:border-red-500/40 hover:bg-red-500/15 group"
                   >
-                    <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse shrink-0" />
+                    {/* Small amber dot with a real glow (box-shadow), not a
+                        flat red one — reads as a live marker rather than an
+                        error state. */}
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-yellow-400 shadow-[0_0_6px_2px_rgba(250,204,21,0.75)] animate-pulse" />
                     <div className="min-w-0 flex-1">
                       <div className="text-[11px] font-medium text-red-300 truncate">
                         Seizure — {s.district}

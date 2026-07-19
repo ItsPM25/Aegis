@@ -727,7 +727,10 @@ export default function Page() {
         onSearch={handleSearch}
         onSearchClear={clearSearch}
         onLogoClick={handleRecenter}
-        isRightPanelOpen={(supplyTrailOpen && activeTab === "map") || activeTab === "alerts"}
+        // Supply Trail is the only RIGHT-anchored panel the next-tab chevron can
+        // collide with — the alerts drawer opens on the left, so listing it here
+        // shifted the arrow aside for a panel that was never in its way.
+        isRightPanelOpen={supplyTrailOpen && activeTab === "map"}
       />
 
       {/* Localized alerts panel (from search). Centred until dragged, then it
@@ -1268,7 +1271,11 @@ export default function Page() {
           child, comes along. */}
       <div
         className={`pointer-events-none fixed bottom-6 right-16 z-50 flex items-center gap-3 transition-transform duration-300 ${
-          supplyTrailOpen ? "-translate-x-[min(400px,90vw)]" : ""
+          // Shift by the panel width MINUS most of this row's own `right-16`
+          // inset. Translating the full 400px stacked that 64px inset on top of
+          // the panel edge, leaving a wide gap — and on narrower windows it
+          // carried the button off the left edge ("...usion").
+          supplyTrailOpen ? "-translate-x-[calc(min(400px,90vw)-3rem)]" : ""
         }`}
       >
         {/* Hidden while its own panel is open: the row sits above that panel's
@@ -1309,9 +1316,12 @@ export default function Page() {
         <FraudConsole onClose={() => setConsoleOpen(false)} onCommitted={handleConsoleCommitted} />
       )}
 
-      {/* ── Supply Trail slide-in panel (right side, over map) ── */}
+      {/* ── Supply Trail slide-in panel (right side, over map) ──
+          z-[60] puts the panel ABOVE the top nav (z-50). At z-40 the nav drew
+          over it, so the search box, bell and clock landed on top of the
+          panel's own header and its close button. */}
       {supplyTrailOpen && (
-        <div className="pointer-events-auto absolute right-0 top-0 z-40 flex h-full w-[400px] max-w-[90vw] flex-col border-l border-white/10 bg-zinc-950/95 shadow-2xl backdrop-blur-xl transition-transform duration-300">
+        <div className="pointer-events-auto absolute right-0 top-0 z-[60] flex h-full w-[400px] max-w-[90vw] flex-col border-l border-white/10 bg-zinc-950/95 shadow-2xl backdrop-blur-xl transition-transform duration-300">
           <SupplyTrailPanel
             trail={activeTrail}
             allTrails={supplyTrailData?.all_trails ?? []}
