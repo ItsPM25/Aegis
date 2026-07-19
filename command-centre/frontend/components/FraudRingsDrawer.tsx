@@ -113,17 +113,17 @@ export default function FraudRingsDrawer({
       <div className="glass p-4">
         <div className="flex items-center justify-between text-xs text-zinc-400 gsap-ring-item" style={{ opacity: 0 }}>
           <div className="flex items-center gap-1.5">
-            <Network className="h-3.5 w-3.5 text-violet-400" /> Fraud Rings
+            <Network className="h-3.5 w-3.5 text-white" /> Fraud Rings
           </div>
           <Activity className="h-3.5 w-3.5" />
         </div>
         {onInjectRing && (
-          <div className="mt-3 border border-violet-500/15 bg-violet-500/5 p-3 gsap-ring-item" style={{ opacity: 0 }}>
+          <div className="mt-3 border border-white/15 bg-white/5 p-3 gsap-ring-item" style={{ opacity: 0 }}>
             <div className="flex items-center gap-2">
               <select
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
-                className="min-w-0 flex-1 border border-white/10 bg-zinc-950/70 px-2.5 py-2 text-[11px] text-zinc-200 outline-none transition focus:border-violet-400/60"
+                className="min-w-0 flex-1 border border-white/10 bg-zinc-950/70 px-2.5 py-2 text-[11px] text-zinc-200 outline-none transition focus:border-white/60"
               >
                 {DEMO_DISTRICTS.map((name) => (
                   <option key={name} value={name}>
@@ -134,22 +134,22 @@ export default function FraudRingsDrawer({
               <button
                 onClick={handleInject}
                 disabled={running || injecting || namesTooFew}
-                className="bg-violet-500 px-3 py-2 text-[11px] font-semibold text-white transition hover:bg-violet-400 disabled:cursor-wait disabled:opacity-50"
+                className="bg-white px-3 py-2 text-[11px] font-semibold text-black transition hover:bg-zinc-200 disabled:cursor-wait disabled:opacity-50"
               >
                 {running ? "Committing…" : "Inject ring"}
               </button>
             </div>
             {phase && (
-              <div className="mt-2 flex items-center gap-2 bg-violet-500/10 px-2.5 py-2">
-                <span className="h-1.5 w-1.5 animate-ping rounded-full bg-violet-400" />
-                <span className="animate-pulse text-[10px] text-violet-200">{phase}</span>
+              <div className="mt-2 flex items-center gap-2 bg-white/10 px-2.5 py-2">
+                <span className="h-1.5 w-1.5 animate-ping rounded-full bg-white" />
+                <span className="animate-pulse text-[10px] text-white">{phase}</span>
               </div>
             )}
             <input
               value={namesRaw}
               onChange={(e) => setNamesRaw(e.target.value)}
               placeholder="name the criminals (optional): ravi, pinky, quickcash"
-              className="mt-2 w-full border border-white/10 bg-zinc-950/70 px-2.5 py-2 text-[11px] text-zinc-200 placeholder:text-zinc-600 outline-none transition focus:border-violet-400/60"
+              className="mt-2 w-full border border-white/10 bg-zinc-950/70 px-2.5 py-2 text-[11px] text-zinc-200 placeholder:text-zinc-600 outline-none transition focus:border-white/60"
             />
             {namesTooFew && (
               <p className="mt-1 text-[10px] text-amber-400/90">
@@ -168,12 +168,12 @@ export default function FraudRingsDrawer({
             )}
             <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">
               Adds fresh accounts moving money in a loop, reruns graph detection, and lights up a
-              new purple dot.
+              new white dot.
             </p>
             {onOpenConsole && (
               <button
                 onClick={onOpenConsole}
-                className="mt-2 w-full border border-white/10 px-2.5 py-1.5 text-[10px] text-zinc-300 transition hover:border-violet-400/50 hover:text-violet-200"
+                className="mt-2 w-full border border-white/10 px-2.5 py-1.5 text-[10px] text-zinc-300 transition hover:border-white/50 hover:text-white"
               >
                 ⚖ Fraud console — design the transactions yourself
               </button>
@@ -199,7 +199,7 @@ export default function FraudRingsDrawer({
               </div>
               <div className="mt-1 h-1 bg-white/5">
                 <div
-                  className="h-1 bg-gradient-to-r from-violet-500 to-fuchsia-400"
+                  className="h-1 bg-gradient-to-r from-white to-zinc-400"
                   style={{ width: `${Math.round(r.risk_score * 100)}%` }}
                 />
               </div>

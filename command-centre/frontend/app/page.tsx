@@ -2,6 +2,9 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
+import { Space_Grotesk } from "next/font/google";
+
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["700"] });
 import type {
   EventsResponse,
   FusionOutput,
@@ -889,6 +892,7 @@ export default function Page() {
         // Both tabs the Supply Trail panel can sit over, so the arrow shifts on
         // Alerts & Analytics exactly as it does on the Live Map.
         isRightPanelOpen={supplyTrailOpen && (activeTab === "map" || activeTab === "alerts")}
+        hideArrows={bankPartnerOpen || consoleOpen}
       />
 
       {/* Localized alerts panel (from search). Centred until dragged, then it
@@ -1254,14 +1258,9 @@ export default function Page() {
               ) : (
                 /* Default GenAI Summary */
                 <div className="p-6 flex flex-col gap-6 h-full">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center bg-emerald-500/20">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5 text-emerald-400"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
-                    </div>
-                    <div>
-                      <h2 className="text-base font-semibold text-zinc-100">Aegis Detection Modules</h2>
-                      <p className="text-[11px] text-zinc-500">AI-powered threat detection suite</p>
-                    </div>
+                  <div>
+                    <h2 className={`text-2xl font-bold text-zinc-100 tracking-tight ${spaceGrotesk.className}`}>Aegis Detection Modules</h2>
+                    <p className="text-xs text-zinc-400 mt-1">AI-powered threat detection suite</p>
                   </div>
 
                   <div className="bg-white/5 border border-white/10 p-5">
@@ -1298,6 +1297,11 @@ export default function Page() {
                       // it. The navigation hint below the card still covers it.
                       <div className="text-[13px] leading-relaxed text-zinc-300 space-y-3">
                         <p>{aiSummaries.modules_overview}</p>
+                        {/* Fixed UI guidance, not model output — kept visually
+                            distinct so it cannot be mistaken for analysis. */}
+                        <p className="border-t border-white/10 pt-3 text-[11px] text-zinc-500">
+                          Click &ldquo;Scam Call&rdquo; or &ldquo;Note Scan&rdquo; on the left to inspect the detailed AI analysis, review feature breakdowns, and evaluate the specific evidence triggering the detection.
+                        </p>
                       </div>
                     ) : (
                       <div className="space-y-3 mt-4 animate-pulse">
@@ -1369,14 +1373,9 @@ export default function Page() {
               ) : (
                 /* Default GenAI Summary Card */
                 <div className="p-6 flex flex-col gap-6 h-full">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center bg-violet-500/20">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5 text-violet-400"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
-                    </div>
-                    <div>
-                      <h2 className="text-base font-semibold text-zinc-100">Fraud Network AI Analysis</h2>
-                      <p className="text-[11px] text-zinc-500">Graph ML · Real-time detection engine</p>
-                    </div>
+                  <div>
+                    <h2 className={`text-2xl font-bold text-zinc-100 tracking-tight ${spaceGrotesk.className}`}>Fraud Network AI Analysis</h2>
+                    <p className="text-xs text-zinc-400 mt-1">Graph ML · Real-time detection engine</p>
                   </div>
 
                   <div className="bg-white/5 border border-white/10 p-5">

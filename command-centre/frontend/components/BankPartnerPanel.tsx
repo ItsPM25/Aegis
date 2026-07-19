@@ -92,12 +92,15 @@ export default function BankPartnerPanel({ onClose }: { onClose: () => void }) {
       <button
         onClick={onClose}
         aria-label="Close Bank Partner"
-        className="absolute right-4 top-4 z-10 border border-white/10 bg-zinc-900/80 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-zinc-100"
+        className="group absolute right-4 top-4 z-10 border border-white/10 bg-zinc-900/80 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-zinc-100"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
           <line x1="18" y1="6" x2="6" y2="18" />
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
+        <span className="pointer-events-none absolute right-full top-1/2 mr-2 -translate-y-1/2 whitespace-nowrap rounded border border-white/10 bg-zinc-800/90 px-2 py-1 text-[10px] text-zinc-300 opacity-0 shadow-lg backdrop-blur-sm transition-opacity group-hover:opacity-100">
+          Close (Esc)
+        </span>
       </button>
 
       <div className="mb-5 pr-12 gsap-bank">
