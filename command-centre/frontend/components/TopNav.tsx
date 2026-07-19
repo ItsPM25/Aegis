@@ -26,7 +26,6 @@ export default function TopNav({
   onSearch,
   onSearchClear,
   onLogoClick,
-  isLeftPanelOpen,
   isRightPanelOpen,
 }: {
   health: HealthResponse | null;
@@ -38,7 +37,6 @@ export default function TopNav({
   onSearchClear?: () => void;
   /** Hard-reset the map to the India overview (owl-logo click). */
   onLogoClick?: () => void;
-  isLeftPanelOpen?: boolean;
   isRightPanelOpen?: boolean;
 }) {
   const backendUp = health?.status === "ok";
@@ -358,9 +356,7 @@ export default function TopNav({
       {/* Floating Global Tab Navigation Arrows */}
       <button
         onClick={handlePrevTab}
-        className={`pointer-events-auto fixed left-2 top-1/2 z-[100] p-1 text-white transition-all duration-300 ease-in-out hover:scale-125 focus-visible:outline-none -translate-y-1/2 ${
-          isLeftPanelOpen ? "translate-x-[calc(52px+22rem)]" : "translate-x-0"
-        }`}
+        className="pointer-events-auto fixed left-2 top-1/2 z-[100] p-1 text-white transition-all duration-300 ease-in-out hover:scale-125 focus-visible:outline-none -translate-y-1/2"
         title="Previous tab"
       >
         <ChevronLeft className="h-8 w-8 drop-shadow-md" />

@@ -217,12 +217,14 @@ export default function AlertChips({
       })}
 
       {onOpenAll && (
-        <button
-          onClick={onOpenAll}
-          className="gsap-chip self-end rounded-full px-2 py-0.5 text-[10px] text-zinc-500 transition hover:text-zinc-300"
-        >
-          view all alerts →
-        </button>
+        <div data-chip-id="view-all" className="gsap-chip w-full flex justify-end">
+          <button
+            onClick={onOpenAll}
+            className="rounded-full px-2 py-0.5 text-[10px] text-zinc-500 transition hover:text-zinc-300"
+          >
+            view all alerts →
+          </button>
+        </div>
       )}
     </div>
   );
