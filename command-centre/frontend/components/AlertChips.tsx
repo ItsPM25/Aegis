@@ -171,7 +171,7 @@ export default function AlertChips({
 
   if (!events || !hotspots) {
     return (
-      <div className="pointer-events-none absolute right-4 top-16 z-20 flex w-[19rem] max-w-[calc(100vw-2rem)] flex-col gap-2 overflow-hidden animate-pulse">
+      <div className="pointer-events-none absolute right-4 top-16 z-20 flex w-[19rem] max-w-[calc(100vw-2rem)] flex-col gap-2 animate-pulse">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="glass w-full border-l-2 !border-l-zinc-700/50 p-3 flex flex-col justify-center h-[68px]">
             <div className="flex items-center gap-2 mb-1.5">
@@ -188,7 +188,7 @@ export default function AlertChips({
   if (!hasAny) return null;
 
   return (
-    <div ref={container} className="pointer-events-auto absolute right-4 top-16 z-20 flex w-[19rem] max-w-[calc(100vw-2rem)] flex-col gap-2 overflow-hidden">
+    <div ref={container} className="pointer-events-auto absolute right-4 top-16 z-20 flex w-[19rem] max-w-[calc(100vw-2rem)] flex-col gap-2">
       {notices.map((n, i) => {
         const Icon = ICONS[n.kind];
         // Severity is the chip's own score, not its kind: a weak signal must not

@@ -46,13 +46,23 @@ export default function Drawer({
     <div ref={scope}>
       {/* click-away backdrop */}
       <div className="absolute inset-0 z-20" onClick={close} />
-      {/* drawer panel */}
-      <aside
-        className="gsap-panel glass-drawer pointer-events-auto absolute left-[52px] top-14 bottom-0 z-30 w-[22rem] origin-left overflow-y-auto scroll-thin"
+      
+      <div 
+        className="gsap-panel pointer-events-auto absolute left-[52px] top-28 bottom-6 z-30 w-[22rem] origin-left flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {children}
-      </aside>
+        {/* Press Esc to exit */}
+        <div className="absolute -top-7 left-0 flex items-center">
+          <span className="text-xs text-zinc-500 whitespace-nowrap">
+            Press <kbd className="font-sans border border-white/10 bg-white/5 px-1.5 py-0.5 rounded text-zinc-400 mx-1">Esc</kbd> to exit
+          </span>
+        </div>
+        
+        {/* drawer panel */}
+        <aside className="glass-drawer flex-1 overflow-y-auto scroll-thin w-full rounded-sm">
+          {children}
+        </aside>
+      </div>
     </div>
   );
 }

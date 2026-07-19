@@ -16,6 +16,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fetchResearch, type ResearchResponse, type SpectralData } from "@/lib/api";
+import { ResearchSkeleton } from "./Skeletons";
 
 export default function ResearchPanel({ onClose }: { onClose: () => void }) {
   const [data, setData] = useState<ResearchResponse | null>(null);
@@ -46,7 +47,7 @@ export default function ResearchPanel({ onClose }: { onClose: () => void }) {
       {error ? (
         <div className="p-8 text-center text-sm text-zinc-500">{error}</div>
       ) : !data ? (
-        <div className="p-8 text-center text-sm text-zinc-500">Loading research results…</div>
+        <ResearchSkeleton />
       ) : (
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
           <GhostRingCard ring={data.ghost_ring} />

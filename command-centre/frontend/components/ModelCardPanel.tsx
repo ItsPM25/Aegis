@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { fetchMetrics, type MetricsResponse, type ModelCard, type MetricItem } from "@/lib/api";
+import { MetricsSkeleton } from "./Skeletons";
 
 /** Model Card — the measured numbers the evaluation focus scores, surfaced.
  *  Counterfeit accuracy, digital-arrest precision/recall, fraud-network detection
@@ -48,17 +49,6 @@ export default function ModelCardPanel({ onClose }: { onClose: () => void }) {
 
   return (
     <div ref={container} className="relative h-full overflow-y-auto p-6 scroll-thin">
-      <button
-        onClick={onClose}
-        aria-label="Close Model Card"
-        className="absolute right-4 top-4 z-10 border border-white/10 bg-zinc-900/80 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-zinc-100"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
-
       <div className="mb-5 pr-12 gsap-mc">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold text-zinc-100">Model Card · Measured Metrics</h2>
@@ -75,7 +65,7 @@ export default function ModelCardPanel({ onClose }: { onClose: () => void }) {
       {error ? (
         <div className="border border-red-500/20 bg-red-500/5 p-6 text-center text-sm text-red-300">{error}</div>
       ) : !data ? (
-        <div className="p-8 text-center text-sm text-zinc-500">Loading measured metrics…</div>
+        <MetricsSkeleton />
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

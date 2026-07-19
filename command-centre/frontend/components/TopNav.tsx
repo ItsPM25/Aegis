@@ -210,7 +210,7 @@ export default function TopNav({
               {isActive && (
                 <button
                   onClick={handlePrevTab}
-                  className="rounded-full p-1 text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors focus-visible:outline-none"
+                  className="rounded-full p-1 text-white hover:bg-zinc-800/50 hover:text-white transition-colors focus-visible:outline-none"
                   title="Previous tab"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
@@ -233,7 +233,7 @@ export default function TopNav({
               {isActive && (
                 <button
                   onClick={handleNextTab}
-                  className="rounded-full p-1 text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-100 transition-colors focus-visible:outline-none"
+                  className="rounded-full p-1 text-white hover:bg-zinc-800/50 hover:text-white transition-colors focus-visible:outline-none"
                   title="Next tab"
                 >
                   <ChevronRight className="h-3.5 w-3.5" />
@@ -357,7 +357,7 @@ export default function TopNav({
       {/* Floating Global Tab Navigation Arrows */}
       <button
         onClick={handlePrevTab}
-        className="pointer-events-auto fixed left-2 top-1/2 z-[100] -translate-y-1/2 p-1 text-zinc-400 transition-all hover:scale-125 hover:text-zinc-100 focus-visible:outline-none"
+        className="pointer-events-auto fixed left-2 top-1/2 z-[100] -translate-y-1/2 p-1 text-white transition-all hover:scale-125 focus-visible:outline-none"
         title="Previous tab"
       >
         <ChevronLeft className="h-8 w-8 drop-shadow-md" />
@@ -365,10 +365,8 @@ export default function TopNav({
 
       <button
         onClick={handleNextTab}
-        className={`pointer-events-auto fixed top-1/2 z-[100] -translate-y-1/2 p-1 text-zinc-400 transition-all duration-300 ease-in-out hover:scale-125 hover:text-zinc-100 focus-visible:outline-none ${
-          // Clear the panel's full width — at `right-0` the chevron still sat on
-          // top of its content. Mirrors the panel's own `w-[400px] max-w-[90vw]`.
-          isRightPanelOpen ? "right-[calc(min(400px,90vw)+0.5rem)]" : "right-2"
+        className={`pointer-events-auto fixed right-0 top-1/2 z-[100] p-1 text-white transition-all duration-300 ease-in-out hover:scale-125 focus-visible:outline-none ${
+          isRightPanelOpen ? "-translate-y-1/2" : "-translate-x-2 -translate-y-1/2"
         }`}
         title="Next tab"
       >

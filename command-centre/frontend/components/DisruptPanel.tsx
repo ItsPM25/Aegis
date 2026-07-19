@@ -10,6 +10,7 @@ import {
   type ActionPriority,
   type ActionType,
 } from "@/lib/api";
+import { DisruptSkeleton } from "./Skeletons";
 
 /** Disrupt / Respond queue — the platform's "act on it" surface.
  *  Detections and fusion produce concrete, recipient-addressed actions
@@ -137,6 +138,8 @@ export default function DisruptPanel({ onClose }: { onClose: () => void }) {
         <div className="border border-red-500/20 bg-red-500/5 p-6 text-center text-sm text-red-300">
           {error}
         </div>
+      ) : !data ? (
+        <DisruptSkeleton />
       ) : actions.length === 0 ? (
         <div className="border border-dashed border-white/10 p-10 text-center text-sm text-zinc-600">
           No actions yet. Run Fusion or analyse a scam/note to populate the disrupt queue.
