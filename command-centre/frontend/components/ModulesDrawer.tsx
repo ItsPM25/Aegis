@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import type { EventsResponse, HealthResponse } from "@/lib/api";
+import { COUNTERFEIT_UI_URL, LIVE_CALL_URL } from "@/lib/api";
 import { clockTime, pct, titleCase } from "@/lib/format";
 import CitizenShieldPanel from "./CitizenShieldPanel";
 import {
@@ -109,6 +110,33 @@ export default function ModulesDrawer({
             </div>
             <div className="text-[10px] text-zinc-400 mt-1">Check scams in 22 languages · live-call detection.</div>
           </button>
+          {/* Both open the service's own operator UI in a new tab. rel is set
+              because target="_blank" otherwise hands the opened page a live
+              window.opener reference back into the dashboard. */}
+          <a
+            href={COUNTERFEIT_UI_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block p-2 bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
+          >
+            <div className="flex items-center justify-between text-xs text-zinc-200">
+              <span className="font-medium">Counterfeit Vision · Note Scan</span>
+              <ArrowUpRight className="h-3 w-3" />
+            </div>
+            <div className="text-[10px] text-zinc-400 mt-1">Scan a ₹note — CNN verdict + security-feature checks.</div>
+          </a>
+          <a
+            href={LIVE_CALL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block p-2 bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
+          >
+            <div className="flex items-center justify-between text-xs text-zinc-200">
+              <span className="font-medium">Live Call Shield</span>
+              <ArrowUpRight className="h-3 w-3" />
+            </div>
+            <div className="text-[10px] text-zinc-400 mt-1">Real-time scam detection on a live call transcript.</div>
+          </a>
           <a href="#" target="_blank" className="block p-2 bg-white/5 hover:bg-white/10 transition-colors border border-white/5">
             <div className="flex items-center justify-between text-xs text-zinc-200">
               <span className="font-medium">Investigator Dashboard</span>

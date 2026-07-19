@@ -3,6 +3,20 @@
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:4000";
 
+/** The two detection services that ship their own operator UI, linked from
+ *  Stakeholder Surfaces. Env-overridable for the same reason API_BASE is: a
+ *  deployed dashboard is not on the same host as the model services, and a
+ *  hardcoded 127.0.0.1 link would dead-end for everyone but the developer. */
+export const FRAUD_SHIELD_BASE =
+  process.env.NEXT_PUBLIC_FRAUD_SHIELD_URL ?? "http://127.0.0.1:8001";
+export const COUNTERFEIT_BASE =
+  process.env.NEXT_PUBLIC_COUNTERFEIT_URL ?? "http://127.0.0.1:8002";
+
+/** Live Call Shield — real-time scam detection on a call transcript. */
+export const LIVE_CALL_URL = `${FRAUD_SHIELD_BASE}/live-call`;
+/** Counterfeit Vision — live note scan (the service serves its UI at root). */
+export const COUNTERFEIT_UI_URL = `${COUNTERFEIT_BASE}/`;
+
 export interface LocationHint {
   district?: string;
   lat?: number;
