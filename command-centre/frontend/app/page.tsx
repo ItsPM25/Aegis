@@ -870,10 +870,6 @@ export default function Page() {
         onSearch={handleSearch}
         onSearchClear={clearSearch}
         onLogoClick={handleRecenter}
-        // Supply Trail is the only RIGHT-anchored panel the next-tab chevron can
-        // collide with — the alerts drawer opens on the left, so listing it here
-        // shifted the arrow aside for a panel that was never in its way.
-        isRightPanelOpen={supplyTrailOpen && activeTab === "map"}
       />
 
       {/* Localized alerts panel (from search). Centred until dragged, then it

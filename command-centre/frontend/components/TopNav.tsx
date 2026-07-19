@@ -25,7 +25,6 @@ export default function TopNav({
   onBell,
   onSearch,
   onSearchClear,
-  isRightPanelOpen,
   onLogoClick,
 }: {
   health: HealthResponse | null;
@@ -36,7 +35,6 @@ export default function TopNav({
   onSearch?: (query: string) => void;
   /** Search dismissed — clear anything it drew on the map. */
   onSearchClear?: () => void;
-  isRightPanelOpen?: boolean;
   /** Hard-reset the map to the India overview (owl-logo click). */
   onLogoClick?: () => void;
 }) {
@@ -206,11 +204,11 @@ export default function TopNav({
         {TABS.map(({ key, label }) => {
           const isActive = activeTab === key;
           return (
-            <div key={key} data-tab={key} className="relative z-20 flex items-center">
+            <Fragment key={key}>
               {isActive && (
                 <button
                   onClick={handlePrevTab}
-                  className="rounded-full p-1 text-zinc-900 hover:bg-zinc-200 transition-colors focus-visible:outline-none"
+                  className="relative z-20 rounded-full p-1 text-white hover:bg-zinc-800/50 hover:text-white transition-colors focus-visible:outline-none"
                   title="Previous tab"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -218,9 +216,10 @@ export default function TopNav({
               )}
               
               <button
+                data-tab={key}
                 onClick={() => onTabChange(key)}
                 aria-current={isActive ? "page" : undefined}
-                className={`focus-visible:outline-none whitespace-nowrap rounded-full px-[clamp(0.55rem,1.05vw,1rem)] py-1.5 text-[clamp(0.72rem,0.92vw,0.875rem)] transition-colors duration-200 ${
+                className={`relative z-20 focus-visible:outline-none whitespace-nowrap rounded-full px-[clamp(0.55rem,1.05vw,1rem)] py-1.5 text-[clamp(0.72rem,0.92vw,0.875rem)] transition-colors duration-200 ${
                   isActive
                     ? "font-medium text-zinc-900"
                     : "font-normal text-zinc-400 hover:text-zinc-100"
@@ -232,13 +231,13 @@ export default function TopNav({
               {isActive && (
                 <button
                   onClick={handleNextTab}
-                  className="rounded-full p-1 text-zinc-900 hover:bg-zinc-200 transition-colors focus-visible:outline-none"
+                  className="relative z-20 rounded-full p-1 text-white hover:bg-zinc-800/50 hover:text-white transition-colors focus-visible:outline-none"
                   title="Next tab"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
               )}
-            </div>
+            </Fragment>
           );
         })}
       </nav>
@@ -364,9 +363,11 @@ export default function TopNav({
 
       <button
         onClick={handleNextTab}
-        className={`pointer-events-auto fixed right-0 top-1/2 z-[100] p-1 text-white transition-all duration-300 ease-in-out hover:scale-125 focus-visible:outline-none ${
-          isRightPanelOpen ? "-translate-y-1/2" : "-translate-x-2 -translate-y-1/2"
-        }`}
+        // Fixed position in every tab and whether or not the Supply Trail panel
+        // is open. It used to shift left by the panel's full width, which parked
+        // it on the panel's own content; anchoring it to the viewport edge keeps
+        // "next tab" exactly where the eye already expects it from the Live Map.
+        className="pointer-events-auto fixed right-0 top-1/2 z-[100] -translate-x-2 -translate-y-1/2 p-1 text-white transition-all duration-300 ease-in-out hover:scale-125 focus-visible:outline-none"
         title="Next tab"
       >
         <ChevronRight className="h-8 w-8 drop-shadow-md" />
