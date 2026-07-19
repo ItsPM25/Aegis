@@ -1,16 +1,38 @@
 /** Types mirror contracts/*.schema.json — the team's locked data contract. */
 
-export const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:4000";
+/** Deployed service hosts, used as the fallback when no env var is supplied.
+ *
+ *  A build without NEXT_PUBLIC_API_BASE used to fall back to 127.0.0.1, which
+ *  on Vercel means the VISITOR's own machine — nothing is listening, every
+ *  fetch fails, and the dashboard reports all three modules offline. That is a
+ *  silent, total failure caused by a missing variable, and it already happened
+ *  once. Defaulting production to the real hosts makes the env vars an override
+ *  rather than a requirement. */
+const DEPLOYED = {
+  api: "https://aegis-backend-5oaw.onrender.com",
+  fraudShield: "https://aegis-fraud-shield.onrender.com",
+  counterfeit: "https://aegis-counterfeat.onrender.com", // Render's spelling, not a typo
+} as const;
+
+const LOCAL = {
+  api: "http://127.0.0.1:4000",
+  fraudShield: "http://127.0.0.1:8001",
+  counterfeit: "http://127.0.0.1:8002",
+} as const;
+
+/** Local dev must keep talking to localhost — otherwise `next dev` silently
+ *  reads and writes PRODUCTION data, which is far worse than a broken link. */
+const FALLBACK = process.env.NODE_ENV === "production" ? DEPLOYED : LOCAL;
+
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? FALLBACK.api;
 
 /** The two detection services that ship their own operator UI, linked from
- *  Stakeholder Surfaces. Env-overridable for the same reason API_BASE is: a
- *  deployed dashboard is not on the same host as the model services, and a
- *  hardcoded 127.0.0.1 link would dead-end for everyone but the developer. */
+ *  Stakeholder Surfaces. An explicit env var still wins, so a preview
+ *  deployment can be pointed at a different backend without a code change. */
 export const FRAUD_SHIELD_BASE =
-  process.env.NEXT_PUBLIC_FRAUD_SHIELD_URL ?? "http://127.0.0.1:8001";
+  process.env.NEXT_PUBLIC_FRAUD_SHIELD_URL ?? FALLBACK.fraudShield;
 export const COUNTERFEIT_BASE =
-  process.env.NEXT_PUBLIC_COUNTERFEIT_URL ?? "http://127.0.0.1:8002";
+  process.env.NEXT_PUBLIC_COUNTERFEIT_URL ?? FALLBACK.counterfeit;
 
 /** Live Call Shield — real-time scam detection on a call transcript. */
 export const LIVE_CALL_URL = `${FRAUD_SHIELD_BASE}/live-call`;
