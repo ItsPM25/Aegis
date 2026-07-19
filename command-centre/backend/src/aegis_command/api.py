@@ -145,12 +145,19 @@ async def analyze_counterfeit(body: dict) -> dict:
 
 
 # ── Citizen Fraud Shield: multilingual + multi-channel (chat / call) ──────────
-async def _fraud_shield_analyze(text: str) -> dict:
-    """Run one message through Fraud Shield (:8001/analyze)."""
+async def _fraud_shield_analyze(text: str, source: str = "manual_demo") -> dict:
+    """Run one message through Fraud Shield (:8001/analyze).
+
+    `source` MUST be one of Fraud Shield's accepted channels — its AnalyzeRequest
+    pins it to ^(sms|call_transcript|whatsapp|email|manual_demo)$. This used to
+    send "citizen_i18n", which is not in that set, so every /citizen/* request
+    failed with a 422 that surfaced as "fraud-shield service unreachable".
+    Passing the real channel also gets the right value onto the stored event.
+    """
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
             r = await client.post(
-                f"{MODULES['fraud-shield']}/analyze", json={"text": text, "source": "citizen_i18n"}
+                f"{MODULES['fraud-shield']}/analyze", json={"text": text, "source": source}
             )
             r.raise_for_status()
     except httpx.HTTPError as exc:
@@ -158,14 +165,14 @@ async def _fraud_shield_analyze(text: str) -> dict:
     return r.json()
 
 
-async def _citizen_pipeline(text: str, language: str | None) -> dict:
+async def _citizen_pipeline(text: str, language: str | None, source: str = "manual_demo") -> dict:
     """Translate → classify → translate-back. The classifier is language-agnostic
     because the text is normalised to English first; the advisory returns in the
     citizen's language. Translation fails safe (English passthrough)."""
     from .multilingual import LANGUAGES, build_advisory, translate
 
     english, detected, t_ok = translate(text, "en-IN", "auto")
-    result = await _fraud_shield_analyze(english)
+    result = await _fraud_shield_analyze(english, source)
     verdict = result.get("verdict", "legit")
     risk = float(result.get("risk_score", 0.0))
     scam_type = result.get("scam_type")
@@ -199,11 +206,11 @@ def citizen_languages() -> dict:
 
 @app.post("/citizen/analyze")
 async def citizen_analyze(body: dict) -> dict:
-    """Citizen message check in any of 12 languages. Verdict + safety advisory
+    """Citizen message check in any of the 22 scheduled Indian languages (plus English). Verdict + safety advisory
     returned in the citizen's language."""
     if not (body or {}).get("text"):
         raise HTTPException(422, "body must contain 'text'")
-    return await _citizen_pipeline(body["text"], body.get("language"))
+    return await _citizen_pipeline(body["text"], body.get("language"), "sms")
 
 
 @app.post("/citizen/call/analyze")
@@ -220,7 +227,7 @@ async def citizen_call_analyze(body: dict) -> dict:
         text = str(tr or "")
     if not text.strip():
         raise HTTPException(422, "body must contain 'transcript'")
-    res = await _citizen_pipeline(text, body.get("language"))
+    res = await _citizen_pipeline(text, body.get("language"), "call_transcript")
     # Mid-call intercept: an active scam still in progress — advise the citizen
     # and (via the Disrupt layer) hold the transfer before money moves.
     res["intercept"] = res["verdict"] == "scam"
@@ -240,7 +247,7 @@ async def citizen_whatsapp(body: dict) -> dict:
     text = (body or {}).get("text") or (body or {}).get("body")
     if not text:
         raise HTTPException(422, "body must contain 'text'")
-    res = await _citizen_pipeline(text, body.get("language"))
+    res = await _citizen_pipeline(text, body.get("language"), "whatsapp")
     return {
         "channel": "whatsapp",
         "to": (body or {}).get("from"),
